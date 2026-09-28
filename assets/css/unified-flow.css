@@ -244,15 +244,17 @@
     background: #ffffff;
     width: 100%;
     max-width: 480px;
+    height: 600px;
     max-height: 92vh;
-    overflow-y: auto;
     border-radius: 12px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     z-index: 2;
-    padding: 0 16px 20px;
+    padding: 0 18px 18px;
     margin: 10px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .wooconfig-modal-top-bar {
@@ -260,9 +262,10 @@
     top: 0;
     background: #ffffff;
     padding-top: 14px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     z-index: 10;
     border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
 }
 
 .wooconfig-modal-title-row {
@@ -326,13 +329,35 @@
     background: #ff5400; /* Vibrant orange active step */
 }
 
-/* STEP HEADER & VER EJEMPLO */
+/* STEP VIEW */
+.wooconfig-step-view {
+    display: none;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
+.wooconfig-step-view.is-active,
+.wooconfig-step-view[style*="display: flex"],
+.wooconfig-step-view[style*="display: block"] {
+    display: flex !important;
+}
+
+/* STEP HEADER & VER EJEMPLO (With bottom divider line) */
 .wooconfig-step-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
-    margin: 16px 0 14px;
+    padding: 12px 0 12px;
+    margin: 0 0 14px 0;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.wooconfig-step-title-col {
+    flex: 1;
 }
 
 .wooconfig-step-number-title {
@@ -346,6 +371,43 @@
     font-size: 13px;
     color: #475569;
     margin: 0;
+}
+
+/* STEP BODY (Middle scrollable area) */
+.wooconfig-step-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+    display: flex;
+    flex-direction: column;
+}
+
+.wooconfig-step-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.wooconfig-step-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
+.wooconfig-step-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.wooconfig-step-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* STEP FOOTER (Bottom pinned section with top divider line) */
+.wooconfig-step-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
 }
 
 .wooconfig-btn-ver-ejemplo {
@@ -1065,6 +1127,51 @@
     }
     .wooconfig-btn-green-save {
         height: 42px !important;
+        font-size: 14px !important;
+    }
+
+    /* Main modal mobile adjustments */
+    .wooconfig-modal-container {
+        height: 94vh !important;
+        max-height: 94vh !important;
+        padding: 0 12px 14px !important;
+        margin: 6px !important;
+    }
+    .wooconfig-modal-top-bar {
+        padding-top: 10px !important;
+        padding-bottom: 8px !important;
+    }
+    .wooconfig-step-header {
+        padding: 8px 0 !important;
+        margin-bottom: 10px !important;
+    }
+    .wooconfig-step-number-title {
+        font-size: 17px !important;
+    }
+    .wooconfig-step-desc {
+        font-size: 12px !important;
+    }
+    .wooconfig-btn-ver-ejemplo {
+        padding: 6px 8px !important;
+        min-width: 74px !important;
+    }
+    .wooconfig-dashed-dropzone {
+        padding: 14px 10px !important;
+        margin-bottom: 10px !important;
+    }
+    .wooconfig-dropzone-text-primary {
+        font-size: 12px !important;
+    }
+    .wooconfig-step-footer {
+        padding-top: 10px !important;
+    }
+    .wooconfig-modal-total-bar {
+        padding: 8px 10px !important;
+        margin-bottom: 8px !important;
+    }
+    .wooconfig-btn-green-next,
+    .wooconfig-btn-nav-back {
+        height: 46px !important;
         font-size: 14px !important;
     }
 }

@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         </div>
 
         <!-- ================= STEP 2: DISEÑO ================= -->
-        <div class="wooconfig-step-view" id="wooconfig-step-2">
+        <div class="wooconfig-step-view is-active" id="wooconfig-step-2">
             <div class="wooconfig-step-header">
                 <div class="wooconfig-step-title-col">
                     <h2 class="wooconfig-step-number-title"><?php esc_html_e( '2 - Diseño', 'woo-config' ); ?></h2>
@@ -50,58 +50,62 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </button>
             </div>
 
-            <!-- Uploaded Files List (Diseño) -->
-            <div class="wooconfig-uploaded-files-list" id="wooconfig-design-files-list"></div>
+            <div class="wooconfig-step-body">
+                <!-- Uploaded Files List (Diseño) -->
+                <div class="wooconfig-uploaded-files-list" id="wooconfig-design-files-list"></div>
 
-            <!-- Dashed Dropzone (Diseño) -->
-            <div class="wooconfig-dashed-dropzone" id="wooconfig-design-dropzone">
-                <input type="file" id="wooconfig-design-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.eps,.zip" style="display: none;">
-                <div class="wooconfig-dropzone-inner" id="wooconfig-design-dropzone-trigger">
-                    <div class="wooconfig-dropzone-icon-circle">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
+                <!-- Dashed Dropzone (Diseño) -->
+                <div class="wooconfig-dashed-dropzone" id="wooconfig-design-dropzone">
+                    <input type="file" id="wooconfig-design-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.eps,.zip" style="display: none;">
+                    <div class="wooconfig-dropzone-inner" id="wooconfig-design-dropzone-trigger">
+                        <div class="wooconfig-dropzone-icon-circle">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Arrastra o sube aquí un archivo con el diseño de tu equipo', 'woo-config' ); ?></span>
+                        <span class="wooconfig-dropzone-text-secondary"><?php esc_html_e( '(max 20mb)', 'woo-config' ); ?></span>
                     </div>
-                    <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Arrastra o sube aquí un archivo con el diseño de tu equipo', 'woo-config' ); ?></span>
-                    <span class="wooconfig-dropzone-text-secondary"><?php esc_html_e( '(max 20mb)', 'woo-config' ); ?></span>
+                </div>
+
+                <!-- Upload Progress (Diseño) -->
+                <div class="wooconfig-upload-progress-wrapper" id="wooconfig-design-progress" style="display: none;">
+                    <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-design-progress-fill"></div></div>
+                    <span class="wooconfig-progress-text" id="wooconfig-design-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
+                </div>
+
+                <!-- Textarea Notas (Diseño) -->
+                <div class="wooconfig-notes-group">
+                    <label for="wooconfig-design-notes" class="wooconfig-notes-label"><?php esc_html_e( 'Notas (opcional):', 'woo-config' ); ?></label>
+                    <textarea id="wooconfig-design-notes" class="wooconfig-textarea" rows="3" placeholder="<?php echo esc_attr( 'Cualquier nota o enlace Drive, dropbox, etc.' ); ?>"></textarea>
                 </div>
             </div>
 
-            <!-- Upload Progress (Diseño) -->
-            <div class="wooconfig-upload-progress-wrapper" id="wooconfig-design-progress" style="display: none;">
-                <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-design-progress-fill"></div></div>
-                <span class="wooconfig-progress-text" id="wooconfig-design-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
-            </div>
-
-            <!-- Textarea Notas (Diseño) -->
-            <div class="wooconfig-notes-group">
-                <label for="wooconfig-design-notes" class="wooconfig-notes-label"><?php esc_html_e( 'Notas (opcional):', 'woo-config' ); ?></label>
-                <textarea id="wooconfig-design-notes" class="wooconfig-textarea" rows="3" placeholder="<?php echo esc_attr( 'Cualquier nota o enlace Drive, dropbox, etc.' ); ?>"></textarea>
-            </div>
-
-            <!-- Resumen Valor Total -->
-            <div class="wooconfig-modal-total-bar">
-                <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
-                <div class="wooconfig-modal-total-sub-details">
-                    <span class="wooconfig-live-units-label">10 unidades</span>
-                    <span class="wooconfig-live-ads-label">0 adicionales</span>
+            <div class="wooconfig-step-footer">
+                <!-- Resumen Valor Total -->
+                <div class="wooconfig-modal-total-bar">
+                    <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
+                    <div class="wooconfig-modal-total-sub-details">
+                        <span class="wooconfig-live-units-label">10 unidades</span>
+                        <span class="wooconfig-live-ads-label">0 adicionales</span>
+                    </div>
+                    <span class="wooconfig-modal-total-amount">$0</span>
                 </div>
-                <span class="wooconfig-modal-total-amount">$0</span>
-            </div>
 
-            <!-- Footer Navigation -->
-            <div class="wooconfig-modal-nav-footer">
-                <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step2-back-to-step1">
-                    <span>❮ <?php esc_html_e( 'Volver a Cantidades', 'woo-config' ); ?></span>
-                </button>
-                <button type="button" class="wooconfig-btn-green-next" id="wooconfig-step2-goto-step3">
-                    <span><?php esc_html_e( 'Siguiente: Sponsors', 'woo-config' ); ?></span>
-                    <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
+                <!-- Footer Navigation -->
+                <div class="wooconfig-modal-nav-footer">
+                    <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step2-back-to-step1">
+                        <span>❮ <?php esc_html_e( 'Volver a Cantidades', 'woo-config' ); ?></span>
+                    </button>
+                    <button type="button" class="wooconfig-btn-green-next" id="wooconfig-step2-goto-step3">
+                        <span><?php esc_html_e( 'Siguiente: Sponsors', 'woo-config' ); ?></span>
+                        <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -118,57 +122,61 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </button>
             </div>
 
-            <!-- Uploaded Files List (Sponsors) -->
-            <div class="wooconfig-uploaded-files-list" id="wooconfig-sponsors-files-list"></div>
+            <div class="wooconfig-step-body">
+                <!-- Uploaded Files List (Sponsors) -->
+                <div class="wooconfig-uploaded-files-list" id="wooconfig-sponsors-files-list"></div>
 
-            <!-- Dashed Dropzone (Sponsors) -->
-            <div class="wooconfig-dashed-dropzone" id="wooconfig-sponsors-dropzone">
-                <input type="file" id="wooconfig-sponsors-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.eps,.svg,.zip" style="display: none;">
-                <div class="wooconfig-dropzone-inner" id="wooconfig-sponsors-dropzone-trigger">
-                    <div class="wooconfig-dropzone-icon-circle">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
+                <!-- Dashed Dropzone (Sponsors) -->
+                <div class="wooconfig-dashed-dropzone" id="wooconfig-sponsors-dropzone">
+                    <input type="file" id="wooconfig-sponsors-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.eps,.svg,.zip" style="display: none;">
+                    <div class="wooconfig-dropzone-inner" id="wooconfig-sponsors-dropzone-trigger">
+                        <div class="wooconfig-dropzone-icon-circle">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Arrastra o sube aquí los logos de los sponsors (alta resolución o vector)', 'woo-config' ); ?></span>
                     </div>
-                    <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Arrastra o sube aquí los logos de los sponsors (alta resolución o vector)', 'woo-config' ); ?></span>
+                </div>
+
+                <!-- Upload Progress (Sponsors) -->
+                <div class="wooconfig-upload-progress-wrapper" id="wooconfig-sponsors-progress" style="display: none;">
+                    <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-sponsors-progress-fill"></div></div>
+                    <span class="wooconfig-progress-text" id="wooconfig-sponsors-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
+                </div>
+
+                <!-- Textarea Notas (Sponsors) -->
+                <div class="wooconfig-notes-group">
+                    <label for="wooconfig-sponsors-notes" class="wooconfig-notes-label"><?php esc_html_e( 'Notas (opcional):', 'woo-config' ); ?></label>
+                    <textarea id="wooconfig-sponsors-notes" class="wooconfig-textarea" rows="3" placeholder="<?php echo esc_attr( 'Cualquier nota o enlace Drive, dropbox, etc.' ); ?>"></textarea>
                 </div>
             </div>
 
-            <!-- Upload Progress (Sponsors) -->
-            <div class="wooconfig-upload-progress-wrapper" id="wooconfig-sponsors-progress" style="display: none;">
-                <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-sponsors-progress-fill"></div></div>
-                <span class="wooconfig-progress-text" id="wooconfig-sponsors-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
-            </div>
-
-            <!-- Textarea Notas (Sponsors) -->
-            <div class="wooconfig-notes-group">
-                <label for="wooconfig-sponsors-notes" class="wooconfig-notes-label"><?php esc_html_e( 'Notas (opcional):', 'woo-config' ); ?></label>
-                <textarea id="wooconfig-sponsors-notes" class="wooconfig-textarea" rows="3" placeholder="<?php echo esc_attr( 'Cualquier nota o enlace Drive, dropbox, etc.' ); ?>"></textarea>
-            </div>
-
-            <!-- Resumen Valor Total -->
-            <div class="wooconfig-modal-total-bar">
-                <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
-                <div class="wooconfig-modal-total-sub-details">
-                    <span class="wooconfig-live-units-label">10 unidades</span>
-                    <span class="wooconfig-live-ads-label">0 adicionales</span>
+            <div class="wooconfig-step-footer">
+                <!-- Resumen Valor Total -->
+                <div class="wooconfig-modal-total-bar">
+                    <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
+                    <div class="wooconfig-modal-total-sub-details">
+                        <span class="wooconfig-live-units-label">10 unidades</span>
+                        <span class="wooconfig-live-ads-label">0 adicionales</span>
+                    </div>
+                    <span class="wooconfig-modal-total-amount">$0</span>
                 </div>
-                <span class="wooconfig-modal-total-amount">$0</span>
-            </div>
 
-            <!-- Footer Navigation -->
-            <div class="wooconfig-modal-nav-footer">
-                <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step3-back-to-step2">
-                    <span>❮ <?php esc_html_e( 'Volver a Diseño', 'woo-config' ); ?></span>
-                </button>
-                <button type="button" class="wooconfig-btn-green-next" id="wooconfig-step3-goto-step4">
-                    <span><?php esc_html_e( 'Siguiente: Jugadores y tallas', 'woo-config' ); ?></span>
-                    <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
+                <!-- Footer Navigation -->
+                <div class="wooconfig-modal-nav-footer">
+                    <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step3-back-to-step2">
+                        <span>❮ <?php esc_html_e( 'Volver a Diseño', 'woo-config' ); ?></span>
+                    </button>
+                    <button type="button" class="wooconfig-btn-green-next" id="wooconfig-step3-goto-step4">
+                        <span><?php esc_html_e( 'Siguiente: Jugadores y tallas', 'woo-config' ); ?></span>
+                        <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -185,74 +193,78 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </button>
             </div>
 
-            <!-- Uploaded Files List (Jugadores) -->
-            <div class="wooconfig-uploaded-files-list" id="wooconfig-players-files-list"></div>
+            <div class="wooconfig-step-body">
+                <!-- Uploaded Files List (Jugadores) -->
+                <div class="wooconfig-uploaded-files-list" id="wooconfig-players-files-list"></div>
 
-            <!-- Dashed Dropzone (Jugadores max 1 archivo) -->
-            <div class="wooconfig-dashed-dropzone" id="wooconfig-players-dropzone">
-                <input type="file" id="wooconfig-players-file-input" accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls,.doc,.docx,.zip" style="display: none;">
-                <div class="wooconfig-dropzone-inner" id="wooconfig-players-dropzone-trigger">
-                    <div class="wooconfig-dropzone-icon-circle">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
+                <!-- Dashed Dropzone (Jugadores max 1 archivo) -->
+                <div class="wooconfig-dashed-dropzone" id="wooconfig-players-dropzone">
+                    <input type="file" id="wooconfig-players-file-input" accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls,.doc,.docx,.zip" style="display: none;">
+                    <div class="wooconfig-dropzone-inner" id="wooconfig-players-dropzone-trigger">
+                        <div class="wooconfig-dropzone-icon-circle">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Sube un archivo con los datos de cada jugador (max 1)', 'woo-config' ); ?></span>
                     </div>
-                    <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Sube un archivo con los datos de cada jugador (max 1)', 'woo-config' ); ?></span>
+                </div>
+
+                <!-- Upload Progress (Jugadores) -->
+                <div class="wooconfig-upload-progress-wrapper" id="wooconfig-players-progress" style="display: none;">
+                    <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-players-progress-fill"></div></div>
+                    <span class="wooconfig-progress-text" id="wooconfig-players-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
+                </div>
+
+                <!-- Option Separator -->
+                <div class="wooconfig-table-opt-prompt">
+                    <p><?php esc_html_e( 'Si prefieres, puedes llenar manualmente aquí:', 'woo-config' ); ?></p>
+                    <div class="wooconfig-table-trigger-row">
+                        <button type="button" class="wooconfig-btn-green-table" id="wooconfig-btn-open-table">
+                            <svg class="wooconfig-grid-ico" width="28" height="20" viewBox="0 0 28 20" fill="none" stroke="#000000" stroke-width="1.8">
+                                <rect x="1" y="1" width="26" height="18" rx="2" stroke="#000000"/>
+                                <line x1="1" y1="7" x2="27" y2="7"/>
+                                <line x1="1" y1="13" x2="27" y2="13"/>
+                                <line x1="9" y1="1" x2="9" y2="19"/>
+                                <line x1="18" y1="1" x2="18" y2="19"/>
+                            </svg>
+                            <span id="wooconfig-table-btn-label"><?php esc_html_e( 'Usar tabla (opcional)', 'woo-config' ); ?></span>
+                        </button>
+                        <button type="button" class="wooconfig-help-circle-btn" data-help="tabla" title="<?php esc_attr_e( 'Instrucciones de la tabla', 'woo-config' ); ?>">?</button>
+                    </div>
+                    <div class="wooconfig-table-saved-status" id="wooconfig-table-saved-badge" style="display: none;">
+                        <span>✓</span> <span id="wooconfig-table-saved-text"><?php esc_html_e( 'Tabla guardada correctamente', 'woo-config' ); ?></span>
+                        <button type="button" class="wooconfig-table-clear-btn" id="wooconfig-btn-clear-table" title="<?php esc_attr_e( 'Limpiar tabla', 'woo-config' ); ?>">✖</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Upload Progress (Jugadores) -->
-            <div class="wooconfig-upload-progress-wrapper" id="wooconfig-players-progress" style="display: none;">
-                <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-players-progress-fill"></div></div>
-                <span class="wooconfig-progress-text" id="wooconfig-players-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
-            </div>
+            <div class="wooconfig-step-footer">
+                <!-- Resumen Valor Total -->
+                <div class="wooconfig-modal-total-bar">
+                    <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
+                    <div class="wooconfig-modal-total-sub-details">
+                        <span class="wooconfig-live-units-label">10 unidades</span>
+                        <span class="wooconfig-live-ads-label">0 adicionales</span>
+                    </div>
+                    <span class="wooconfig-modal-total-amount">$0</span>
+                </div>
 
-            <!-- Option Separator -->
-            <div class="wooconfig-table-opt-prompt">
-                <p><?php esc_html_e( 'Si prefieres, puedes llenar manualmente aquí:', 'woo-config' ); ?></p>
-                <div class="wooconfig-table-trigger-row">
-                    <button type="button" class="wooconfig-btn-green-table" id="wooconfig-btn-open-table">
-                        <svg class="wooconfig-grid-ico" width="28" height="20" viewBox="0 0 28 20" fill="none" stroke="#000000" stroke-width="1.8">
-                            <rect x="1" y="1" width="26" height="18" rx="2" stroke="#000000"/>
-                            <line x1="1" y1="7" x2="27" y2="7"/>
-                            <line x1="1" y1="13" x2="27" y2="13"/>
-                            <line x1="9" y1="1" x2="9" y2="19"/>
-                            <line x1="18" y1="1" x2="18" y2="19"/>
-                        </svg>
-                        <span id="wooconfig-table-btn-label"><?php esc_html_e( 'Usar tabla (opcional)', 'woo-config' ); ?></span>
+                <!-- Footer Navigation -->
+                <div class="wooconfig-modal-nav-footer">
+                    <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step4-back-to-step3">
+                        <span>❮ <?php esc_html_e( 'Volver a Sponsors', 'woo-config' ); ?></span>
                     </button>
-                    <button type="button" class="wooconfig-help-circle-btn" data-help="tabla" title="<?php esc_attr_e( 'Instrucciones de la tabla', 'woo-config' ); ?>">?</button>
+                    <button type="button" class="wooconfig-btn-green-next" id="wooconfig-submit-cart-btn">
+                        <span id="wooconfig-submit-cart-label"><?php esc_html_e( 'Añadir y ver carrito', 'woo-config' ); ?></span>
+                        <span class="wooconfig-spinner" id="wooconfig-submit-spinner" style="display: none;"></span>
+                        <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
                 </div>
-                <div class="wooconfig-table-saved-status" id="wooconfig-table-saved-badge" style="display: none;">
-                    <span>✓</span> <span id="wooconfig-table-saved-text"><?php esc_html_e( 'Tabla guardada correctamente', 'woo-config' ); ?></span>
-                    <button type="button" class="wooconfig-table-clear-btn" id="wooconfig-btn-clear-table" title="<?php esc_attr_e( 'Limpiar tabla', 'woo-config' ); ?>">✖</button>
-                </div>
-            </div>
-
-            <!-- Resumen Valor Total -->
-            <div class="wooconfig-modal-total-bar">
-                <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
-                <div class="wooconfig-modal-total-sub-details">
-                    <span class="wooconfig-live-units-label">10 unidades</span>
-                    <span class="wooconfig-live-ads-label">0 adicionales</span>
-                </div>
-                <span class="wooconfig-modal-total-amount">$0</span>
-            </div>
-
-            <!-- Footer Navigation -->
-            <div class="wooconfig-modal-nav-footer">
-                <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step4-back-to-step3">
-                    <span>❮ <?php esc_html_e( 'Volver a Sponsors', 'woo-config' ); ?></span>
-                </button>
-                <button type="button" class="wooconfig-btn-green-next" id="wooconfig-submit-cart-btn">
-                    <span id="wooconfig-submit-cart-label"><?php esc_html_e( 'Añadir y ver carrito', 'woo-config' ); ?></span>
-                    <span class="wooconfig-spinner" id="wooconfig-submit-spinner" style="display: none;"></span>
-                    <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
             </div>
         </div>
 

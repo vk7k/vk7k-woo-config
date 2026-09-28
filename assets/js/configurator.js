@@ -196,8 +196,8 @@
         // ================= NAVIGATION =================
         goToStep: function(step) {
             this.currentStep = step;
-            $('.wooconfig-step-view').hide();
-            $('#wooconfig-step-' + step).show();
+            $('.wooconfig-step-view').hide().removeClass('is-active');
+            $('#wooconfig-step-' + step).css('display', 'flex').addClass('is-active');
 
             // Update Progress Bar
             $('.wooconfig-prog-segment').removeClass('is-active is-completed');
@@ -215,6 +215,7 @@
             // Hide validation banner on step change
             $('#wooconfig-validation-banner').slideUp(150);
             $('.wooconfig-modal-container').scrollTop(0);
+            $('.wooconfig-step-body').scrollTop(0);
         },
 
         openModal: function(step) {
