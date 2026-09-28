@@ -568,7 +568,6 @@ class WC_Config_Order {
         }
 
         $is_initial_paid = $order->is_paid();
-        $payment_url     = self::get_balance_payment_url( $order );
         ?>
         <div class="wooconfig-customer-deposit-card" style="margin: 30px 0; background: #fff; border: 2px solid <?php echo ( 'paid' === $balance_status ? '#10b981' : '#94ec00' ); ?>; border-radius: 10px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
@@ -603,23 +602,18 @@ class WC_Config_Order {
 
             <?php if ( 'paid' !== $balance_status ) : ?>
                 <?php if ( $is_initial_paid ) : ?>
-                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 14px; margin-bottom: 15px;">
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 14px;">
                         <p style="margin: 0; font-size: 13px; color: #166534; line-height: 1.5;">
-                            ℹ <strong><?php esc_html_e( 'Tu boceto está en proceso de elaboración.', 'woo-config' ); ?></strong> <?php esc_html_e( 'Recibirás la propuesta de diseño dentro de un plazo máximo de 24 horas. Una vez que apruebes el boceto, tu pedido iniciará confección. Puedes liquidar el saldo restante en cualquier momento para agilizar el despacho.', 'woo-config' ); ?>
+                            ℹ <strong><?php esc_html_e( 'Tu boceto está en proceso de elaboración.', 'woo-config' ); ?></strong> <?php esc_html_e( 'Recibirás la propuesta de diseño dentro de un plazo máximo de 24 horas. Una vez que apruebes el boceto, tu pedido iniciará confección.', 'woo-config' ); ?>
                         </p>
                     </div>
                 <?php else : ?>
-                    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 14px; margin-bottom: 15px;">
+                    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 14px;">
                         <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
                             ℹ <strong><?php esc_html_e( 'El pago inicial da inicio a la elaboración de tu boceto (24 horas).', 'woo-config' ); ?></strong> <?php esc_html_e( 'Una vez confirmado tu abono (50%), prepararemos tu diseño. Tras tu aprobación del boceto, se iniciará la confección de tu pedido.', 'woo-config' ); ?>
                         </p>
                     </div>
                 <?php endif; ?>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="<?php echo esc_url( $payment_url ); ?>" class="button button-primary" style="background: #111; border-color: #111; color: #fff; padding: 12px 20px; font-weight: 800; font-size: 14px; border-radius: 6px; text-decoration: none;">
-                        💳 <?php esc_html_e( 'Pagar Saldo Pendiente en Línea (Webpay / Tarjetas)', 'woo-config' ); ?>
-                    </a>
-                </div>
             <?php else : ?>
                 <p style="margin: 0; font-size: 13px; color: #059669; font-weight: 600;">
                     ✓ <?php esc_html_e( '¡Gracias! El saldo total ha sido cubierto. Una vez aprobado tu boceto y finalizada la confección, tu pedido será despachado de inmediato.', 'woo-config' ); ?>
