@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94ec00"/>
+      <stop offset="100%" stop-color="#78c500"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" rx="20" fill="url(#bgGrad)"/>
+  
+  <rect x="0" y="0" width="600" height="110" rx="20" fill="#182234"/>
+  <rect x="0" y="106" width="600" height="4" fill="url(#accentGrad)"/>
+  <text x="300" y="55" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="800" text-anchor="middle" letter-spacing="1">EJEMPLO DE DISEÑO</text>
+  <text x="300" y="85" fill="#94ec00" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" text-anchor="middle">CAFÚ INDUMENTARIA DEPORTIVA</text>
+  
+  <rect x="40" y="140" width="520" height="230" rx="14" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <circle cx="80" cy="180" r="22" fill="#94ec00"/>
+  <text x="80" y="187" fill="#000000" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="900" text-anchor="middle">🎨</text>
+  <text x="120" y="185" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="19" font-weight="700">¿Qué archivos de diseño subir?</text>
+  <text x="60" y="230" fill="#cbd5e1" font-family="system-ui, -apple-system, sans-serif" font-size="15">
+    <tspan x="60" dy="0">Sube cualquier referencia visual de tu camiseta o conjunto:</tspan>
+    <tspan x="60" dy="24">• Bocetos o fotos de modelos que te gusten.</tspan>
+    <tspan x="60" dy="24">• Archivos de diseño en Illustrator (.AI), PDF, EPS o PNG.</tspan>
+    <tspan x="60" dy="24">• Fotos de uniformes anteriores o dibujos a mano alzada.</tspan>
+  </text>
+
+  <rect x="40" y="400" width="520" height="340" rx="14" fill="#182234" stroke="#334155" stroke-width="2"/>
+  <text x="300" y="440" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" text-anchor="middle">Formatos y Notas opcionales</text>
+
+  <g transform="translate(70, 470)">
+    <rect width="130" height="90" rx="10" fill="#0f172a" stroke="#94ec00" stroke-width="1.5"/>
+    <text x="65" y="42" fill="#94ec00" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" text-anchor="middle">.AI / .EPS</text>
+    <text x="65" y="68" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Vectores</text>
+
+    <rect x="165" width="130" height="90" rx="10" fill="#0f172a" stroke="#94ec00" stroke-width="1.5"/>
+    <text x="230" y="42" fill="#94ec00" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" text-anchor="middle">.PDF</text>
+    <text x="230" y="68" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Documento</text>
+
+    <rect x="330" width="130" height="90" rx="10" fill="#0f172a" stroke="#94ec00" stroke-width="1.5"/>
+    <text x="395" y="42" fill="#94ec00" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" text-anchor="middle">.JPG / .PNG</text>
+    <text x="395" y="68" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Imágenes</text>
+  </g>
+
+  <rect x="70" y="590" width="460" height="110" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="95" y="625" fill="#94ec00" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700">Campo de Notas:</text>
+  <text x="95" y="655" fill="#cbd5e1" font-family="system-ui, -apple-system, sans-serif" font-size="14">
+    <tspan x="95" dy="0">Puedes agregar detalles como colores corporativos, tono</tspan>
+    <tspan x="95" dy="22">del cuello o un enlace de Google Drive / Dropbox si pesa más.</tspan>
+  </text>
+
+  <text x="300" y="860" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">(Imagen de referencia reemplazable en assets/images/help-diseno.svg)</text>
+</svg>

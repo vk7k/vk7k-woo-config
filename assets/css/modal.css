@@ -1773,6 +1773,8 @@
     text-align: center !important;
     width: 48px !important;
     height: 34px !important;
+}
+
 /* Hide default WooCommerce add-to-cart form, variation dropdowns and individual selectors on WooConfig products */
 body.single-product .variations_form.cart,
 body.single-product form.cart:not(.wooconfig-onpage-widget form):not(#wooconfig-quick-form) > .variations,

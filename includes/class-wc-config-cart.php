@@ -63,6 +63,264 @@ class WC_Config_Cart {
         $payment_mode = isset( $_POST['payment_mode'] ) ? sanitize_text_field( $_POST['payment_mode'] ) : 'deposit';
         $is_deposit   = ( 'yes' === $deposit_enabled && 'deposit' === $payment_mode );
 
+        // ================= FLOW 3: UNIFIED 4-STEP CONFIGURATION =================
+        if ( 'unified' === $flow ) {
+            $qty = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
+            if ( $qty < 1 ) {
+                wp_send_json_error( array( 'message' => __( 'Debes ingresar al menos 1 prenda.', 'woo-config' ) ) );
+            }
+
+            // Decode design, sponsor and player files
+            $files_design_json   = isset( $_POST['files_design'] ) ? wp_unslash( $_POST['files_design'] ) : '[]';
+            $files_design        = json_decode( $files_design_json, true );
+            if ( ! is_array( $files_design ) ) $files_design = array();
+
+            $files_sponsors_json = isset( $_POST['files_sponsors'] ) ? wp_unslash( $_POST['files_sponsors'] ) : '[]';
+            $files_sponsors      = json_decode( $files_sponsors_json, true );
+            if ( ! is_array( $files_sponsors ) ) $files_sponsors = array();
+
+            $files_players_json  = isset( $_POST['files_players'] ) ? wp_unslash( $_POST['files_players'] ) : '[]';
+            $files_players       = json_decode( $files_players_json, true );
+            if ( ! is_array( $files_players ) ) $files_players = array();
+
+            $design_notes  = isset( $_POST['design_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_notes'] ) ) : '';
+            $sponsor_notes = isset( $_POST['sponsor_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sponsor_notes'] ) ) : '';
+
+            $use_table    = ( isset( $_POST['use_table'] ) && ( '1' === $_POST['use_table'] || 'true' === $_POST['use_table'] ) );
+            $players_json = isset( $_POST['players'] ) ? wp_unslash( $_POST['players'] ) : '[]';
+            $players      = json_decode( $players_json, true );
+            if ( ! is_array( $players ) ) $players = array();
+
+            // Validation server side:
+            if ( empty( $files_design ) ) {
+                wp_send_json_error( array( 'message' => __( 'Paso 2 (Diseño): Debes subir al menos un archivo o imagen con el diseño.', 'woo-config' ) ) );
+            }
+            if ( empty( $files_sponsors ) ) {
+                wp_send_json_error( array( 'message' => __( 'Paso 3 (Sponsors): Debes subir los logos de los sponsors.', 'woo-config' ) ) );
+            }
+            if ( empty( $files_players ) && ! $use_table ) {
+                wp_send_json_error( array( 'message' => __( 'Paso 4 (Jugadores y tallas): Debes subir un archivo con las tallas o completar la tabla manual.', 'woo-config' ) ) );
+            }
+            if ( $use_table && empty( $players ) ) {
+                wp_send_json_error( array( 'message' => __( 'Paso 4: Por favor completa la tabla de jugadores.', 'woo-config' ) ) );
+            }
+
+            // Tag files for clarity
+            foreach ( $files_design as &$fd ) { $fd['category'] = __( 'Diseño', 'woo-config' ); }
+            unset($fd);
+            foreach ( $files_sponsors as &$fs ) { $fs['category'] = __( 'Sponsors', 'woo-config' ); }
+            unset($fs);
+            foreach ( $files_players as &$fp ) { $fp['category'] = __( 'Tallas y Jugadores', 'woo-config' ); }
+            unset($fp);
+
+            $all_files = array_merge( $files_design, $files_sponsors, $files_players );
+
+            // Combine notes
+            $notes_parts = array();
+            if ( ! empty( $design_notes ) ) {
+                $notes_parts[] = __( 'Diseño:', 'woo-config' ) . ' ' . $design_notes;
+            }
+            if ( ! empty( $sponsor_notes ) ) {
+                $notes_parts[] = __( 'Sponsors:', 'woo-config' ) . ' ' . $sponsor_notes;
+            }
+            $combined_desc = implode( "\n\n", $notes_parts );
+
+            $adicionales_counts_json = isset( $_POST['adicionales_counts'] ) ? wp_unslash( $_POST['adicionales_counts'] ) : '{}';
+            $adicionales_counts      = json_decode( $adicionales_counts_json, true );
+            if ( ! is_array( $adicionales_counts ) ) {
+                $adicionales_counts = array();
+            }
+
+            $extra_total = 0;
+            $adicionales_summary_list = array();
+            foreach ( $adicionales_counts as $ad_key => $ad_qty ) {
+                $ad_qty = absint( $ad_qty );
+                if ( $ad_qty > 0 && isset( $product_adicionales[$ad_key] ) ) {
+                    $unit_cost = (float) $product_adicionales[$ad_key]['price'];
+                    $extra_total += ( $ad_qty * $unit_cost );
+                    $formatted_ad_price = html_entity_decode( wp_strip_all_tags( wc_price( $ad_qty * $unit_cost ) ) );
+                    $adicionales_summary_list[] = sprintf(
+                        '%dx %s (+%s)',
+                        $ad_qty,
+                        $product_adicionales[$ad_key]['label'],
+                        $formatted_ad_price
+                    );
+                }
+            }
+
+            $group_id = 'unified_' . wp_generate_uuid4();
+
+            if ( $use_table && ! empty( $players ) ) {
+                $group_title = sprintf( __( 'Equipo / Set: %s (%d prendas)', 'woo-config' ), $product->get_name(), count( $players ) );
+                $added_count = 0;
+                $index = 1;
+
+                $variations_info = array();
+                if ( $product->is_type( 'variable' ) ) {
+                    $available_variations = $product->get_available_variations();
+                    foreach ( $available_variations as $var ) {
+                        $var_id     = $var['variation_id'];
+                        $attributes = $var['attributes'];
+                        $size_val   = '';
+                        foreach ( $attributes as $attr_k => $attr_v ) {
+                            if ( false !== stripos( $attr_k, 'talla' ) || false !== stripos( $attr_k, 'size' ) ) {
+                                $size_val = strtolower( trim( $attr_v ) );
+                            }
+                        }
+                        if ( empty( $size_val ) && ! empty( $attributes ) ) {
+                            $keys = array_keys( $attributes );
+                            $size_val = strtolower( trim( $attributes[$keys[0]] ) );
+                        }
+                        $variations_info[] = array( 'id' => $var_id, 'attributes' => $attributes, 'size' => $size_val );
+                    }
+                }
+
+                foreach ( $players as $p ) {
+                    $dorsal = isset( $p['dorsal'] ) ? sanitize_text_field( $p['dorsal'] ) : '';
+                    $name   = isset( $p['name'] ) ? sanitize_text_field( $p['name'] ) : '';
+                    $size   = isset( $p['size'] ) ? sanitize_text_field( $p['size'] ) : '';
+                    if ( empty( $size ) ) {
+                        wp_send_json_error( array( 'message' => sprintf( __( 'Por favor selecciona la talla para la prenda #%d.', 'woo-config' ), $index ) ) );
+                    }
+
+                    $assigned_ad_raw = isset( $p['adicionales'] ) && is_array( $p['adicionales'] ) ? $p['adicionales'] : array();
+                    $player_adicionales_labels = array();
+                    $player_adicionales_cost   = 0;
+
+                    foreach ( $assigned_ad_raw as $ad_key ) {
+                        if ( isset( $product_adicionales[$ad_key] ) ) {
+                            $ad_obj  = $product_adicionales[$ad_key];
+                            $ad_cost = (float) $ad_obj['price'];
+                            $player_adicionales_cost += $ad_cost;
+                            $formatted_single_ad_price = html_entity_decode( wp_strip_all_tags( wc_price( $ad_cost ) ) );
+                            $player_adicionales_labels[] = $ad_obj['label'] . ' (+' . $formatted_single_ad_price . ')';
+                        }
+                    }
+
+                    $player_full_unit_price = $base_price + $player_adicionales_cost;
+                    if ( $is_deposit ) {
+                        $deposit_unit_price = round( $player_full_unit_price * ( $deposit_percent / 100 ) );
+                        $balance_unit_due   = $player_full_unit_price - $deposit_unit_price;
+                    } else {
+                        $deposit_unit_price = $player_full_unit_price;
+                        $balance_unit_due   = 0;
+                    }
+
+                    $variation_id = 0;
+                    $variation_attributes = array();
+                    if ( $product->is_type( 'variable' ) && ! empty( $variations_info ) ) {
+                        $target_size = strtolower( trim( $size ) );
+                        $matched = null;
+                        foreach ( $variations_info as $vinfo ) {
+                            if ( $vinfo['size'] === $target_size ) {
+                                $matched = $vinfo;
+                                break;
+                            }
+                        }
+                        if ( ! $matched ) $matched = $variations_info[0];
+                        $variation_id         = $matched['id'];
+                        $variation_attributes = $matched['attributes'];
+                    }
+
+                    $cart_item_data = array(
+                        '_wooconfig_flow'                => 'unified',
+                        '_wooconfig_group_id'            => $group_id,
+                        '_wooconfig_group_title'         => $group_title,
+                        '_wooconfig_item_index'          => $index,
+                        '_wooconfig_total_items'         => count( $players ),
+                        '_wooconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
+                        '_wooconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
+                        '_wooconfig_deposit_percent'     => $deposit_percent,
+                        '_wooconfig_full_unit_price'     => $player_full_unit_price,
+                        '_wooconfig_deposit_unit_price'  => $deposit_unit_price,
+                        '_wooconfig_balance_unit_due'    => $balance_unit_due,
+                        '_wooconfig_custom_price'        => $player_full_unit_price,
+                        '_wooconfig_dorsal'              => $dorsal,
+                        '_wooconfig_player_name'         => $name,
+                        '_wooconfig_size'                => $size,
+                        '_wooconfig_adicionales_raw'     => $assigned_ad_raw,
+                        '_wooconfig_adicionales_list'    => $player_adicionales_labels,
+                        '_wooconfig_base_price'          => $base_price,
+                        '_wooconfig_design_desc'         => $combined_desc,
+                        '_wooconfig_files'               => $all_files,
+                        '_wooconfig_files_design'        => $files_design,
+                        '_wooconfig_files_sponsors'      => $files_sponsors,
+                        '_wooconfig_files_players'       => $files_players,
+                        '_wooconfig_unique_key'          => md5( $group_id . '_' . $index . '_' . microtime() ),
+                    );
+
+                    $key = WC()->cart->add_to_cart( $product_id, 1, $variation_id, $variation_attributes, $cart_item_data );
+                    if ( $key ) $added_count++;
+                    $index++;
+                }
+
+                if ( $added_count > 0 ) {
+                    wp_send_json_success( array(
+                        'message'      => sprintf( __( '¡Se agregaron %d prendas al carrito!', 'woo-config' ), $added_count ),
+                        'cart_url'     => wc_get_cart_url(),
+                        'checkout_url' => wc_get_checkout_url(),
+                        'count'        => $added_count,
+                    ) );
+                } else {
+                    wp_send_json_error( array( 'message' => __( 'No se pudieron añadir las prendas al carrito.', 'woo-config' ) ) );
+                }
+            } else {
+                $full_unit_price = $base_price + ( $qty > 0 ? ( $extra_total / $qty ) : 0 );
+                if ( $is_deposit ) {
+                    $deposit_unit_price = round( $full_unit_price * ( $deposit_percent / 100 ) );
+                    $balance_unit_due   = $full_unit_price - $deposit_unit_price;
+                } else {
+                    $deposit_unit_price = $full_unit_price;
+                    $balance_unit_due   = 0;
+                }
+
+                $cart_item_data = array(
+                    '_wooconfig_flow'                => 'unified',
+                    '_wooconfig_group_id'            => $group_id,
+                    '_wooconfig_group_title'         => sprintf( __( 'Equipo / Set: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
+                    '_wooconfig_total_items'         => $qty,
+                    '_wooconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
+                    '_wooconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
+                    '_wooconfig_deposit_percent'     => $deposit_percent,
+                    '_wooconfig_full_unit_price'     => $full_unit_price,
+                    '_wooconfig_deposit_unit_price'  => $deposit_unit_price,
+                    '_wooconfig_balance_unit_due'    => $balance_unit_due,
+                    '_wooconfig_custom_price'        => $full_unit_price,
+                    '_wooconfig_base_price'          => $base_price,
+                    '_wooconfig_adicionales_summary' => $adicionales_summary_list,
+                    '_wooconfig_adicionales_counts'  => $adicionales_counts,
+                    '_wooconfig_design_desc'         => $combined_desc,
+                    '_wooconfig_files'               => $all_files,
+                    '_wooconfig_files_design'        => $files_design,
+                    '_wooconfig_files_sponsors'      => $files_sponsors,
+                    '_wooconfig_files_players'       => $files_players,
+                    '_wooconfig_unique_key'          => md5( $group_id . '_' . microtime() ),
+                );
+
+                $variation_id         = 0;
+                $variation_attributes = array();
+                if ( $product->is_type( 'variable' ) ) {
+                    $available_variations = $product->get_available_variations();
+                    if ( ! empty( $available_variations ) ) {
+                        $variation_id         = $available_variations[0]['variation_id'];
+                        $variation_attributes = $available_variations[0]['attributes'];
+                    }
+                }
+
+                $cart_item_key = WC()->cart->add_to_cart( $product_id, $qty, $variation_id, $variation_attributes, $cart_item_data );
+                if ( $cart_item_key ) {
+                    wp_send_json_success( array(
+                        'message'      => sprintf( __( '¡Se agregaron %d prendas al carrito!', 'woo-config' ), $qty ),
+                        'cart_url'     => wc_get_cart_url(),
+                        'checkout_url' => wc_get_checkout_url(),
+                        'count'        => $qty,
+                    ) );
+                } else {
+                    wp_send_json_error( array( 'message' => __( 'No se pudo añadir al carrito.', 'woo-config' ) ) );
+                }
+            }
+        }
+
         // ================= FLOW 1: QUICK CONFIGURATION =================
         if ( 'quick' === $flow ) {
             if ( empty( $files ) ) {

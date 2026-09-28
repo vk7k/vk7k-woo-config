@@ -3,224 +3,344 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 ?>
-<!-- WooConfig Modal Root Wrapper -->
+
+<!-- WooConfig Main 4-Step Modal Root Wrapper -->
 <div id="wooconfig-modal-wrapper" class="wooconfig-modal-wrapper" style="display: none;">
     <div class="wooconfig-overlay" id="wooconfig-overlay"></div>
 
     <div class="wooconfig-modal-container" role="dialog" aria-modal="true">
 
-        <!-- ================= STEP 1: CONFIGURAR EQUIPO ================= -->
-        <div class="wooconfig-step-view" id="wooconfig-step-1">
-            <div class="wooconfig-header">
-                <h2><?php esc_html_e( 'Paso 1: Configurar equipo', 'woo-config' ); ?></h2>
-                <button type="button" class="wooconfig-modal-header-close" id="wooconfig-header-close-btn" title="<?php esc_attr_e( 'Cerrar', 'woo-config' ); ?>">✖</button>
+        <!-- Top Header & Stepper Progress Bar -->
+        <div class="wooconfig-modal-top-bar">
+            <div class="wooconfig-modal-title-row">
+                <h3 class="wooconfig-modal-main-title"><?php esc_html_e( 'Configura tu compra', 'woo-config' ); ?></h3>
+                <button type="button" class="wooconfig-modal-close-x" id="wooconfig-header-close-btn" title="<?php esc_attr_e( 'Cerrar', 'woo-config' ); ?>">✖</button>
+            </div>
+            
+            <!-- 4-Segment Progress Bar -->
+            <div class="wooconfig-stepper-progress-bar">
+                <div class="wooconfig-prog-segment is-completed" data-step="1"></div>
+                <div class="wooconfig-prog-segment is-active" data-step="2" id="wooconfig-prog-seg-2"></div>
+                <div class="wooconfig-prog-segment" data-step="3" id="wooconfig-prog-seg-3"></div>
+                <div class="wooconfig-prog-segment" data-step="4" id="wooconfig-prog-seg-4"></div>
+            </div>
+        </div>
+
+        <!-- Global Validation Error Banner (When "Añadir al carrito" fails) -->
+        <div class="wooconfig-validation-banner" id="wooconfig-validation-banner" style="display: none;">
+            <div class="wooconfig-validation-banner-inner">
+                <span class="wooconfig-validation-banner-icon">⚠️</span>
+                <div class="wooconfig-validation-banner-content">
+                    <strong><?php esc_html_e( 'Por favor revisa los siguientes pasos antes de continuar:', 'woo-config' ); ?></strong>
+                    <ul id="wooconfig-validation-errors-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= STEP 2: DISEÑO ================= -->
+        <div class="wooconfig-step-view" id="wooconfig-step-2">
+            <div class="wooconfig-step-header">
+                <div class="wooconfig-step-title-col">
+                    <h2 class="wooconfig-step-number-title"><?php esc_html_e( '2 - Diseño', 'woo-config' ); ?></h2>
+                    <p class="wooconfig-step-desc"><?php esc_html_e( 'Sube aquí un archivo del producto', 'woo-config' ); ?></p>
+                </div>
+                <button type="button" class="wooconfig-btn-ver-ejemplo" data-help="diseno">
+                    <span class="wooconfig-ejemplo-icon">?</span>
+                    <span class="wooconfig-ejemplo-text"><?php esc_html_e( 'ver ejemplo', 'woo-config' ); ?></span>
+                </button>
             </div>
 
-            <div class="wooconfig-info-bar">
-                <div class="wooconfig-info-text">
-                    <p class="wooconfig-min-badge" id="wooconfig-min-badge-text">
-                        <?php echo esc_html( sprintf( __( 'Pedido mínimo: %d unidad', 'woo-config' ), 1 ) ); ?>
-                    </p>
-                    <p class="wooconfig-hint">
-                        <?php esc_html_e( 'Indica el número (dorsal), nombre del jugador y su talla.', 'woo-config' ); ?>
-                    </p>
-                </div>
-                <div class="wooconfig-info-actions">
-                    <button type="button" class="wooconfig-btn-guide" data-action="open-size-guide" id="wooconfig-btn-size-guide">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                            <line x1="6" y1="8" x2="6" y2="16"></line>
-                            <line x1="10" y1="8" x2="10" y2="12"></line>
-                            <line x1="14" y1="8" x2="14" y2="16"></line>
-                            <line x1="18" y1="8" x2="18" y2="12"></line>
+            <!-- Uploaded Files List (Diseño) -->
+            <div class="wooconfig-uploaded-files-list" id="wooconfig-design-files-list"></div>
+
+            <!-- Dashed Dropzone (Diseño) -->
+            <div class="wooconfig-dashed-dropzone" id="wooconfig-design-dropzone">
+                <input type="file" id="wooconfig-design-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.eps,.zip" style="display: none;">
+                <div class="wooconfig-dropzone-inner" id="wooconfig-design-dropzone-trigger">
+                    <div class="wooconfig-dropzone-icon-circle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <span><?php esc_html_e( 'Guía de tallas', 'woo-config' ); ?></span>
-                    </button>
-                    <button type="button" class="wooconfig-btn-reset" id="wooconfig-btn-reset-form" title="<?php esc_attr_e( 'Limpiar formulario', 'woo-config' ); ?>">
-                        <span>🔄 <?php esc_html_e( 'Limpiar', 'woo-config' ); ?></span>
-                    </button>
+                    </div>
+                    <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Arrastra o sube aquí un archivo con el diseño de tu equipo', 'woo-config' ); ?></span>
+                    <span class="wooconfig-dropzone-text-secondary"><?php esc_html_e( '(max 20mb)', 'woo-config' ); ?></span>
                 </div>
             </div>
 
-            <!-- Stepper de cantidad en Modal -->
-            <div class="wooconfig-modal-qty-bar">
-                <span class="wooconfig-modal-qty-label"><?php esc_html_e( 'Total de productos:', 'woo-config' ); ?></span>
-                <div class="wooconfig-stepper-control wooconfig-stepper-sm">
-                    <button type="button" class="wooconfig-stepper-btn" id="wooconfig-modal-qty-minus">-</button>
-                    <input type="number" id="wooconfig-modal-qty-input" class="wooconfig-stepper-input" value="5" min="1" step="1" />
-                    <button type="button" class="wooconfig-stepper-btn" id="wooconfig-modal-qty-plus">+</button>
-                </div>
+            <!-- Upload Progress (Diseño) -->
+            <div class="wooconfig-upload-progress-wrapper" id="wooconfig-design-progress" style="display: none;">
+                <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-design-progress-fill"></div></div>
+                <span class="wooconfig-progress-text" id="wooconfig-design-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
             </div>
 
-            <div class="wooconfig-body">
-                <div class="wooconfig-players-list" id="wooconfig-players-list">
-                    <!-- Dynamic player cards rendered via JS -->
-                </div>
-
-                <div class="wooconfig-add-player-wrapper">
-                    <button type="button" class="wooconfig-btn-add-player" id="wooconfig-add-player-btn">
-                        <span class="wooconfig-plus-icon">+</span> <?php esc_html_e( 'Agregar jugador', 'woo-config' ); ?>
-                    </button>
-                </div>
+            <!-- Textarea Notas (Diseño) -->
+            <div class="wooconfig-notes-group">
+                <label for="wooconfig-design-notes" class="wooconfig-notes-label"><?php esc_html_e( 'Notas (opcional):', 'woo-config' ); ?></label>
+                <textarea id="wooconfig-design-notes" class="wooconfig-textarea" rows="3" placeholder="<?php echo esc_attr( 'Cualquier nota o enlace Drive, dropbox, etc.' ); ?>"></textarea>
             </div>
 
-            <div class="wooconfig-footer">
-                <button type="button" class="wooconfig-btn-close" id="wooconfig-close-step-1">
-                    <span class="wooconfig-close-icon">✖</span>
-                    <span><?php esc_html_e( 'Cerrar', 'woo-config' ); ?></span>
+            <!-- Resumen Valor Total -->
+            <div class="wooconfig-modal-total-bar">
+                <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
+                <div class="wooconfig-modal-total-sub-details">
+                    <span class="wooconfig-live-units-label">10 unidades</span>
+                    <span class="wooconfig-live-ads-label">0 adicionales</span>
+                </div>
+                <span class="wooconfig-modal-total-amount">$0</span>
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="wooconfig-modal-nav-footer">
+                <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step2-back-to-step1">
+                    <span>❮ <?php esc_html_e( 'Volver a Cantidades', 'woo-config' ); ?></span>
                 </button>
-
-                <div class="wooconfig-summary-block">
-                    <div class="wooconfig-summary-title" id="wooconfig-summary-product-title"></div>
-                    <div class="wooconfig-summary-qty" id="wooconfig-summary-qty-text">0 unidades</div>
-                    <div class="wooconfig-summary-total" id="wooconfig-summary-total-price">$0</div>
-                </div>
-
-                <button type="button" class="wooconfig-btn-next" id="wooconfig-goto-step-2">
-                    <span id="wooconfig-step1-next-btn-text"><?php esc_html_e( 'Siguiente paso: Adicionales >>', 'woo-config' ); ?></span>
+                <button type="button" class="wooconfig-btn-green-next" id="wooconfig-step2-goto-step3">
+                    <span><?php esc_html_e( 'Siguiente: Sponsors', 'woo-config' ); ?></span>
+                    <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
                 </button>
             </div>
         </div>
 
-        <!-- ================= STEP 2: ADICIONALES ================= -->
-        <div class="wooconfig-step-view" id="wooconfig-step-2" style="display: none;">
-            <div class="wooconfig-header">
-                <h2><?php esc_html_e( 'Paso 2: Adicionales', 'woo-config' ); ?></h2>
-                <button type="button" class="wooconfig-modal-header-close" id="wooconfig-close-step-2-x" title="<?php esc_attr_e( 'Cerrar', 'woo-config' ); ?>">✖</button>
-            </div>
-
-            <div class="wooconfig-info-bar">
-                <div class="wooconfig-info-text">
-                    <p class="wooconfig-hint" style="font-size: 13px; font-weight: 600; color: #111;">
-                        <?php esc_html_e( 'Asigne los adicionales a cada jugador:', 'woo-config' ); ?>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Adicionales global counts summary in Step 2 -->
-            <div class="wooconfig-step2-adicionales-summary" id="wooconfig-step2-adicionales-summary">
-                <!-- Injected via JS with counters and subtotals -->
-            </div>
-
-            <div class="wooconfig-body">
-                <div class="wooconfig-step2-players-list" id="wooconfig-step2-players-list">
-                    <!-- Dynamic player rows with additional toggles rendered via JS -->
-                </div>
-            </div>
-
-            <div class="wooconfig-footer">
-                <button type="button" class="wooconfig-btn-back" id="wooconfig-step2-backto-step1">
-                    <span class="wooconfig-back-icon">❮❮</span>
-                </button>
-
-                <div class="wooconfig-summary-block">
-                    <div class="wooconfig-summary-title" id="wooconfig-step2-product-title"></div>
-                    <div class="wooconfig-summary-qty" id="wooconfig-step2-qty-text">0 unidades</div>
-                    <div class="wooconfig-summary-total" id="wooconfig-step2-total-price">$0</div>
-                </div>
-
-                <button type="button" class="wooconfig-btn-next" id="wooconfig-goto-step-3">
-                    <span><?php esc_html_e( 'Siguiente paso: Diseño >>', 'woo-config' ); ?></span>
-                </button>
-            </div>
-        </div>
-
-        <!-- ================= STEP 3: DISEÑO ================= -->
+        <!-- ================= STEP 3: SPONSORS ================= -->
         <div class="wooconfig-step-view" id="wooconfig-step-3" style="display: none;">
-            <div class="wooconfig-header">
-                <h2 id="wooconfig-step3-title"><?php esc_html_e( 'Paso 3: Diseño', 'woo-config' ); ?></h2>
-                <button type="button" class="wooconfig-modal-header-close" id="wooconfig-close-step-3-x" title="<?php esc_attr_e( 'Cerrar', 'woo-config' ); ?>">✖</button>
-            </div>
-
-            <div class="wooconfig-body">
-                <div class="wooconfig-design-section">
-                    <h3 class="wooconfig-section-title"><?php esc_html_e( 'Describe tu diseño', 'woo-config' ); ?></h3>
-                    <label for="wooconfig-design-desc" class="wooconfig-field-label">
-                        <?php esc_html_e( 'Describe el diseño del equipo', 'woo-config' ); ?> <span class="required">*</span>
-                    </label>
-                    <textarea id="wooconfig-design-desc" class="wooconfig-textarea" rows="5" placeholder="<?php echo esc_attr( "Ejemplos:\n- Uniforme selección chilena 2026\n- Como en la imagen adjunta\n- Ayúdenos a diseñar" ); ?>"></textarea>
+            <div class="wooconfig-step-header">
+                <div class="wooconfig-step-title-col">
+                    <h2 class="wooconfig-step-number-title"><?php esc_html_e( '3 - Sponsors', 'woo-config' ); ?></h2>
+                    <p class="wooconfig-step-desc"><?php esc_html_e( 'Sube los logos de los sponsors', 'woo-config' ); ?></p>
                 </div>
-
-                <div class="wooconfig-upload-section">
-                    <label class="wooconfig-field-label">
-                        <?php esc_html_e( 'Aquí puedes cargar imágenes o diseños', 'woo-config' ); ?>
-                    </label>
-                    <p class="wooconfig-field-sublabel">
-                        <?php esc_html_e( 'instrucción (usa referencias o diseño, boceto, planilla Excel, foto cuaderno etc)---', 'woo-config' ); ?>
-                    </p>
-
-                    <div class="wooconfig-dropzone" id="wooconfig-dropzone">
-                        <input type="file" id="wooconfig-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls,.doc,.docx,.ai,.eps,.zip" style="display: none;">
-                        <button type="button" class="wooconfig-btn-upload" id="wooconfig-btn-trigger-upload">
-                            <?php esc_html_e( 'Subir archivos (jpg, pdf, ai)', 'woo-config' ); ?>
-                        </button>
-                        <p class="wooconfig-dropzone-hint"><?php esc_html_e( 'O arrastra tus archivos aquí (Máx 20MB cada uno)', 'woo-config' ); ?></p>
-                    </div>
-
-                    <div class="wooconfig-upload-progress-wrapper" id="wooconfig-upload-progress" style="display: none;">
-                        <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-progress-fill"></div></div>
-                        <span class="wooconfig-progress-text" id="wooconfig-progress-text">Subiendo archivos...</span>
-                    </div>
-
-                    <div class="wooconfig-files-list" id="wooconfig-files-list"></div>
-                </div>
-
-                <!-- Modal Step 3 Payment Breakdown Box -->
-                <div class="wooconfig-step3-payment-summary" id="wooconfig-step3-payment-box">
-                    <div class="wooconfig-step3-payment-title">
-                        💳 <?php esc_html_e( 'Resumen de Pago y Anticipo', 'woo-config' ); ?>
-                    </div>
-                    <div class="wooconfig-step3-payment-rows">
-                        <div class="wooconfig-prow">
-                            <span><?php esc_html_e( 'Total confección:', 'woo-config' ); ?></span>
-                            <strong id="wooconfig-modal-full-total">$0</strong>
-                        </div>
-                        <div class="wooconfig-prow wooconfig-prow-deposit">
-                            <span><?php esc_html_e( 'Abono inicial hoy:', 'woo-config' ); ?></span>
-                            <strong id="wooconfig-modal-deposit-val">$0</strong>
-                        </div>
-                        <div class="wooconfig-prow wooconfig-prow-balance">
-                            <span><?php esc_html_e( 'Saldo al terminar confección:', 'woo-config' ); ?></span>
-                            <strong id="wooconfig-modal-balance-val">$0</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wooconfig-footer">
-                <button type="button" class="wooconfig-btn-close" id="wooconfig-step3-backto-step2">
-                    <span class="wooconfig-back-icon">❮❮</span>
+                <button type="button" class="wooconfig-btn-ver-ejemplo" data-help="sponsors">
+                    <span class="wooconfig-ejemplo-icon">?</span>
+                    <span class="wooconfig-ejemplo-text"><?php esc_html_e( 'ver ejemplo', 'woo-config' ); ?></span>
                 </button>
+            </div>
 
-                <div class="wooconfig-summary-block">
-                    <div class="wooconfig-summary-title" id="wooconfig-step3-product-title"></div>
-                    <div class="wooconfig-summary-qty" id="wooconfig-step3-qty-text">0 unidades</div>
-                    <div class="wooconfig-summary-total" id="wooconfig-step3-total-price">$0</div>
+            <!-- Uploaded Files List (Sponsors) -->
+            <div class="wooconfig-uploaded-files-list" id="wooconfig-sponsors-files-list"></div>
+
+            <!-- Dashed Dropzone (Sponsors) -->
+            <div class="wooconfig-dashed-dropzone" id="wooconfig-sponsors-dropzone">
+                <input type="file" id="wooconfig-sponsors-file-input" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.eps,.svg,.zip" style="display: none;">
+                <div class="wooconfig-dropzone-inner" id="wooconfig-sponsors-dropzone-trigger">
+                    <div class="wooconfig-dropzone-icon-circle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Arrastra o sube aquí los logos de los sponsors (alta resolución o vector)', 'woo-config' ); ?></span>
                 </div>
+            </div>
 
-                <button type="button" class="wooconfig-btn-submit" id="wooconfig-submit-cart">
-                    <span id="wooconfig-submit-btn-text"><?php esc_html_e( 'Añadir al carrito', 'woo-config' ); ?></span>
-                    <span class="wooconfig-spinner" id="wooconfig-submit-spinner" style="display: none;"></span>
+            <!-- Upload Progress (Sponsors) -->
+            <div class="wooconfig-upload-progress-wrapper" id="wooconfig-sponsors-progress" style="display: none;">
+                <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-sponsors-progress-fill"></div></div>
+                <span class="wooconfig-progress-text" id="wooconfig-sponsors-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
+            </div>
+
+            <!-- Textarea Notas (Sponsors) -->
+            <div class="wooconfig-notes-group">
+                <label for="wooconfig-sponsors-notes" class="wooconfig-notes-label"><?php esc_html_e( 'Notas (opcional):', 'woo-config' ); ?></label>
+                <textarea id="wooconfig-sponsors-notes" class="wooconfig-textarea" rows="3" placeholder="<?php echo esc_attr( 'Cualquier nota o enlace Drive, dropbox, etc.' ); ?>"></textarea>
+            </div>
+
+            <!-- Resumen Valor Total -->
+            <div class="wooconfig-modal-total-bar">
+                <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
+                <div class="wooconfig-modal-total-sub-details">
+                    <span class="wooconfig-live-units-label">10 unidades</span>
+                    <span class="wooconfig-live-ads-label">0 adicionales</span>
+                </div>
+                <span class="wooconfig-modal-total-amount">$0</span>
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="wooconfig-modal-nav-footer">
+                <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step3-back-to-step2">
+                    <span>❮ <?php esc_html_e( 'Volver a Diseño', 'woo-config' ); ?></span>
+                </button>
+                <button type="button" class="wooconfig-btn-green-next" id="wooconfig-step3-goto-step4">
+                    <span><?php esc_html_e( 'Siguiente: Jugadores y tallas', 'woo-config' ); ?></span>
+                    <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
                 </button>
             </div>
         </div>
 
-        <!-- ================= SUCCESS TOAST / MODAL ================= -->
-        <div class="wooconfig-success-overlay" id="wooconfig-success-dialog" style="display: none;">
-            <div class="wooconfig-success-card">
-                <div class="wooconfig-success-icon">✓</div>
-                <h3><?php esc_html_e( '¡Tu equipo ha sido añadido al carrito!', 'woo-config' ); ?></h3>
-                <p id="wooconfig-success-subtitle"><?php esc_html_e( 'Las prendas personalizadas se encuentran listas para el pago.', 'woo-config' ); ?></p>
-                <div class="wooconfig-success-actions">
-                    <a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="wooconfig-btn-primary" id="wooconfig-btn-go-checkout">
-                        <?php esc_html_e( 'Ir a pagar / Carrito', 'woo-config' ); ?>
-                    </a>
-                    <button type="button" class="wooconfig-btn-secondary" id="wooconfig-btn-configure-another">
-                        <?php esc_html_e( 'Configurar otro equipo', 'woo-config' ); ?>
+        <!-- ================= STEP 4: JUGADORES Y TALLAS ================= -->
+        <div class="wooconfig-step-view" id="wooconfig-step-4" style="display: none;">
+            <div class="wooconfig-step-header">
+                <div class="wooconfig-step-title-col">
+                    <h2 class="wooconfig-step-number-title"><?php esc_html_e( '4 - Jugadores y tallas', 'woo-config' ); ?></h2>
+                    <p class="wooconfig-step-desc"><?php esc_html_e( 'Sube la identificación de los jugadores y las tallas.', 'woo-config' ); ?></p>
+                </div>
+                <button type="button" class="wooconfig-btn-ver-ejemplo" data-help="jugadores">
+                    <span class="wooconfig-ejemplo-icon">?</span>
+                    <span class="wooconfig-ejemplo-text"><?php esc_html_e( 'ver ejemplo', 'woo-config' ); ?></span>
+                </button>
+            </div>
+
+            <!-- Uploaded Files List (Jugadores) -->
+            <div class="wooconfig-uploaded-files-list" id="wooconfig-players-files-list"></div>
+
+            <!-- Dashed Dropzone (Jugadores max 1 archivo) -->
+            <div class="wooconfig-dashed-dropzone" id="wooconfig-players-dropzone">
+                <input type="file" id="wooconfig-players-file-input" accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls,.doc,.docx,.zip" style="display: none;">
+                <div class="wooconfig-dropzone-inner" id="wooconfig-players-dropzone-trigger">
+                    <div class="wooconfig-dropzone-icon-circle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <span class="wooconfig-dropzone-text-primary"><?php esc_html_e( 'Sube un archivo con los datos de cada jugador (max 1)', 'woo-config' ); ?></span>
+                </div>
+            </div>
+
+            <!-- Upload Progress (Jugadores) -->
+            <div class="wooconfig-upload-progress-wrapper" id="wooconfig-players-progress" style="display: none;">
+                <div class="wooconfig-progress-bar"><div class="wooconfig-progress-fill" id="wooconfig-players-progress-fill"></div></div>
+                <span class="wooconfig-progress-text" id="wooconfig-players-progress-text"><?php esc_html_e( 'Subiendo archivo...', 'woo-config' ); ?></span>
+            </div>
+
+            <!-- Option Separator -->
+            <div class="wooconfig-table-opt-prompt">
+                <p><?php esc_html_e( 'Si prefieres, puedes llenar manualmente aquí:', 'woo-config' ); ?></p>
+                <div class="wooconfig-table-trigger-row">
+                    <button type="button" class="wooconfig-btn-green-table" id="wooconfig-btn-open-table">
+                        <svg class="wooconfig-grid-ico" width="28" height="20" viewBox="0 0 28 20" fill="none" stroke="#000000" stroke-width="1.8">
+                            <rect x="1" y="1" width="26" height="18" rx="2" stroke="#000000"/>
+                            <line x1="1" y1="7" x2="27" y2="7"/>
+                            <line x1="1" y1="13" x2="27" y2="13"/>
+                            <line x1="9" y1="1" x2="9" y2="19"/>
+                            <line x1="18" y1="1" x2="18" y2="19"/>
+                        </svg>
+                        <span id="wooconfig-table-btn-label"><?php esc_html_e( 'Usar tabla (opcional)', 'woo-config' ); ?></span>
                     </button>
+                    <button type="button" class="wooconfig-help-circle-btn" data-help="tabla" title="<?php esc_attr_e( 'Instrucciones de la tabla', 'woo-config' ); ?>">?</button>
                 </div>
+                <div class="wooconfig-table-saved-status" id="wooconfig-table-saved-badge" style="display: none;">
+                    <span>✓</span> <span id="wooconfig-table-saved-text"><?php esc_html_e( 'Tabla guardada correctamente', 'woo-config' ); ?></span>
+                    <button type="button" class="wooconfig-table-clear-btn" id="wooconfig-btn-clear-table" title="<?php esc_attr_e( 'Limpiar tabla', 'woo-config' ); ?>">✖</button>
+                </div>
+            </div>
+
+            <!-- Resumen Valor Total -->
+            <div class="wooconfig-modal-total-bar">
+                <span class="wooconfig-modal-total-label"><?php esc_html_e( 'Valor total', 'woo-config' ); ?></span>
+                <div class="wooconfig-modal-total-sub-details">
+                    <span class="wooconfig-live-units-label">10 unidades</span>
+                    <span class="wooconfig-live-ads-label">0 adicionales</span>
+                </div>
+                <span class="wooconfig-modal-total-amount">$0</span>
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="wooconfig-modal-nav-footer">
+                <button type="button" class="wooconfig-btn-nav-back" id="wooconfig-step4-back-to-step3">
+                    <span>❮ <?php esc_html_e( 'Volver a Sponsors', 'woo-config' ); ?></span>
+                </button>
+                <button type="button" class="wooconfig-btn-green-next" id="wooconfig-submit-cart-btn">
+                    <span id="wooconfig-submit-cart-label"><?php esc_html_e( 'Añadir y ver carrito', 'woo-config' ); ?></span>
+                    <span class="wooconfig-spinner" id="wooconfig-submit-spinner" style="display: none;"></span>
+                    <svg class="wooconfig-chevron-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- ================= SUB-MODAL: TABLA DE JUGADORES ================= -->
+<div id="wooconfig-table-modal" class="wooconfig-table-modal-wrapper" style="display: none;">
+    <div class="wooconfig-table-overlay" id="wooconfig-table-overlay"></div>
+
+    <div class="wooconfig-table-dialog" role="dialog" aria-modal="true">
+        <div class="wooconfig-table-header">
+            <h3 class="wooconfig-table-dialog-title"><?php esc_html_e( 'Tabla de jugadores', 'woo-config' ); ?></h3>
+            <button type="button" class="wooconfig-table-close-x" id="wooconfig-close-table-x-btn" title="<?php esc_attr_e( 'Cerrar', 'woo-config' ); ?>">✖</button>
+        </div>
+
+        <div class="wooconfig-table-instruction-row">
+            <p class="wooconfig-table-instruction-text">
+                <?php esc_html_e( 'Asigna los datos de cada jugador. Si necesitas cambiar cantidad o adicionales, ve al paso 1 y regresa.', 'woo-config' ); ?>
+            </p>
+            <button type="button" class="wooconfig-help-circle-btn" data-help="tabla" title="<?php esc_attr_e( 'Ver instrucciones', 'woo-config' ); ?>">?</button>
+        </div>
+
+        <!-- Adicionales Disponibles vs Asignados Live Badges -->
+        <div class="wooconfig-table-ads-badges-wrap" id="wooconfig-table-ads-badges"></div>
+
+        <!-- Live warning banner for adicionales limit -->
+        <div class="wooconfig-table-ad-warning" id="wooconfig-table-ad-warning" style="display: none;">
+            <span class="wooconfig-ad-warning-text"></span>
+        </div>
+
+        <!-- Scrollable Table Container -->
+        <div class="wooconfig-table-scroll-wrap">
+            <table class="wooconfig-interactive-table" id="wooconfig-interactive-table">
+                <thead>
+                    <tr id="wooconfig-table-thead-row">
+                        <th class="col-num"><?php esc_html_e( 'N°', 'woo-config' ); ?></th>
+                        <th class="col-name"><?php esc_html_e( 'Nombre', 'woo-config' ); ?></th>
+                        <th class="col-size"><?php esc_html_e( 'Talla', 'woo-config' ); ?></th>
+                        <!-- Dynamic columns for adicionales appended via JS -->
+                    </tr>
+                </thead>
+                <tbody id="wooconfig-table-tbody">
+                    <!-- Dynamic rows rendered via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="wooconfig-table-footer">
+            <button type="button" class="wooconfig-btn-green-save" id="wooconfig-btn-save-table">
+                <?php esc_html_e( 'Guardar y cerrar', 'woo-config' ); ?>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= HELP / EXAMPLE MODAL POPUP ================= -->
+<div id="wooconfig-help-modal" class="wooconfig-help-modal-wrapper" style="display: none;">
+    <div class="wooconfig-help-overlay" id="wooconfig-help-overlay"></div>
+    <div class="wooconfig-help-dialog">
+        <div class="wooconfig-help-header">
+            <h4 class="wooconfig-help-title" id="wooconfig-help-modal-title"><?php esc_html_e( 'Instrucciones', 'woo-config' ); ?></h4>
+            <button type="button" class="wooconfig-help-close-x" id="wooconfig-help-close-btn">✖</button>
+        </div>
+        <div class="wooconfig-help-body">
+            <img id="wooconfig-help-modal-img" src="" alt="Instrucciones" class="wooconfig-help-vertical-img" />
+        </div>
+        <div class="wooconfig-help-footer">
+            <button type="button" class="wooconfig-btn-close-help" id="wooconfig-btn-close-help-action">
+                <?php esc_html_e( 'Entendido / Continuar', 'woo-config' ); ?>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= SUCCESS MODAL DIALOG ================= -->
+<div class="wooconfig-success-overlay" id="wooconfig-success-dialog" style="display: none;">
+    <div class="wooconfig-success-card">
+        <div class="wooconfig-success-icon">✓</div>
+        <h3><?php esc_html_e( '¡Tu equipo ha sido añadido al carrito!', 'woo-config' ); ?></h3>
+        <p id="wooconfig-success-subtitle"><?php esc_html_e( 'Las prendas personalizadas se encuentran listas para el pago.', 'woo-config' ); ?></p>
+        <div class="wooconfig-success-actions">
+            <a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="wooconfig-btn-primary" id="wooconfig-btn-go-checkout">
+                <?php esc_html_e( 'Ir a pagar / Carrito', 'woo-config' ); ?>
+            </a>
+            <button type="button" class="wooconfig-btn-secondary" id="wooconfig-btn-configure-another">
+                <?php esc_html_e( 'Configurar otro equipo', 'woo-config' ); ?>
+            </button>
+        </div>
     </div>
 </div>

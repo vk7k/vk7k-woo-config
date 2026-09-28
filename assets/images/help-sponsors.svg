@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94ec00"/>
+      <stop offset="100%" stop-color="#78c500"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" rx="20" fill="url(#bgGrad)"/>
+  
+  <rect x="0" y="0" width="600" height="110" rx="20" fill="#182234"/>
+  <rect x="0" y="106" width="600" height="4" fill="url(#accentGrad)"/>
+  <text x="300" y="55" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="800" text-anchor="middle" letter-spacing="1">EJEMPLO DE SPONSORS</text>
+  <text x="300" y="85" fill="#94ec00" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" text-anchor="middle">CAFÚ INDUMENTARIA DEPORTIVA</text>
+  
+  <rect x="40" y="140" width="520" height="230" rx="14" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <circle cx="80" cy="180" r="22" fill="#94ec00"/>
+  <text x="80" y="187" fill="#000000" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="900" text-anchor="middle">★</text>
+  <text x="120" y="185" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="19" font-weight="700">Logos y Marcas Auspiciadoras</text>
+  <text x="60" y="230" fill="#cbd5e1" font-family="system-ui, -apple-system, sans-serif" font-size="15">
+    <tspan x="60" dy="0">Para una impresión nítida en sublimación o transfer:</tspan>
+    <tspan x="60" dy="24">• Sube tus logos en formato vector (.AI, .EPS, .SVG, .PDF).</tspan>
+    <tspan x="60" dy="24">• Si usas imágenes (PNG/JPG), que sean de alta resolución.</tspan>
+    <tspan x="60" dy="24">• Puedes subir múltiples logos a la vez.</tspan>
+  </text>
+
+  <rect x="40" y="400" width="520" height="340" rx="14" fill="#182234" stroke="#334155" stroke-width="2"/>
+  <text x="300" y="440" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" text-anchor="middle">Ubicaciones típicas de Sponsors</text>
+
+  <g transform="translate(70, 470)">
+    <rect width="210" height="100" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="105" y="45" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Pecho Central</text>
+    <text x="105" y="75" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Sponsor Principal</text>
+
+    <rect x="250" width="210" height="100" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="355" y="45" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Espalda Superior</text>
+    <text x="355" y="75" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Sobre o bajo el dorsal</text>
+
+    <rect y="120" width="210" height="100" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="105" y="165" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Mangas Izq / Der</text>
+    <text x="105" y="195" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Logos secundarios</text>
+
+    <rect x="250" y="120" width="210" height="100" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="355" y="165" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Pierna Short</text>
+    <text x="355" y="195" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">Lateral o frontal</text>
+  </g>
+
+  <text x="300" y="860" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle">(Imagen de referencia reemplazable en assets/images/help-sponsors.svg)</text>
+</svg>

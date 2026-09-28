@@ -1,0 +1,1047 @@
+/* ==========================================================================
+   UNIFIED 4-STEP FLOW STYLES (MOBILE-FIRST & PIXEL-PERFECT)
+   ========================================================================== */
+
+/* STEP 1: ON-PAGE WIDGET */
+.wooconfig-unified-widget {
+    margin: 20px 0;
+    font-family: var(--wooconfig-font, system-ui, -apple-system, sans-serif);
+    box-sizing: border-box;
+}
+
+.wooconfig-step1-accent-bar {
+    width: 65px;
+    height: 5px;
+    background: #94ec00;
+    border-radius: 3px;
+    margin-bottom: 12px;
+}
+
+.wooconfig-step1-header {
+    margin-bottom: 14px;
+}
+
+.wooconfig-step1-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+
+.wooconfig-step1-subtitle {
+    font-size: 14px;
+    color: #334155;
+    margin: 0;
+    font-weight: 500;
+}
+
+.wooconfig-card-box {
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.wooconfig-card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.wooconfig-card-header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.wooconfig-help-circle-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    font-weight: 800;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.wooconfig-help-circle-btn:hover {
+    background: #94ec00;
+    color: #000000;
+    transform: scale(1.1);
+}
+
+.wooconfig-qty-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.wooconfig-qty-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+}
+
+.wooconfig-qty-item-price {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    min-width: 80px;
+    text-align: right;
+}
+
+.wooconfig-adicionales-list .wooconfig-qty-item-row:not(:last-child) {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+/* TOTAL CARD */
+.wooconfig-total-card {
+    background: #ffffff;
+    border: 2px solid #0f172a;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.wooconfig-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.wooconfig-total-main-label {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    flex: 1;
+}
+
+.wooconfig-total-sub-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    line-height: 1.25;
+}
+
+.wooconfig-total-big-price {
+    font-size: 18px;
+    font-weight: 900;
+    color: #0f172a;
+    min-width: 90px;
+    text-align: right;
+}
+
+.wooconfig-deposit-info-pill {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #166534;
+    background: #f0fdf4;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.wooconfig-deposit-balance-hint {
+    font-size: 11px;
+    color: #64748b;
+}
+
+/* BRIGHT NEON GREEN CTA BUTTON */
+.wooconfig-btn-green-next {
+    width: 100%;
+    height: 52px;
+    background: #94ec00;
+    color: #000000;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    user-select: none;
+}
+
+.wooconfig-btn-green-next:hover {
+    background: #80ce00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(148, 236, 0, 0.35);
+}
+
+.wooconfig-btn-green-next:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wooconfig-chevron-svg {
+    stroke: #000000;
+    flex-shrink: 0;
+}
+
+/* MODAL CONTAINER & TOP BAR */
+.wooconfig-modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483640;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--wooconfig-font, system-ui, -apple-system, sans-serif);
+}
+
+.wooconfig-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(2px);
+}
+
+.wooconfig-modal-container {
+    position: relative;
+    background: #ffffff;
+    width: 100%;
+    max-width: 480px;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    padding: 0 16px 20px;
+    margin: 10px;
+}
+
+.wooconfig-modal-top-bar {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    padding-top: 14px;
+    padding-bottom: 10px;
+    z-index: 10;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.wooconfig-modal-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.wooconfig-modal-main-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    text-align: center;
+    flex: 1;
+}
+
+.wooconfig-modal-close-x {
+    background: #f1f5f9;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wooconfig-modal-close-x:hover {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+/* 4-SEGMENT STEPPER BAR */
+.wooconfig-stepper-progress-bar {
+    display: flex;
+    gap: 4px;
+    height: 8px;
+    width: 100%;
+}
+
+.wooconfig-prog-segment {
+    flex: 1;
+    height: 100%;
+    background: #e2e8f0;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.wooconfig-prog-segment.is-completed {
+    background: #94ec00;
+}
+
+.wooconfig-prog-segment.is-active {
+    background: #ff5400; /* Vibrant orange active step */
+}
+
+/* STEP HEADER & VER EJEMPLO */
+.wooconfig-step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 16px 0 14px;
+}
+
+.wooconfig-step-number-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 3px;
+}
+
+.wooconfig-step-desc {
+    font-size: 13px;
+    color: #475569;
+    margin: 0;
+}
+
+.wooconfig-btn-ver-ejemplo {
+    background: #94ec00;
+    color: #000000;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    min-width: 82px;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.wooconfig-btn-ver-ejemplo:hover {
+    background: #80ce00;
+    transform: scale(1.03);
+}
+
+.wooconfig-ejemplo-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #000000;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.wooconfig-ejemplo-text {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: lowercase;
+}
+
+/* UPLOADED FILES LIST */
+.wooconfig-uploaded-files-list {
+    margin-bottom: 10px;
+}
+
+.wooconfig-file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    background: #ffffff;
+}
+
+.wooconfig-file-item .file-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    flex: 1;
+}
+
+.wooconfig-file-item .file-thumb {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.wooconfig-file-item .file-doc-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.wooconfig-file-item .file-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wooconfig-btn-delete-file {
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+}
+
+.wooconfig-btn-delete-file:hover {
+    background: #dc2626;
+}
+
+/* DASHED DROPZONES */
+.wooconfig-dashed-dropzone {
+    border: 2px dashed #94a3b8;
+    border-radius: 10px;
+    padding: 22px 14px;
+    text-align: center;
+    cursor: pointer;
+    background: #fafcf7;
+    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 14px;
+}
+
+.wooconfig-dashed-dropzone:hover {
+    background: #f1f5f9;
+    border-color: #475569;
+}
+
+.wooconfig-dropzone-icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ecfccb;
+    color: #3f6212;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.wooconfig-dropzone-text-primary {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.35;
+}
+
+.wooconfig-dropzone-text-secondary {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* NOTES FIELD */
+.wooconfig-notes-group {
+    margin-bottom: 14px;
+}
+
+.wooconfig-notes-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.wooconfig-textarea {
+    width: 100%;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #0f172a;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.wooconfig-textarea:focus {
+    outline: none;
+    border-color: #0f172a;
+}
+
+/* MODAL TOTAL BAR */
+.wooconfig-modal-total-bar {
+    border: 1.5px solid #0f172a;
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    margin-bottom: 12px;
+}
+
+.wooconfig-modal-total-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    flex: 1;
+}
+
+.wooconfig-modal-total-sub-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    line-height: 1.25;
+}
+
+.wooconfig-modal-total-amount {
+    font-size: 16px;
+    font-weight: 900;
+    color: #0f172a;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* NAV FOOTER */
+.wooconfig-modal-nav-footer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.wooconfig-btn-nav-back {
+    height: 52px;
+    padding: 0 14px;
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.wooconfig-btn-nav-back:hover {
+    background: #e2e8f0;
+}
+
+/* STEP 4: TABLE TRIGGER */
+.wooconfig-table-opt-prompt {
+    margin-bottom: 14px;
+}
+
+.wooconfig-table-opt-prompt p {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 8px;
+}
+
+.wooconfig-table-trigger-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wooconfig-btn-green-table {
+    background: #94ec00;
+    color: #000000;
+    border: none;
+    border-radius: 6px;
+    height: 46px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.wooconfig-btn-green-table:hover {
+    background: #80ce00;
+    transform: translateY(-1px);
+}
+
+.wooconfig-table-saved-status {
+    margin-top: 8px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wooconfig-table-clear-btn {
+    background: none;
+    border: none;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* VALIDATION BANNER */
+.wooconfig-validation-banner {
+    background: #fffbeb;
+    border: 1.5px solid #f59e0b;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 10px 0;
+}
+
+.wooconfig-validation-banner-inner {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.wooconfig-validation-banner-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.wooconfig-validation-banner-content strong {
+    font-size: 13px;
+    color: #92400e;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.wooconfig-validation-banner-content ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: #78350f;
+}
+
+.wooconfig-validation-banner-content li {
+    margin-bottom: 5px;
+}
+
+.wooconfig-btn-jump-step {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 6px;
+}
+
+/* ================= SUB-MODAL: TABLA DE JUGADORES ================= */
+.wooconfig-table-modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483645;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--wooconfig-font, system-ui, -apple-system, sans-serif);
+}
+
+.wooconfig-table-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+}
+
+.wooconfig-table-dialog {
+    position: relative;
+    background: #ffffff;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    margin: 10px;
+}
+
+.wooconfig-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.wooconfig-table-dialog-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.wooconfig-table-close-x {
+    background: #f1f5f9;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    color: #475569;
+    cursor: pointer;
+}
+
+.wooconfig-table-instruction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.wooconfig-table-instruction-text {
+    font-size: 13px;
+    color: #475569;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.wooconfig-table-ads-badges-wrap {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.wooconfig-table-ad-pill {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wooconfig-table-ad-pill.is-complete {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.wooconfig-table-ad-pill.is-partial {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.wooconfig-table-ad-pill.is-zero {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.wooconfig-table-ad-warning {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.wooconfig-table-scroll-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 52vh;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.wooconfig-interactive-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.wooconfig-interactive-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    border-bottom: 2px solid #cbd5e1;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: center;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.wooconfig-interactive-table thead th.col-num {
+    width: 40px;
+}
+
+.wooconfig-interactive-table thead th.col-name {
+    text-align: left;
+    min-width: 120px;
+}
+
+.wooconfig-interactive-table thead th.col-size {
+    min-width: 90px;
+}
+
+.wooconfig-interactive-table thead th.col-adicional {
+    min-width: 80px;
+}
+
+.wooconfig-interactive-table tbody td {
+    padding: 6px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.wooconfig-interactive-table tbody td.cell-num {
+    font-weight: 800;
+    color: #0f172a;
+    text-align: center;
+    font-size: 13px;
+}
+
+.wooconfig-interactive-table tbody td.cell-adicional {
+    text-align: center;
+}
+
+.wooconfig-table-input-name {
+    width: 100%;
+    height: 34px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 0 8px;
+    font-size: 12px;
+    background: #ffffff;
+}
+
+.wooconfig-table-select-size {
+    width: 100%;
+    height: 34px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #ffffff;
+}
+
+/* CUSTOM CHECKBOX (SQUARE BORDER WITH GREEN FILL) */
+.wooconfig-custom-checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 2px solid #000000;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #ffffff;
+    transition: background 0.1s, border-color 0.1s;
+    user-select: none;
+    position: relative;
+}
+
+.wooconfig-custom-checkbox-wrap input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.wooconfig-custom-checkbox-wrap.is-active {
+    background: #94ec00;
+    border-color: #000000;
+}
+
+.wooconfig-btn-green-save {
+    width: 100%;
+    height: 48px;
+    background: #94ec00;
+    color: #000000;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.wooconfig-btn-green-save:hover {
+    background: #80ce00;
+}
+
+/* ================= HELP MODAL POPUP ================= */
+.wooconfig-help-modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483648;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--wooconfig-font, system-ui, -apple-system, sans-serif);
+}
+
+.wooconfig-help-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+}
+
+.wooconfig-help-dialog {
+    position: relative;
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.5);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    margin: 10px;
+}
+
+.wooconfig-help-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.wooconfig-help-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.wooconfig-help-close-x {
+    background: #f1f5f9;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+    color: #475569;
+    cursor: pointer;
+}
+
+.wooconfig-help-body {
+    overflow-y: auto;
+    max-height: 68vh;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.wooconfig-help-vertical-img {
+    width: 100%;
+    max-height: 65vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.wooconfig-btn-close-help {
+    width: 100%;
+    height: 44px;
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.wooconfig-btn-close-help:hover {
+    background: #94ec00;
+    color: #000000;
+}

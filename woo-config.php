@@ -174,6 +174,13 @@ final class WooConfig {
             WOOCONFIG_VERSION
         );
 
+        wp_enqueue_style(
+            'wooconfig-unified-css',
+            WOOCONFIG_URL . 'assets/css/unified-flow.css',
+            array( 'wooconfig-modal-css' ),
+            WOOCONFIG_VERSION
+        );
+
         wp_enqueue_script(
             'wooconfig-frontend-js',
             WOOCONFIG_URL . 'assets/js/configurator.js',
@@ -323,6 +330,14 @@ final class WooConfig {
             'size_guide_url'     => $size_guide_url,
             'size_guide_img'     => $size_guide_img,
             'max_file_size_mb'   => (int) get_option( 'wooconfig_max_file_size_mb', 20 ),
+            'help_images'        => array(
+                'cantidades'  => WOOCONFIG_URL . 'assets/images/help-cantidades.svg',
+                'adicionales' => WOOCONFIG_URL . 'assets/images/help-adicionales.svg',
+                'diseno'      => WOOCONFIG_URL . 'assets/images/help-diseno.svg',
+                'sponsors'    => WOOCONFIG_URL . 'assets/images/help-sponsors.svg',
+                'jugadores'   => WOOCONFIG_URL . 'assets/images/help-jugadores.svg',
+                'tabla'       => WOOCONFIG_URL . 'assets/images/help-tabla.svg',
+            ),
             'cart_url'           => wc_get_cart_url(),
             'checkout_url'       => wc_get_checkout_url(),
             'i18n'               => array(
