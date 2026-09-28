@@ -1,0 +1,61 @@
+/* WooConfig Admin Styles */
+.wooconfig-admin-order-box {
+    margin-top: 10px;
+}
+
+.wooconfig-group-card {
+    transition: all 0.2s ease;
+}
+
+.wooconfig-group-card:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* ================= PRODUCT DATA TAB STYLES ================= */
+#wooconfig_product_data {
+    padding: 10px 0;
+}
+
+#wooconfig_product_data .wooconfig-admin-box {
+    padding: 14px 18px !important;
+    background: #fafafa !important;
+    border: 1px solid #e5e5e5 !important;
+    margin: 0 15px 15px !important;
+    border-radius: 6px !important;
+}
+
+#wooconfig_product_data .wooconfig-admin-box label,
+#wooconfig_product_data label.wooconfig-inline-label {
+    float: none !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    vertical-align: middle !important;
+}
+
+#wooconfig_product_data .wooconfig-admin-box input[type="checkbox"] {
+    margin: 0 6px 0 0 !important;
+    float: none !important;
+    vertical-align: middle !important;
+}
+
+#wooconfig_product_data .wooconfig-admin-box input[type="text"],
+#wooconfig_product_data .wooconfig-admin-box input[type="number"] {
+    float: none !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+#wooconfig_product_data .wooconfig-admin-box p {
+    margin: 8px 0 !important;
+    padding: 0 !important;
+    clear: both !important;
+}
+

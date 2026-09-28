@@ -1,0 +1,1791 @@
+/* ==========================================================================
+   WooConfig Stylesheet (Widget on Product Page + 3-Step Modal + Deposits + WhatsApp)
+   ========================================================================== */
+
+:root {
+    --wooconfig-primary: #94ec00;       /* Neon lime / green */
+    --wooconfig-primary-hover: #80ce00;
+    --wooconfig-dark: #000000;
+    --wooconfig-dark-surface: #181818;
+    --wooconfig-card-bg: #ffffff;
+    --wooconfig-border: #cccccc;
+    --wooconfig-border-light: #e5e5e5;
+    --wooconfig-text: #111111;
+    --wooconfig-text-muted: #666666;
+    --wooconfig-radius-sm: 6px;
+    --wooconfig-radius-md: 10px;
+    --wooconfig-radius-lg: 14px;
+    --wooconfig-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --wooconfig-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* ================= ON-PAGE PRODUCT WIDGET ================= */
+.wooconfig-onpage-widget {
+    margin: 25px 0;
+    font-family: var(--wooconfig-font);
+    box-sizing: border-box;
+}
+
+.wooconfig-onpage-widget * {
+    box-sizing: border-box;
+}
+
+.wooconfig-box-section {
+    background: #ffffff;
+    border: 1px solid var(--wooconfig-border-light);
+    border-radius: var(--wooconfig-radius-md);
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.wooconfig-box-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.wooconfig-widget-title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--wooconfig-text);
+}
+
+.wooconfig-box-header-row .wooconfig-widget-title {
+    margin: 0;
+}
+
+.wooconfig-btn-guide-onpage {
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1.5px solid #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.wooconfig-btn-guide-onpage svg {
+    color: #16a34a;
+}
+
+.wooconfig-btn-guide-onpage:hover {
+    background: var(--wooconfig-primary);
+    border-color: #79c500;
+    color: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+/* Standalone Size Guide Block & Shortcode */
+.wooconfig-size-guide-standalone-wrapper {
+    margin: 10px 0;
+    box-sizing: border-box;
+}
+
+.wooconfig-btn-standalone {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.wooconfig-btn-standalone svg {
+    flex-shrink: 0;
+}
+
+/* Style variants */
+.wooconfig-btn-style-default {
+    background: var(--wooconfig-primary);
+    border: 1.5px solid #79c500;
+    color: #000000;
+}
+.wooconfig-btn-style-default svg {
+    color: #000000;
+}
+.wooconfig-btn-style-default:hover {
+    background: var(--wooconfig-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(148, 236, 0, 0.3);
+}
+
+.wooconfig-btn-style-light {
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    color: #0f172a;
+}
+.wooconfig-btn-style-light svg {
+    color: #16a34a;
+}
+.wooconfig-btn-style-light:hover {
+    background: var(--wooconfig-primary);
+    border-color: #79c500;
+    color: #000000;
+    transform: translateY(-1px);
+}
+
+.wooconfig-btn-style-dark {
+    background: #0f172a;
+    border: 1.5px solid #0f172a;
+    color: #ffffff;
+}
+.wooconfig-btn-style-dark svg {
+    color: var(--wooconfig-primary);
+}
+.wooconfig-btn-style-dark:hover {
+    background: #000000;
+    border-color: var(--wooconfig-primary);
+    color: var(--wooconfig-primary);
+    transform: translateY(-1px);
+}
+
+.wooconfig-btn-style-outline {
+    background: transparent;
+    border: 1.5px solid #0f172a;
+    color: #0f172a;
+}
+.wooconfig-btn-style-outline svg {
+    color: #0f172a;
+}
+.wooconfig-btn-style-outline:hover {
+    background: var(--wooconfig-primary);
+    border-color: #79c500;
+    color: #000000;
+    transform: translateY(-1px);
+}
+
+/* Block editor preview */
+.wooconfig-editor-block-wrapper {
+    padding: 8px 0;
+}
+
+.wooconfig-sub-title {
+    margin: 15px 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #222;
+}
+
+.wooconfig-sub-hint {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: var(--wooconfig-text-muted);
+}
+
+.wooconfig-flow-subtitle {
+    margin: -6px 0 14px;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 500;
+}
+
+/* Stepper controls */
+.wooconfig-qty-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.wooconfig-qty-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.wooconfig-stepper-control {
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid #222;
+    border-radius: var(--wooconfig-radius-sm);
+    overflow: hidden;
+    background: #fff;
+}
+
+.wooconfig-stepper-btn {
+    background: #f0f0f0;
+    border: none;
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.wooconfig-stepper-btn:hover {
+    background: var(--wooconfig-primary);
+}
+
+.wooconfig-stepper-input {
+    width: 54px;
+    height: 38px;
+    border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: #111;
+    padding: 0;
+    margin: 0;
+    -moz-appearance: textfield;
+}
+
+.wooconfig-stepper-input::-webkit-outer-spin-button,
+.wooconfig-stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.wooconfig-stepper-sm .wooconfig-stepper-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+}
+.wooconfig-stepper-sm .wooconfig-stepper-input {
+    width: 44px;
+    height: 30px;
+    font-size: 13px;
+}
+
+/* Adicionales Rows */
+.wooconfig-adicional-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #eee;
+    gap: 10px;
+}
+
+.wooconfig-adicional-info {
+    flex: 1;
+}
+
+.wooconfig-adicional-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
+}
+
+.wooconfig-adicional-unit-price {
+    font-size: 12px;
+    color: #666;
+}
+
+.wooconfig-adicional-subtotal {
+    min-width: 75px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+}
+
+/* Live Total Bar & Deposit Highlights */
+.wooconfig-live-total-bar {
+    margin-top: 18px;
+    background: #111;
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: var(--wooconfig-radius-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.wooconfig-total-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.wooconfig-total-text-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #bbb;
+}
+
+.wooconfig-total-amount {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.wooconfig-total-tax-note {
+    font-size: 10px;
+    color: #888;
+    font-weight: 600;
+}
+
+.wooconfig-deposit-highlight-tag {
+    background: rgba(148, 236, 0, 0.12);
+    border: 1px solid rgba(148, 236, 0, 0.6);
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-align: right;
+}
+
+.wooconfig-deposit-tag-title {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--wooconfig-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.wooconfig-deposit-tag-amount {
+    display: block;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--wooconfig-primary);
+    line-height: 1.15;
+    margin: 2px 0 1px;
+}
+
+.wooconfig-deposit-tag-subtitle {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    color: #a3e635;
+    opacity: 0.85;
+    text-transform: none;
+}
+
+/* Payment Mode Selector */
+.wooconfig-payment-mode-box {
+    margin-top: 15px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 14px;
+}
+
+.wooconfig-payment-mode-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.wooconfig-payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wooconfig-payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.wooconfig-payment-option:hover {
+    border-color: #94ec00;
+    background: #fcfdfa;
+}
+
+.wooconfig-payment-option.is-selected {
+    border-color: #111;
+    background: #f7fff0;
+    box-shadow: 0 0 0 1px #111;
+}
+
+.wooconfig-payment-mode-radio {
+    margin-top: 3px;
+    cursor: pointer;
+}
+
+.wooconfig-payment-option-content {
+    flex: 1;
+}
+
+.wooconfig-option-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.wooconfig-option-badge {
+    background: #94ec00;
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.wooconfig-option-sub {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+    line-height: 1.35;
+}
+
+/* Flow Cards */
+.wooconfig-flow-card {
+    border: 1.5px solid #e2e8f0;
+    border-radius: var(--wooconfig-radius-md);
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.22s ease-in-out;
+    overflow: hidden;
+    margin-bottom: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.wooconfig-flow-card:hover {
+    border-color: #0f172a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
+}
+
+.wooconfig-flow-card-quick {
+    border-color: #cbd5e1;
+    background: #fafcf7;
+}
+
+.wooconfig-flow-card-quick:hover {
+    border-color: #84cc16;
+}
+
+.wooconfig-flow-card.is-open {
+    border-color: #84cc16;
+    box-shadow: 0 4px 14px rgba(132, 204, 22, 0.15);
+}
+
+.wooconfig-flow-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    user-select: none;
+}
+
+.wooconfig-flow-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: transparent;
+    color: #1e293b;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.wooconfig-flow-card-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.wooconfig-flow-card-quick .wooconfig-flow-card-icon {
+    background: transparent;
+}
+
+.wooconfig-flow-card-wizard .wooconfig-flow-card-icon {
+    background: transparent;
+}
+
+.wooconfig-flow-card:hover .wooconfig-flow-card-icon {
+    transform: scale(1.05);
+}
+
+.wooconfig-flow-card-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.wooconfig-flow-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 3px;
+}
+
+.wooconfig-flow-card-text strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+}
+
+.wooconfig-flow-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #365314;
+    background: #d9f99d;
+    padding: 2px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.2px;
+}
+
+.wooconfig-flow-badge-precise {
+    color: #9a3412;
+    background: #ffedd5;
+}
+
+.wooconfig-flow-card-text span:not(.wooconfig-flow-badge) {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.35;
+}
+
+.wooconfig-flow-toggle-arrow,
+.wooconfig-flow-card-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #475569;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.wooconfig-flow-card:hover .wooconfig-flow-toggle-arrow,
+.wooconfig-flow-card:hover .wooconfig-flow-card-action {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+.wooconfig-flow-card.is-open .wooconfig-flow-toggle-arrow {
+    transform: rotate(180deg);
+    background: #84cc16;
+    color: #0f172a;
+}
+
+.wooconfig-flow-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 14px 0;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.wooconfig-flow-divider::before,
+.wooconfig-flow-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.wooconfig-flow-divider span {
+    padding: 0 12px;
+}
+
+.wooconfig-flow-card-wizard {
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+
+.wooconfig-flow-card-wizard:hover {
+    border-color: #0f172a;
+}
+
+/* Quick Panel (Flow 1 Opened) */
+.wooconfig-quick-panel {
+    padding: 16px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.wooconfig-upload-icon-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #ecfccb;
+    color: #3f6212;
+    margin-bottom: 8px;
+}
+
+/* Dropzones */
+.wooconfig-dropzone {
+    border: 2px dashed #999;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 20px 15px;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.wooconfig-dropzone:hover {
+    border-color: var(--wooconfig-primary-hover);
+    background: #f5fbee;
+}
+
+.wooconfig-dropzone.wooconfig-dropzone-error {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+    animation: wooconfigShake 0.4s ease-in-out;
+}
+
+.wooconfig-quick-inline-error {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #fef2f2;
+    border: 1.5px solid #f87171;
+    border-radius: var(--wooconfig-radius-sm);
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    animation: wooconfigFadeSlide 0.3s ease;
+}
+
+.wooconfig-quick-inline-error .wooconfig-error-icon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+@keyframes wooconfigShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes wooconfigFadeSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.wooconfig-upload-arrow {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 6px;
+    color: #222;
+}
+
+.wooconfig-dropzone-main-text {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+}
+
+.wooconfig-dropzone-sub-text {
+    display: block;
+    font-size: 11px;
+    color: #777;
+    margin-top: 2px;
+}
+
+.wooconfig-dropzone-hint {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: #888;
+}
+
+/* Upload Progress Bar */
+.wooconfig-upload-progress-wrapper {
+    margin: 12px 0;
+}
+
+.wooconfig-progress-bar {
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.wooconfig-progress-fill {
+    height: 100%;
+    background: var(--wooconfig-primary);
+    width: 0%;
+    transition: width 0.2s;
+}
+
+.wooconfig-progress-text {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    text-align: center;
+}
+
+/* Uploaded Files List */
+.wooconfig-files-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wooconfig-file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.file-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.file-thumb {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.file-doc-icon {
+    font-size: 20px;
+}
+
+.file-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #222;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.wooconfig-btn-delete-file {
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.wooconfig-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: var(--wooconfig-radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.wooconfig-btn-action-primary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: var(--wooconfig-primary);
+    color: #000;
+    border: none;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.wooconfig-btn-action-primary:hover {
+    background: var(--wooconfig-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* ================= MODAL FULLSCREEN / DIALOG ================= */
+.wooconfig-modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--wooconfig-font);
+    box-sizing: border-box;
+}
+
+.wooconfig-modal-wrapper * {
+    box-sizing: border-box;
+}
+
+.wooconfig-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+}
+
+.wooconfig-modal-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    max-height: 100vh;
+    background: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10;
+    box-shadow: var(--wooconfig-shadow);
+}
+
+@media (min-width: 769px) {
+    .wooconfig-modal-container {
+        height: 92vh;
+        max-height: 840px;
+        border-radius: var(--wooconfig-radius-lg);
+    }
+}
+
+.wooconfig-step-view {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.wooconfig-header {
+    background: var(--wooconfig-dark);
+    color: #ffffff;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.wooconfig-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #ffffff !important;
+}
+
+.wooconfig-modal-header-close {
+    background: var(--wooconfig-primary);
+    color: #000;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wooconfig-info-bar {
+    background: #ffffff;
+    padding: 12px 18px;
+    border-bottom: 2px solid var(--wooconfig-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 10px;
+}
+
+.wooconfig-info-text {
+    flex: 1;
+}
+
+.wooconfig-min-badge {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--wooconfig-text);
+}
+
+.wooconfig-hint {
+    margin: 0;
+    font-size: 11px;
+    color: var(--wooconfig-text-muted);
+}
+
+.wooconfig-info-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.wooconfig-btn-guide, .wooconfig-btn-reset {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    padding: 6px 10px;
+    border-radius: var(--wooconfig-radius-sm);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.wooconfig-btn-guide {
+    background: var(--wooconfig-primary);
+    color: #000;
+}
+
+.wooconfig-btn-reset {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.wooconfig-modal-qty-bar {
+    background: #fff;
+    padding: 10px 18px;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.wooconfig-modal-qty-label {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.wooconfig-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Player Cards (Step 1) */
+.wooconfig-player-card {
+    background: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: var(--wooconfig-radius-md);
+    padding: 12px 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.wooconfig-player-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.wooconfig-card-number {
+    font-size: 12px;
+    font-weight: 800;
+    color: #666;
+}
+
+.wooconfig-btn-delete-player {
+    background: none;
+    border: 1px solid #ffb3b3;
+    color: #cc0000;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wooconfig-player-inputs-grid {
+    display: grid;
+    grid-template-columns: 75px 1fr 100px;
+    gap: 8px;
+}
+
+.wooconfig-player-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #bbb;
+    border-radius: var(--wooconfig-radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.wooconfig-select {
+    background: #fff;
+    cursor: pointer;
+}
+
+.wooconfig-add-player-wrapper {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.wooconfig-btn-add-player {
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wooconfig-btn-add-player:hover {
+    background: #222;
+}
+
+/* Step 2: Adicionales View */
+.wooconfig-step2-ad-header-boxes {
+    background: #fff;
+    padding: 10px 18px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.wooconfig-step2-ad-pill {
+    background: #f3f9ea;
+    border: 1px solid #c9e89d;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #222;
+}
+
+.wooconfig-step2-players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wooconfig-step2-player-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.wooconfig-step2-player-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    flex: 1;
+}
+
+.wooconfig-step2-toggles-wrap {
+    display: flex;
+    gap: 6px;
+}
+
+.wooconfig-toggle-adicional-btn {
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+}
+
+.wooconfig-toggle-adicional-btn.is-active {
+    background: var(--wooconfig-primary);
+    border-color: #79c500;
+    color: #000;
+}
+
+/* Step 3: Payment Breakdown */
+.wooconfig-step3-payment-summary {
+    margin-top: 15px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 14px;
+}
+
+.wooconfig-step3-payment-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 6px;
+}
+
+.wooconfig-step3-payment-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wooconfig-prow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #334155;
+}
+
+.wooconfig-prow-deposit strong {
+    color: #059669;
+    font-weight: 800;
+}
+
+.wooconfig-prow-balance strong {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+/* Modal Footer */
+.wooconfig-footer {
+    background: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.wooconfig-btn-close, .wooconfig-btn-back {
+    background: var(--wooconfig-primary);
+    border: none;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wooconfig-summary-block {
+    flex: 1;
+    text-align: center;
+}
+
+.wooconfig-summary-title {
+    font-size: 11px;
+    color: #666;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 160px;
+    margin: 0 auto;
+}
+
+.wooconfig-summary-qty {
+    font-size: 11px;
+    font-weight: 700;
+    color: #333;
+}
+
+.wooconfig-summary-total {
+    font-size: 16px;
+    font-weight: 900;
+    color: #000;
+}
+
+.wooconfig-btn-next, .wooconfig-btn-submit {
+    background: var(--wooconfig-primary);
+    color: #000;
+    border: none;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wooconfig-btn-next:hover, .wooconfig-btn-submit:hover {
+    background: var(--wooconfig-primary-hover);
+}
+
+/* Success Overlay */
+.wooconfig-success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.wooconfig-success-card {
+    background: #fff;
+    border-radius: var(--wooconfig-radius-lg);
+    padding: 25px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--wooconfig-shadow);
+}
+
+.wooconfig-success-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--wooconfig-primary);
+    color: #000;
+    font-size: 32px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+}
+
+.wooconfig-success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.wooconfig-btn-primary {
+    background: #000;
+    color: #fff;
+    padding: 12px;
+    border-radius: var(--wooconfig-radius-sm);
+    text-decoration: none;
+    font-weight: 800;
+    display: block;
+}
+
+.wooconfig-btn-secondary {
+    background: #eee;
+    color: #111;
+    padding: 10px;
+    border: none;
+    border-radius: var(--wooconfig-radius-sm);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ================= MODERN SIZE GUIDE POPUP ================= */
+.wooconfig-guide-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.82) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    z-index: 2147483647 !important;
+    display: none;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+    font-family: var(--wooconfig-font) !important;
+}
+
+.wooconfig-guide-overlay * {
+    box-sizing: border-box !important;
+}
+
+.wooconfig-guide-modal-container {
+    position: relative !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border-radius: var(--wooconfig-radius-lg) !important;
+    max-width: 760px !important;
+    width: 100% !important;
+    max-height: 88vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+    z-index: 2147483647 !important;
+    animation: wooconfigFadeScaleIn 0.2s ease-out !important;
+}
+
+@keyframes wooconfigFadeScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.wooconfig-guide-modal-header {
+    background: var(--wooconfig-dark);
+    color: #ffffff;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 2px solid var(--wooconfig-primary);
+}
+
+.wooconfig-guide-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wooconfig-guide-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--wooconfig-primary);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wooconfig-guide-modal-heading {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff !important;
+    letter-spacing: 0.3px;
+}
+
+.wooconfig-guide-modal-subheading {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.wooconfig-guide-close-btn {
+    background: #262626;
+    color: #ffffff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+
+.wooconfig-guide-close-btn:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+/* Tabs Bar */
+.wooconfig-guide-tabs-bar {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.wooconfig-guide-tab-btn {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.wooconfig-guide-tab-btn:hover {
+    border-color: #94a3b8;
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+.wooconfig-guide-tab-btn.is-active {
+    background: var(--wooconfig-primary);
+    border-color: #79c500;
+    color: #000000;
+    box-shadow: 0 2px 8px rgba(148, 236, 0, 0.35);
+}
+
+/* Body & Tables */
+.wooconfig-guide-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #ffffff;
+}
+
+.wooconfig-guide-gender-badge-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.wooconfig-gender-badge {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.wooconfig-unit-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.wooconfig-guide-table-block {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.wooconfig-guide-table-title {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.wooconfig-guide-tag-sm {
+    font-size: 11px;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #334155;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.wooconfig-table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.wooconfig-table-sizes-modern {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: center;
+}
+
+.wooconfig-table-sizes-modern th {
+    background: #f1f5f9;
+    color: #1e293b;
+    font-weight: 700;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.wooconfig-table-sizes-modern td {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.wooconfig-table-sizes-modern tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.wooconfig-table-sizes-modern tbody tr:hover {
+    background: #f0fdf4;
+}
+
+.wooconfig-table-sizes-modern td.col-talla {
+    font-weight: 800;
+    background: #f8fafc;
+    color: #0f172a;
+    width: 80px;
+}
+
+/* How to measure box */
+.wooconfig-how-to-measure-box {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 10px;
+}
+
+.wooconfig-how-to-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #0f172a;
+    margin-bottom: 12px;
+    font-weight: 800;
+}
+
+.wooconfig-how-to-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.wooconfig-how-to-item {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: #334155;
+}
+
+.wooconfig-how-to-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.wooconfig-how-to-item ul {
+    margin: 4px 0 0;
+    padding-left: 16px;
+    line-height: 1.5;
+}
+
+.wooconfig-measure-footnote {
+    margin: 12px 0 0;
+    font-size: 11px;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+    line-height: 1.4;
+}
+
+/* Image Tab */
+.wooconfig-guide-image-container {
+    text-align: center;
+    padding: 12px;
+    background: #0f172a;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wooconfig-guide-full-image {
+    max-width: 100%;
+    max-height: 65vh;
+    height: auto;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+/* Footer */
+.wooconfig-guide-modal-footer {
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.wooconfig-btn-guide-close-bottom {
+    background: var(--wooconfig-primary);
+    color: #000000;
+    border: none;
+    border-radius: var(--wooconfig-radius-sm);
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.wooconfig-btn-guide-close-bottom:hover {
+    background: var(--wooconfig-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* ================= WOOCOMMERCE CART & CHECKOUT ENHANCED METADATA ================= */
+.wc-block-components-product-details,
+.woocommerce-cart-form .product-name dl.variation,
+.woocommerce-checkout-review-order dl.variation {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 5px !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+.wc-block-components-product-details__item,
+.woocommerce-cart-form .product-name dl.variation dt,
+.woocommerce-cart-form .product-name dl.variation dd {
+    display: inline-flex !important;
+    align-items: center !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    padding: 3px 8px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    color: #1e293b !important;
+    max-width: 100% !important;
+}
+
+/* Remove default WooCommerce blocks ugly slashes */
+.wc-block-components-product-details__item::after {
+    display: none !important;
+    content: "" !important;
+}
+
+.wc-block-components-product-details__name {
+    font-weight: 700 !important;
+    color: #334155 !important;
+    margin-right: 4px !important;
+}
+
+.wc-block-components-product-details__value {
+    font-weight: 600 !important;
+    color: #0f172a !important;
+}
+
+/* Quantity lock in cart */
+.wc-block-cart-items .wc-block-components-quantity-selector button,
+.wc-block-cart-items .wc-block-components-quantity-selector .wc-block-components-quantity-selector__button {
+    display: none !important;
+}
+
+.wc-block-cart-items .wc-block-components-quantity-selector input,
+.wc-block-cart-items .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input {
+    pointer-events: none !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    color: #0f172a !important;
+    text-align: center !important;
+    width: 48px !important;
+    height: 34px !important;
+/* Hide default WooCommerce add-to-cart form, variation dropdowns and individual selectors on WooConfig products */
+body.single-product .variations_form.cart,
+body.single-product form.cart:not(.wooconfig-onpage-widget form):not(#wooconfig-quick-form) > .variations,
+body.single-product form.cart:not(.wooconfig-onpage-widget form):not(#wooconfig-quick-form) > .single_variation_wrap,
+body.single-product form.cart:not(.wooconfig-onpage-widget form):not(#wooconfig-quick-form) > .quantity,
+body.single-product form.cart:not(.wooconfig-onpage-widget form):not(#wooconfig-quick-form) > .single_add_to_cart_button,
+body.single-product .wp-block-woocommerce-add-to-cart-form > form.cart > .variations,
+body.single-product .wp-block-woocommerce-add-to-cart-form > form.cart > .single_variation_wrap,
+body.single-product .wp-block-woocommerce-add-to-cart-form > form.cart > .quantity,
+body.single-product .wp-block-woocommerce-add-to-cart-form > form.cart > .single_add_to_cart_button,
+body.single-product table.variations {
+    display: none !important;
+}
+
+
+
