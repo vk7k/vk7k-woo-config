@@ -59,26 +59,36 @@
 }
 
 .wooconfig-help-circle-btn {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #0f172a;
-    color: #ffffff;
-    border: none;
-    font-weight: 800;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    max-width: 22px !important;
+    min-height: 22px !important;
+    max-height: 22px !important;
+    flex: 0 0 22px !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 800 !important;
+    font-size: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
     transition: transform 0.15s, background 0.15s;
 }
 
 .wooconfig-help-circle-btn:hover {
-    background: #94ec00;
-    color: #000000;
+    background: #94ec00 !important;
+    color: #000000 !important;
     transform: scale(1.1);
 }
 
@@ -759,9 +769,9 @@
 .wooconfig-table-instruction-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .wooconfig-table-instruction-text {
@@ -769,19 +779,20 @@
     color: #475569;
     margin: 0;
     line-height: 1.35;
+    flex: 1;
 }
 
 .wooconfig-table-ads-badges-wrap {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     margin-bottom: 10px;
 }
 
 .wooconfig-table-ad-pill {
-    padding: 3px 10px;
+    padding: 2px 8px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
@@ -823,14 +834,16 @@
     max-height: 52vh;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     -webkit-overflow-scrolling: touch;
 }
 
 .wooconfig-interactive-table {
     width: 100%;
+    min-width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 12px;
+    table-layout: auto;
 }
 
 .wooconfig-interactive-table thead th {
@@ -838,8 +851,8 @@
     top: 0;
     background: #f8fafc;
     border-bottom: 2px solid #cbd5e1;
-    padding: 8px 6px;
-    font-size: 12px;
+    padding: 6px 2px;
+    font-size: 11px;
     font-weight: 800;
     color: #0f172a;
     text-align: center;
@@ -847,59 +860,105 @@
     z-index: 1;
 }
 
-.wooconfig-interactive-table thead th.col-num {
-    width: 40px;
+.wooconfig-interactive-table thead th.col-prenda {
+    width: 20px;
+    min-width: 18px;
+    font-size: 10px;
+    color: #64748b;
+}
+
+.wooconfig-interactive-table thead th.col-dorsal {
+    width: 38px;
+    min-width: 36px;
+    text-align: center;
 }
 
 .wooconfig-interactive-table thead th.col-name {
     text-align: left;
-    min-width: 120px;
+    min-width: 85px;
+    padding-left: 4px;
 }
 
 .wooconfig-interactive-table thead th.col-size {
-    min-width: 90px;
+    width: 62px;
+    min-width: 58px;
+    text-align: center;
 }
 
 .wooconfig-interactive-table thead th.col-adicional {
-    min-width: 80px;
+    min-width: 44px;
+    max-width: 62px;
+    font-size: 10px;
+    line-height: 1.15;
+    white-space: normal;
+    text-align: center;
+    padding: 4px 2px;
 }
 
 .wooconfig-interactive-table tbody td {
-    padding: 6px;
+    padding: 4px 2px;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
 }
 
-.wooconfig-interactive-table tbody td.cell-num {
-    font-weight: 800;
-    color: #0f172a;
+.wooconfig-interactive-table tbody td.cell-prenda {
+    font-weight: 700;
+    color: #64748b;
     text-align: center;
-    font-size: 13px;
+    font-size: 11px;
 }
 
-.wooconfig-interactive-table tbody td.cell-adicional {
+.wooconfig-interactive-table tbody td.cell-dorsal {
     text-align: center;
+}
+
+.wooconfig-table-input-dorsal {
+    width: 36px;
+    height: 32px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 0 2px;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.wooconfig-interactive-table tbody td.cell-name {
+    padding: 4px 2px;
 }
 
 .wooconfig-table-input-name {
     width: 100%;
-    height: 34px;
+    height: 32px;
     border: 1.5px solid #cbd5e1;
     border-radius: 4px;
-    padding: 0 8px;
-    font-size: 12px;
+    padding: 0 4px;
+    font-size: 11.5px;
     background: #ffffff;
+    box-sizing: border-box;
+}
+
+.wooconfig-interactive-table tbody td.cell-size {
+    padding: 4px 2px;
 }
 
 .wooconfig-table-select-size {
     width: 100%;
-    height: 34px;
+    height: 32px;
     border: 1.5px solid #cbd5e1;
     border-radius: 4px;
-    padding: 0 6px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 0 2px;
+    font-size: 11px;
+    font-weight: 700;
     background: #ffffff;
+    box-sizing: border-box;
+}
+
+.wooconfig-interactive-table tbody td.cell-adicional {
+    text-align: center;
+    padding: 4px 2px;
 }
 
 /* CUSTOM CHECKBOX (SQUARE BORDER WITH GREEN FILL) */
@@ -907,15 +966,16 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     border: 2px solid #000000;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
     background: #ffffff;
     transition: background 0.1s, border-color 0.1s;
     user-select: none;
     position: relative;
+    box-sizing: border-box;
 }
 
 .wooconfig-custom-checkbox-wrap input[type="checkbox"] {
@@ -946,6 +1006,67 @@
 
 .wooconfig-btn-green-save:hover {
     background: #80ce00;
+}
+
+/* Mobile specific table adjustments */
+@media (max-width: 520px) {
+    .wooconfig-table-dialog {
+        margin: 4px !important;
+        padding: 10px 6px !important;
+        max-height: 94vh !important;
+        border-radius: 10px !important;
+    }
+    .wooconfig-table-header {
+        margin-bottom: 6px !important;
+    }
+    .wooconfig-table-dialog-title {
+        font-size: 16px !important;
+    }
+    .wooconfig-table-instruction-text {
+        font-size: 11px !important;
+        line-height: 1.25 !important;
+    }
+    .wooconfig-table-ads-badges-wrap {
+        gap: 4px !important;
+        margin-bottom: 6px !important;
+    }
+    .wooconfig-table-ad-pill {
+        font-size: 10.5px !important;
+        padding: 2px 5px !important;
+    }
+    .wooconfig-interactive-table thead th {
+        padding: 4px 1px !important;
+        font-size: 10px !important;
+    }
+    .wooconfig-interactive-table tbody td {
+        padding: 3px 1px !important;
+    }
+    .wooconfig-table-input-dorsal {
+        width: 32px !important;
+        height: 28px !important;
+        font-size: 11px !important;
+    }
+    .wooconfig-table-input-name {
+        height: 28px !important;
+        font-size: 10.5px !important;
+        padding: 0 3px !important;
+    }
+    .wooconfig-table-select-size {
+        height: 28px !important;
+        font-size: 10.5px !important;
+        padding: 0 1px !important;
+    }
+    .wooconfig-custom-checkbox-wrap {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    .wooconfig-table-scroll-wrap {
+        margin-bottom: 8px !important;
+    }
+    .wooconfig-btn-green-save {
+        height: 42px !important;
+        font-size: 14px !important;
+    }
 }
 
 /* ================= HELP MODAL POPUP ================= */

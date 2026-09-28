@@ -569,14 +569,17 @@ class WC_Config_Admin {
                 $adicionales = get_post_meta( $post->ID, '_wooconfig_adicionales', true );
                 if ( ! is_array( $adicionales ) ) {
                     $adicionales = array(
-                        'cuello_polo' => array( 'enabled' => 'yes', 'price' => 2500, 'label' => __( 'Cuello polo', 'woo-config' ) ),
+                        'cuello_polo' => array( 'enabled' => 'yes', 'price' => 2500, 'label' => __( 'Cuello piqué', 'woo-config' ) ),
                         'manga_larga' => array( 'enabled' => 'yes', 'price' => 2500, 'label' => __( 'Manga larga', 'woo-config' ) ),
                     );
                 }
 
                 $cuello_enabled = isset( $adicionales['cuello_polo']['enabled'] ) && 'yes' === $adicionales['cuello_polo']['enabled'];
                 $cuello_price   = isset( $adicionales['cuello_polo']['price'] ) ? (float) $adicionales['cuello_polo']['price'] : 2500;
-                $cuello_label   = ! empty( $adicionales['cuello_polo']['label'] ) ? $adicionales['cuello_polo']['label'] : __( 'Cuello polo', 'woo-config' );
+                $cuello_label   = ! empty( $adicionales['cuello_polo']['label'] ) ? $adicionales['cuello_polo']['label'] : __( 'Cuello piqué', 'woo-config' );
+                if ( 'Cuello polo' === $cuello_label ) {
+                    $cuello_label = __( 'Cuello piqué', 'woo-config' );
+                }
 
                 $manga_enabled  = isset( $adicionales['manga_larga']['enabled'] ) && 'yes' === $adicionales['manga_larga']['enabled'];
                 $manga_price    = isset( $adicionales['manga_larga']['price'] ) ? (float) $adicionales['manga_larga']['price'] : 2500;
@@ -584,11 +587,11 @@ class WC_Config_Admin {
                 ?>
 
                 <div class="wooconfig-admin-box" style="padding: 14px 18px; background: #fafafa; border: 1px solid #e5e5e5; margin: 0 15px 15px; border-radius: 6px;">
-                    <strong style="display: block; margin-bottom: 8px; font-size: 13px; color: #111;"><?php esc_html_e( '1. Cuello Polo', 'woo-config' ); ?></strong>
+                    <strong style="display: block; margin-bottom: 8px; font-size: 13px; color: #111;"><?php esc_html_e( '1. Cuello Piqué', 'woo-config' ); ?></strong>
                     <div style="margin: 8px 0; display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" id="_wooconfig_adicional_cuello_enabled" name="_wooconfig_adicional_cuello_enabled" value="yes" <?php checked( $cuello_enabled, true ); ?> style="margin: 0 !important; float: none !important;" />
                         <label for="_wooconfig_adicional_cuello_enabled" style="float: none !important; margin: 0 !important; width: auto !important; font-weight: 600; cursor: pointer; display: inline !important;">
-                            <?php esc_html_e( 'Habilitar Cuello Polo para este producto', 'woo-config' ); ?>
+                            <?php esc_html_e( 'Habilitar Cuello Piqué para este producto', 'woo-config' ); ?>
                         </label>
                     </div>
                     <div style="margin: 10px 0 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -642,7 +645,7 @@ class WC_Config_Admin {
         $adicionales = array();
         
         $cuello_enabled = isset( $_POST['_wooconfig_adicional_cuello_enabled'] ) ? 'yes' : 'no';
-        $cuello_label   = isset( $_POST['_wooconfig_adicional_cuello_label'] ) ? sanitize_text_field( $_POST['_wooconfig_adicional_cuello_label'] ) : 'Cuello polo';
+        $cuello_label   = isset( $_POST['_wooconfig_adicional_cuello_label'] ) ? sanitize_text_field( $_POST['_wooconfig_adicional_cuello_label'] ) : 'Cuello piqué';
         $cuello_price   = isset( $_POST['_wooconfig_adicional_cuello_price'] ) ? (float) $_POST['_wooconfig_adicional_cuello_price'] : 2500;
         
         $adicionales['cuello_polo'] = array(

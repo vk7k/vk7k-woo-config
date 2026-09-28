@@ -289,7 +289,8 @@ if ( ! defined( 'ABSPATH' ) ) {
             <table class="wooconfig-interactive-table" id="wooconfig-interactive-table">
                 <thead>
                     <tr id="wooconfig-table-thead-row">
-                        <th class="col-num"><?php esc_html_e( 'N°', 'woo-config' ); ?></th>
+                        <th class="col-prenda">#</th>
+                        <th class="col-dorsal" title="<?php esc_attr_e( 'Número de dorsal', 'woo-config' ); ?>"><?php esc_html_e( 'N°', 'woo-config' ); ?></th>
                         <th class="col-name"><?php esc_html_e( 'Nombre', 'woo-config' ); ?></th>
                         <th class="col-size"><?php esc_html_e( 'Talla', 'woo-config' ); ?></th>
                         <!-- Dynamic columns for adicionales appended via JS -->

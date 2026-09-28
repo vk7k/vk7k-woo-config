@@ -21,7 +21,7 @@
   <text x="80" y="187" fill="#000000" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="900" text-anchor="middle">+</text>
   <text x="120" y="185" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="19" font-weight="700">¿Qué son los adicionales?</text>
   <text x="60" y="230" fill="#cbd5e1" font-family="system-ui, -apple-system, sans-serif" font-size="15">
-    <tspan x="60" dy="0">Son opciones de personalización especial como cuello polo</tspan>
+    <tspan x="60" dy="0">Son opciones de personalización especial como cuello piqué</tspan>
     <tspan x="60" dy="24">o manga larga. Puedes agregar la cantidad exacta de prendas</tspan>
     <tspan x="60" dy="24">que llevarán estos detalles.</tspan>
     <tspan x="60" dy="28" fill="#94ec00" font-weight="600">Ejemplo: 2 camisetas con manga larga y 8 con manga corta.</tspan>

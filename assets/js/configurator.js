@@ -380,9 +380,13 @@
                 var assigned  = self.getAssignedAdicionalCount(key);
                 var isComplete = (available > 0 && assigned === available);
                 var badgeClass = isComplete ? 'is-complete' : (assigned > 0 ? 'is-partial' : 'is-zero');
+                var adLabel = ad.label;
+                if (/polo/i.test(adLabel)) {
+                    adLabel = 'Cuello piqué';
+                }
 
                 var pillHtml = '<div class="wooconfig-table-ad-pill ' + badgeClass + '">' +
-                    '<strong>' + self.escapeHtml(ad.label) + ':</strong> ' +
+                    '<strong>' + self.escapeHtml(adLabel) + ':</strong> ' +
                     '<span>' + assigned + '/' + available + (isComplete ? ' ✓' : '') + '</span>' +
                 '</div>';
                 $wrap.append(pillHtml);
@@ -403,7 +407,11 @@
             if (this.data.adicionales) {
                 $.each(this.data.adicionales, function(key, ad) {
                     adicionalesKeys.push(key);
-                    var thHtml = '<th class="col-adicional" data-ad-key="' + key + '">' + self.escapeHtml(ad.label) + '</th>';
+                    var adLabel = ad.label;
+                    if (/polo/i.test(adLabel)) {
+                        adLabel = 'Cuello piqué';
+                    }
+                    var thHtml = '<th class="col-adicional" data-ad-key="' + key + '">' + self.escapeHtml(adLabel) + '</th>';
                     $theadRow.append(thHtml);
                 });
             }
@@ -414,13 +422,16 @@
                 var rowNum = idx + 1;
                 var tr = $('<tr class="wooconfig-table-row" data-index="' + idx + '"></tr>');
 
-                // Col 1: N°
-                tr.append('<td class="cell-num">#' + rowNum + '</td>');
+                // Col 1: # Prenda
+                tr.append('<td class="cell-prenda">' + rowNum + '</td>');
 
-                // Col 2: Nombre
-                tr.append('<td class="cell-name"><input type="text" class="wooconfig-table-input-name" placeholder="Nombre jugador" value="' + self.escapeHtml(p.name || '') + '"></td>');
+                // Col 2: N° Dorsal input
+                tr.append('<td class="cell-dorsal"><input type="text" class="wooconfig-table-input-dorsal" placeholder="#" maxlength="4" value="' + self.escapeHtml(p.dorsal || '') + '"></td>');
 
-                // Col 3: Talla
+                // Col 3: Nombre
+                tr.append('<td class="cell-name"><input type="text" class="wooconfig-table-input-name" placeholder="Nombre" value="' + self.escapeHtml(p.name || '') + '"></td>');
+
+                // Col 4: Talla
                 var selHtml = '<select class="wooconfig-table-select-size"><option value="">Talla *</option>';
                 $.each(sizes, function(i, sz) {
                     var isSel = (p.size === sz) ? 'selected' : '';
@@ -429,7 +440,7 @@
                 selHtml += '</select>';
                 tr.append('<td class="cell-size">' + selHtml + '</td>');
 
-                // Col 4+: Adicionales Checkboxes
+                // Col 5+: Adicionales Checkboxes
                 $.each(adicionalesKeys, function(i, adKey) {
                     var isChecked = Array.isArray(p.adicionales) && (p.adicionales.indexOf(adKey) > -1);
                     var checkedAttr = isChecked ? 'checked' : '';
@@ -455,19 +466,21 @@
             $('#wooconfig-table-tbody tr').each(function() {
                 var idx = parseInt($(this).data('index'), 10);
                 if (typeof self.players[idx] !== 'undefined') {
-                    var name = $(this).find('.wooconfig-table-input-name').val() || '';
-                    var size = $(this).find('.wooconfig-table-select-size').val() || '';
-                    var ads  = [];
+                    var dorsal = $(this).find('.wooconfig-table-input-dorsal').val() || '';
+                    var name   = $(this).find('.wooconfig-table-input-name').val() || '';
+                    var size   = $(this).find('.wooconfig-table-select-size').val() || '';
+                    var ads    = [];
 
                     $(this).find('.wooconfig-table-cb-ad:checked').each(function() {
                         ads.push($(this).data('ad-key'));
                     });
 
-                    self.players[idx].name = name;
-                    self.players[idx].size = size;
+                    self.players[idx].dorsal = dorsal;
+                    self.players[idx].name   = name;
+                    self.players[idx].size   = size;
                     self.players[idx].adicionales = ads;
 
-                    if (name || size || ads.length > 0) hasAnyData = true;
+                    if (dorsal || name || size || ads.length > 0) hasAnyData = true;
                 }
             });
 

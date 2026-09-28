@@ -46,9 +46,16 @@ class WC_Config_Cart {
         $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
         if ( ! is_array( $product_adicionales ) ) {
             $product_adicionales = array(
-                'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello polo', 'woo-config' ), 'price' => 2500 ),
+                'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
                 'manga_larga' => array( 'id' => 'manga_larga', 'enabled' => 'yes', 'label' => __( 'Manga larga', 'woo-config' ), 'price' => 2500 ),
             );
+        } else {
+            foreach ( $product_adicionales as $key => &$ad_item ) {
+                if ( isset( $ad_item['label'] ) && false !== stripos( $ad_item['label'], 'polo' ) ) {
+                    $ad_item['label'] = __( 'Cuello piqué', 'woo-config' );
+                }
+            }
+            unset( $ad_item );
         }
 
         $base_price = (float) $product->get_price();
