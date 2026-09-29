@@ -2,38 +2,100 @@
    UNIFIED 4-STEP FLOW STYLES (MOBILE-FIRST & PIXEL-PERFECT)
    ========================================================================== */
 
-/* STEP 1: ON-PAGE WIDGET */
-.wooconfig-unified-widget {
+/* WIDGET CONTAINER & 4-STEP INLINE FLOW */
+.wooconfig-widget-container {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 18px 20px;
     margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     font-family: var(--wooconfig-font, system-ui, -apple-system, sans-serif);
     box-sizing: border-box;
+    width: 100%;
 }
 
-.wooconfig-step1-accent-bar {
-    width: 65px;
-    height: 5px;
-    background: #94ec00;
-    border-radius: 3px;
-    margin-bottom: 12px;
-}
-
-.wooconfig-step1-header {
+.wooconfig-widget-top-bar {
+    padding-bottom: 12px;
     margin-bottom: 14px;
+    border-bottom: 1.5px solid #e2e8f0;
 }
 
-.wooconfig-step1-title {
-    font-size: 24px;
+.wooconfig-widget-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.wooconfig-widget-main-title {
+    font-size: 15px;
     font-weight: 800;
     color: #0f172a;
-    margin: 0 0 4px;
-    letter-spacing: -0.5px;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.wooconfig-step1-subtitle {
-    font-size: 14px;
+.wooconfig-widget-step-badge {
+    background: #f1f5f9;
     color: #334155;
-    margin: 0;
-    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 800;
+}
+
+.wooconfig-stepper-progress-bar {
+    display: flex;
+    gap: 6px;
+    height: 7px;
+    width: 100%;
+}
+
+.wooconfig-prog-segment {
+    flex: 1;
+    height: 100%;
+    background: #e2e8f0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.wooconfig-prog-segment.is-completed {
+    background: #94ec00;
+}
+
+.wooconfig-prog-segment.is-active {
+    background: #ff5400;
+}
+
+.wooconfig-stepper-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    margin-top: 6px;
+}
+
+.wooconfig-stepper-label {
+    cursor: pointer;
+    transition: color 0.15s;
+    user-select: none;
+}
+
+.wooconfig-stepper-label:hover {
+    color: #0f172a;
+}
+
+.wooconfig-stepper-label.is-active {
+    color: #ff5400;
+    font-weight: 800;
+}
+
+.wooconfig-stepper-label.is-completed {
+    color: #0f172a;
 }
 
 .wooconfig-card-box {
@@ -589,20 +651,24 @@
     border-color: #0f172a;
 }
 
-/* MODAL TOTAL BAR */
+/* TOTAL BAR (ACROSS ALL STEPS) */
 .wooconfig-modal-total-bar {
     border: 1.5px solid #0f172a;
-    border-radius: 6px;
-    padding: 10px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-radius: 8px;
+    padding: 12px 14px;
     background: #ffffff;
     margin-bottom: 12px;
 }
 
+.wooconfig-total-top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
 .wooconfig-modal-total-label {
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 800;
     color: #0f172a;
     flex: 1;
@@ -619,11 +685,25 @@
 }
 
 .wooconfig-modal-total-amount {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 900;
     color: #0f172a;
     min-width: 80px;
     text-align: right;
+}
+
+.wooconfig-modal-total-bar .wooconfig-deposit-info-pill {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    color: #166534;
+    background: #f0fdf4;
+    padding: 6px 10px;
+    border-radius: 6px;
 }
 
 /* NAV FOOTER */

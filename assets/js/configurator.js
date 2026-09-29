@@ -174,17 +174,14 @@
             var formattedDeposit    = this.formatPrice(depositAmount);
 
             // On-page summaries
-            $('#wooconfig-onpage-total-amount').html(formattedGrandTotal);
-            $('#wooconfig-onpage-deposit-tag-amount').html(formattedDeposit);
+            $('#wooconfig-onpage-total-amount, .wooconfig-modal-total-amount').html(formattedGrandTotal);
+            $('#wooconfig-onpage-deposit-tag-amount, .wooconfig-live-deposit-amount').html(formattedDeposit);
 
             var unitsLabel = totalQty + (totalQty === 1 ? ' unidad' : ' unidades');
             var adsLabel   = totalAdsCount + (totalAdsCount === 1 ? ' adicional' : ' adicionales');
 
             $('#wooconfig-total-units-text, .wooconfig-live-units-label').text(unitsLabel);
             $('#wooconfig-total-ads-text, .wooconfig-live-ads-label').text(adsLabel);
-
-            // Modal summaries
-            $('.wooconfig-modal-total-amount').html(formattedGrandTotal);
         },
 
         formatPrice: function(num) {
@@ -193,41 +190,54 @@
             return symbol + formatted;
         },
 
-        // ================= NAVIGATION =================
+        // ================= NAVIGATION (IN-WIDGET 4-STEP FLOW) =================
         goToStep: function(step) {
+            step = parseInt(step, 10) || 1;
+            if (step < 1) step = 1;
+            if (step > 4) step = 4;
             this.currentStep = step;
+
             $('.wooconfig-step-view').hide().removeClass('is-active');
             $('#wooconfig-step-' + step).css('display', 'flex').addClass('is-active');
 
-            // Update Progress Bar
+            // Update Progress Bar Segments and Labels
             $('.wooconfig-prog-segment').removeClass('is-active is-completed');
-            $('.wooconfig-prog-segment[data-step="1"]').addClass('is-completed');
+            $('.wooconfig-stepper-label').removeClass('is-active is-completed');
 
-            for (var s = 2; s <= 4; s++) {
+            for (var s = 1; s <= 4; s++) {
                 var $seg = $('.wooconfig-prog-segment[data-step="' + s + '"]');
+                var $lbl = $('.wooconfig-stepper-label[data-step="' + s + '"]');
                 if (s < step) {
                     $seg.addClass('is-completed');
+                    $lbl.addClass('is-completed');
                 } else if (s === step) {
                     $seg.addClass('is-active');
+                    $lbl.addClass('is-active');
                 }
             }
 
+            $('#wooconfig-current-step-badge').text('Paso ' + step + ' de 4');
+
             // Hide validation banner on step change
             $('#wooconfig-validation-banner').slideUp(150);
-            $('.wooconfig-modal-container').scrollTop(0);
-            $('.wooconfig-step-body').scrollTop(0);
+
+            // Smooth scroll to top of widget if user had scrolled down
+            var $widget = $('#wooconfig-onpage-widget');
+            if ($widget.length) {
+                var widgetTop = $widget.offset().top - 70;
+                if ($(window).scrollTop() > widgetTop + 60 || $(window).scrollTop() < widgetTop - 350) {
+                    $('html, body').animate({ scrollTop: widgetTop }, 200);
+                }
+            }
         },
 
         openModal: function(step) {
             step = step || 2;
             this.goToStep(step);
-            $('#wooconfig-modal-wrapper').fadeIn(200);
-            $('body').addClass('wooconfig-modal-open');
         },
 
         closeModal: function() {
-            $('#wooconfig-modal-wrapper').fadeOut(200);
-            $('body').removeClass('wooconfig-modal-open');
+            this.goToStep(1);
         },
 
         // ================= UPLOAD HANDLING =================
@@ -632,18 +642,17 @@
                     var jumpBtn = $('<button type="button" class="wooconfig-btn-jump-step">Corregir ›</button>');
                     jumpBtn.on('click', function(e) {
                         e.preventDefault();
-                        if (err.step === 1) {
-                            self.closeModal();
-                        } else {
-                            self.goToStep(err.step);
-                        }
+                        self.goToStep(err.step);
                     });
                     item.append(jumpBtn);
                     $list.append(item);
                 });
 
                 $('#wooconfig-validation-banner').slideDown(200);
-                $('.wooconfig-modal-container').animate({ scrollTop: 0 }, 250);
+                var $widget = $('#wooconfig-onpage-widget');
+                if ($widget.length) {
+                    $('html, body').animate({ scrollTop: $widget.offset().top - 80 }, 250);
+                }
                 return;
             }
 
@@ -769,21 +778,14 @@
                 self.saveDraft();
             });
 
-            // ================= STEP 1 -> MODAL (STEP 2) =================
-            $(document).on('click', '#wooconfig-btn-start-config', function(e) {
+            // ================= STEP NAVIGATION (ALL IN WIDGET) =================
+            $(document).on('click', '#wooconfig-btn-start-config, #wooconfig-step1-goto-step2', function(e) {
                 e.preventDefault();
-                self.openModal(2);
+                self.goToStep(2);
             });
 
-            // ================= MODAL HEADER CLOSE & BACKDROP =================
-            $(document).on('click', '#wooconfig-header-close-btn, #wooconfig-overlay', function(e) {
-                e.preventDefault();
-                self.closeModal();
-            });
-
-            // ================= STEP NAVIGATION =================
             $(document).on('click', '#wooconfig-step2-back-to-step1', function() {
-                self.closeModal();
+                self.goToStep(1);
             });
 
             $(document).on('click', '#wooconfig-step2-goto-step3', function() {
@@ -802,12 +804,10 @@
                 self.goToStep(3);
             });
 
-            // Clickable segments in progress bar
-            $(document).on('click', '.wooconfig-prog-segment', function() {
+            // Clickable segments and labels in progress bar
+            $(document).on('click', '.wooconfig-prog-segment, .wooconfig-stepper-label', function() {
                 var step = parseInt($(this).data('step'), 10);
-                if (step === 1) {
-                    self.closeModal();
-                } else if (step >= 2 && step <= 4) {
+                if (step >= 1 && step <= 4) {
                     self.goToStep(step);
                 }
             });
@@ -974,8 +974,6 @@
                     } else if ($('#wooconfig-table-modal').is(':visible')) {
                         self.saveTableDataFromDom();
                         self.closeTableModal();
-                    } else if ($('#wooconfig-modal-wrapper').is(':visible')) {
-                        self.closeModal();
                     }
                 }
             });
