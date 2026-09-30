@@ -245,20 +245,36 @@
 /* BRIGHT NEON GREEN CTA BUTTON */
 .wooconfig-btn-green-next {
     width: 100%;
-    height: 52px;
+    min-height: 48px;
+    height: 50px;
     background: #94ec00;
     color: #000000;
     border: none;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 13px !important;
+    line-height: 1.15 !important;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 18px;
+    gap: 6px;
+    padding: 6px 12px;
     cursor: pointer;
     transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
     user-select: none;
+    box-sizing: border-box;
+    flex: 1;
+}
+
+.wooconfig-btn-green-next span {
+    font-size: 13px !important;
+    line-height: 1.15 !important;
+    font-weight: 800;
+    text-align: left;
+    display: inline-block;
+    word-break: keep-all;
+    hyphens: none;
+    -webkit-hyphens: none;
 }
 
 .wooconfig-btn-green-next:hover {
@@ -275,6 +291,8 @@
 .wooconfig-chevron-svg {
     stroke: #000000;
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
 }
 
 /* MODAL CONTAINER & TOP BAR */
@@ -710,21 +728,33 @@
 .wooconfig-modal-nav-footer {
     display: flex;
     gap: 8px;
-    align-items: center;
+    align-items: stretch;
 }
 
 .wooconfig-btn-nav-back {
-    height: 52px;
-    padding: 0 14px;
+    height: 50px;
+    padding: 6px 10px;
     background: #f1f5f9;
     border: 1.5px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px !important;
+    line-height: 1.15 !important;
     font-weight: 700;
     color: #334155;
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.15s;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.wooconfig-btn-nav-back span {
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+    font-weight: 700;
 }
 
 .wooconfig-btn-nav-back:hover {
@@ -1249,10 +1279,25 @@
         padding: 8px 10px !important;
         margin-bottom: 8px !important;
     }
-    .wooconfig-btn-green-next,
+    .wooconfig-btn-green-next {
+        height: 46px !important;
+        font-size: 12px !important;
+        line-height: 1.12 !important;
+        padding: 4px 10px !important;
+    }
+    .wooconfig-btn-green-next span {
+        font-size: 12px !important;
+        line-height: 1.12 !important;
+    }
     .wooconfig-btn-nav-back {
         height: 46px !important;
-        font-size: 14px !important;
+        font-size: 11.5px !important;
+        line-height: 1.12 !important;
+        padding: 4px 8px !important;
+    }
+    .wooconfig-btn-nav-back span {
+        font-size: 11.5px !important;
+        line-height: 1.12 !important;
     }
 }
 
