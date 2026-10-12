@@ -1,0 +1,269 @@
+/* ==========================================================================
+   WooConfig Wholesale Tag & Lightbox Modal Styles
+   ========================================================================== */
+
+/* Wholesale Price Tag in Catalog & Product Page */
+.wooconfig-wholesale-price-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    padding: 3px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #475569;
+    vertical-align: middle;
+}
+
+.wooconfig-wholesale-price-tag .wooconfig-ws-label {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.wooconfig-wholesale-price-tag .wooconfig-ws-amount {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.wooconfig-wholesale-price-tag .wooconfig-ws-min {
+    font-size: 11px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Info Icon Button (i) */
+.wooconfig-ws-info-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    padding: 0 !important;
+    margin: 0 0 0 2px !important;
+    border-radius: 50% !important;
+    background: #0f172a !important;
+    color: #94ec00 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    font-family: inherit !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    border: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
+    transition: all 0.2s ease !important;
+}
+
+.wooconfig-ws-info-btn:hover {
+    background: #94ec00 !important;
+    color: #000000 !important;
+    transform: scale(1.15);
+}
+
+/* Wholesale Cart / Checkout Notification Banner */
+.wooconfig-wholesale-cart-notice {
+    margin: 15px 0 20px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.wooconfig-wholesale-cart-notice.is-pending {
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    color: #14532d;
+}
+
+.wooconfig-wholesale-cart-notice.is-qualified {
+    background: #ecfdf5;
+    border: 1.5px solid #34d399;
+    color: #064e3b;
+}
+
+.wooconfig-wholesale-notice-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.wooconfig-wholesale-notice-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.wooconfig-wholesale-notice-text {
+    flex: 1;
+    min-width: 240px;
+}
+
+.wooconfig-wholesale-notice-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.wooconfig-wholesale-notice-text p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: inherit;
+}
+
+.wooconfig-ws-info-btn-text {
+    background: #0f172a;
+    color: #94ec00;
+    border: 1px solid #0f172a;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.wooconfig-ws-info-btn-text:hover {
+    background: #94ec00;
+    color: #000000;
+    border-color: #94ec00;
+}
+
+/* Modal Lightbox Overlay */
+.wooconfig-wholesale-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.wooconfig-wholesale-modal-box {
+    background: #ffffff;
+    width: 100%;
+    max-width: 540px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: wooconfigWsPop 0.25s ease-out;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+}
+
+@keyframes wooconfigWsPop {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.wooconfig-wholesale-modal-header {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wooconfig-wholesale-header-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wooconfig-wholesale-icon {
+    font-size: 20px;
+}
+
+.wooconfig-wholesale-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.wooconfig-wholesale-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.wooconfig-wholesale-close-btn:hover {
+    color: #ffffff;
+}
+
+.wooconfig-wholesale-modal-body {
+    padding: 22px 24px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #334155;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.wooconfig-wholesale-modal-body p {
+    margin: 0 0 12px;
+}
+
+.wooconfig-wholesale-modal-body ul {
+    margin: 10px 0 16px 20px;
+    padding: 0;
+    list-style-type: disc;
+}
+
+.wooconfig-wholesale-modal-body li {
+    margin-bottom: 8px;
+}
+
+.wooconfig-wholesale-modal-footer {
+    padding: 14px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: right;
+}
+
+.wooconfig-wholesale-btn-ok {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wooconfig-wholesale-btn-ok:hover {
+    background: #94ec00;
+    color: #000000;
+}

@@ -32,6 +32,14 @@ class WC_Config_Order {
         add_action( 'woocommerce_checkout_update_order_meta', array( __CLASS__, 'save_preferred_contact_order_meta' ) );
         add_action( 'woocommerce_thankyou', array( __CLASS__, 'render_thankyou_sketch_notice' ), 20, 1 );
         add_action( 'woocommerce_admin_order_data_after_billing_address', array( __CLASS__, 'render_admin_order_preferred_contact' ) );
+
+        // Admin AJAX endpoints for backend order editing & workshop preview
+        add_action( 'wp_ajax_wooconfig_admin_get_configurable_products', array( __CLASS__, 'ajax_get_configurable_products' ) );
+        add_action( 'wp_ajax_wooconfig_admin_save_group', array( __CLASS__, 'ajax_save_group' ) );
+        add_action( 'wp_ajax_wooconfig_admin_delete_item', array( __CLASS__, 'ajax_delete_item' ) );
+        add_action( 'wp_ajax_wooconfig_admin_update_item', array( __CLASS__, 'ajax_update_item' ) );
+        add_action( 'wp_ajax_wooconfig_admin_add_item', array( __CLASS__, 'ajax_add_item' ) );
+        add_action( 'wp_ajax_wooconfig_admin_preview_sheet', array( __CLASS__, 'ajax_preview_sheet' ) );
     }
 
     public static function handle_order_deletion( $order_id ) {
@@ -421,18 +429,30 @@ class WC_Config_Order {
                 </div>
             <?php endif; ?>
 
-            <div class="wooconfig-admin-header-actions" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0;">Detalle de Personalización por Equipo</h3>
-                <a href="<?php echo esc_url( $pdf_url ); ?>" target="_blank" class="button button-primary button-large" style="background: #111; border-color: #111; color: #fff;">
-                    📄 Imprimir / Generar Ficha de Producción (PDF)
-                </a>
+            <div class="wooconfig-admin-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #c3c4c7; border-radius: 4px; padding: 12px 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <strong style="font-size: 15px; color: #1e293b;">🎽 Personalización de Prendas y Equipos</strong>
+                    <span class="badge" style="background: #2271b1; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700;">
+                        <?php echo count( $items ); ?> prendas
+                    </span>
+                </div>
+                <div class="wooconfig-admin-toolbar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="button button-primary" id="wooconfig-btn-open-add-group" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+                        ➕ Añadir Prendas / Equipo al Pedido
+                    </button>
+                    <a href="<?php echo esc_url( $pdf_url ); ?>" target="_blank" class="button button-secondary">
+                        📄 Ficha Oficial de Taller (PDF)
+                    </a>
+                </div>
             </div>
 
             <?php
             $grouped_items = array();
             foreach ( $items as $item_id => $item ) {
                 $gid = $item->get_meta( '_wooconfig_group_id' );
-                if ( empty( $gid ) ) continue;
+                if ( empty( $gid ) ) {
+                    $gid = 'sin_grupo';
+                }
                 $grouped_items[$gid][] = $item;
             }
 
@@ -441,104 +461,127 @@ class WC_Config_Order {
                 $first_item  = $group_item_list[0];
                 $flow        = isset( $group_meta['flow'] ) ? $group_meta['flow'] : $first_item->get_meta( '_wooconfig_flow' );
                 $group_title = $first_item->get_meta( '_wooconfig_group_title' );
+                if ( empty( $group_title ) ) {
+                    $group_title = isset( $group_meta['group_title'] ) ? $group_meta['group_title'] : __( 'Equipo / Lote de Confección', 'woo-config' );
+                }
                 $design_desc = isset( $group_meta['design_desc'] ) ? $group_meta['design_desc'] : $first_item->get_meta( '_wooconfig_design_desc' );
                 $files       = isset( $group_meta['files'] ) ? $group_meta['files'] : $first_item->get_meta( '_wooconfig_files' );
                 ?>
-                <div class="wooconfig-group-card" style="background: #fff; border: 1px solid #ccd0d4; border-radius: 8px; padding: 18px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #94ec00; padding-bottom: 10px; margin-bottom: 15px;">
-                        <h4 style="margin: 0; font-size: 16px; font-weight: 700;">
-                            👕 <?php echo esc_html( $group_title ? $group_title : 'Equipo Personalizado' ); ?>
+                <div class="wooconfig-group-card" data-group-id="<?php echo esc_attr( $gid ); ?>" style="background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; margin-bottom: 25px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2271b1; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1d2327;">
+                            👕 <?php echo esc_html( $group_title ); ?>
                         </h4>
-                        <span style="background: #f0f0f1; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 13px;">
-                            <?php if ( 'quick' === $flow ) : ?>
-                                📁 Configuración Rápida (<?php echo esc_html( $first_item->get_quantity() ); ?> unidades)
-                            <?php else : ?>
-                                📋 Wizard Paso a Paso (<?php echo count( $group_item_list ); ?> prendas)
-                            <?php endif; ?>
-                        </span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span style="background: #f0f0f1; padding: 3px 8px; border-radius: 3px; font-weight: 600; font-size: 12px; color: #50575e;">
+                                <?php echo count( $group_item_list ); ?> prendas
+                            </span>
+                            <button type="button" class="button button-small wooconfig-btn-add-item-row" data-group-id="<?php echo esc_attr( $gid ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+                                ➕ Añadir Prenda
+                            </button>
+                            <button type="button" class="button button-small wooconfig-btn-preview-group" data-group-id="<?php echo esc_attr( $gid ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" data-group-title="<?php echo esc_attr( $group_title ); ?>">
+                                👁 Previsualizar Ficha
+                            </button>
+                        </div>
                     </div>
 
-                    <?php if ( 'quick' === $flow ) : 
-                        $ad_summary = $first_item->get_meta( __( 'Adicionales incluidos', 'woo-config' ) );
-                        $clean_ad_summary = array();
-                        if ( is_array( $ad_summary ) ) {
-                            foreach ( $ad_summary as $as_item ) {
-                                $clean_ad_summary[] = html_entity_decode( wp_strip_all_tags( $as_item ) );
-                            }
-                        } elseif ( $ad_summary ) {
-                            $clean_ad_summary[] = html_entity_decode( wp_strip_all_tags( $ad_summary ) );
-                        }
-                    ?>
-                        <div style="background: #f8f9fa; border: 1px solid #e2e4e7; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px;">
-                            <strong style="display: block; margin-bottom: 4px; color: #111;">📦 Resumen del Pedido Rápido:</strong>
-                            <p style="margin: 3px 0;"><strong>Cantidad total:</strong> <?php echo esc_html( $first_item->get_quantity() ); ?> prendas</p>
-                            <?php if ( ! empty( $clean_ad_summary ) ) : ?>
-                                <p style="margin: 3px 0;"><strong>Adicionales:</strong> <?php echo esc_html( implode( ', ', $clean_ad_summary ) ); ?></p>
-                            <?php endif; ?>
-                            <p style="margin: 3px 0; color: #666; font-size: 12px;"><em>* Los detalles de tallas y números se encuentran en los archivos adjuntos a continuación.</em></p>
-                        </div>
-                    <?php else : ?>
-                        <table class="widefat fixed striped" style="margin-bottom: 20px;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">#</th>
-                                    <th>Prenda</th>
-                                    <th style="width: 80px;">Dorsal</th>
-                                    <th>Nombre / Alias</th>
-                                    <th style="width: 90px;">Talla</th>
-                                    <th>Adicionales</th>
+                    <table class="widefat fixed striped wooconfig-items-table" style="margin-bottom: 15px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 45px; text-align: center;">#</th>
+                                <th>Prenda</th>
+                                <th style="width: 90px;">Dorsal</th>
+                                <th style="width: 170px;">Nombre / Alias</th>
+                                <th style="width: 100px;">Talla</th>
+                                <th>Adicionales</th>
+                                <th style="width: 130px; text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ( $group_item_list as $i => $item ) : 
+                                $item_id        = $item->get_id();
+                                $dorsal_val     = $item->get_meta( __( 'Dorsal (#)', 'woo-config' ) );
+                                $name_val       = $item->get_meta( __( 'Nombre / Alias', 'woo-config' ) );
+                                $size_val       = $item->get_meta( __( 'Talla', 'woo-config' ) );
+                                $ads            = $item->get_meta( __( 'Adicionales', 'woo-config' ) );
+                                $ads_text       = is_array( $ads ) ? implode( ', ', $ads ) : ( $ads ? $ads : '-' );
+                                $clean_ads_text = html_entity_decode( wp_strip_all_tags( $ads_text ) );
+                            ?>
+                                <tr class="wooconfig-item-row" data-item-id="<?php echo esc_attr( $item_id ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+                                    <td style="text-align: center; vertical-align: middle;">
+                                        <strong>#<?php echo esc_html( $item->get_meta( '_wooconfig_item_index' ) ? $item->get_meta( '_wooconfig_item_index' ) : ($i + 1) ); ?></strong>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <strong><?php echo esc_html( $item->get_name() ); ?></strong>
+                                        <div style="font-size: 11px; color: #646970;">ID: <?php echo esc_html( $item_id ); ?> | <?php echo wc_price( $item->get_total() ); ?></div>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <span class="wooconfig-view-mode"><strong style="color: #0073aa; font-size: 14px;"><?php echo esc_html( $dorsal_val ? $dorsal_val : '-' ); ?></strong></span>
+                                        <input type="text" class="wooconfig-edit-dorsal wooconfig-edit-mode" value="<?php echo esc_attr( $dorsal_val ); ?>" style="display: none; width: 75px;" placeholder="Ej: 10" />
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <span class="wooconfig-view-mode"><strong style="text-transform: uppercase;"><?php echo esc_html( $name_val ? $name_val : '-' ); ?></strong></span>
+                                        <input type="text" class="wooconfig-edit-name wooconfig-edit-mode" value="<?php echo esc_attr( $name_val ); ?>" style="display: none; width: 100%; text-transform: uppercase;" placeholder="Ej: PÉREZ" />
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <span class="wooconfig-view-mode"><span style="display: inline-block; background: #e0e0e0; padding: 2px 8px; border-radius: 3px; font-weight: 700;"><?php echo esc_html( $size_val ? $size_val : '-' ); ?></span></span>
+                                        <input type="text" class="wooconfig-edit-size wooconfig-edit-mode" value="<?php echo esc_attr( $size_val ); ?>" style="display: none; width: 80px;" placeholder="Ej: M" />
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <span style="font-size: 12px; color: #222; font-weight: 600;"><?php echo esc_html( $clean_ads_text ); ?></span>
+                                    </td>
+                                    <td style="text-align: center; vertical-align: middle;">
+                                        <div class="wooconfig-row-actions">
+                                            <button type="button" class="button button-small wooconfig-btn-edit-row wooconfig-view-mode" title="Editar talla y dorsal">
+                                                ✏ Editar
+                                            </button>
+                                            <button type="button" class="button button-small button-primary wooconfig-btn-save-row wooconfig-edit-mode" style="display: none;">
+                                                💾 Guardar
+                                            </button>
+                                            <button type="button" class="button button-small wooconfig-btn-cancel-row wooconfig-edit-mode" style="display: none;">
+                                                ✕
+                                            </button>
+                                            <button type="button" class="button button-small button-link-delete wooconfig-btn-delete-row" title="Eliminar prenda">
+                                                🗑
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ( $group_item_list as $i => $item ) : 
-                                    $ads = $item->get_meta( __( 'Adicionales', 'woo-config' ) );
-                                    $ads_text = is_array( $ads ) ? implode( ', ', $ads ) : ( $ads ? $ads : '-' );
-                                    $clean_ads_text = html_entity_decode( wp_strip_all_tags( $ads_text ) );
-                                ?>
-                                    <tr>
-                                        <td><strong>#<?php echo esc_html( $item->get_meta( '_wooconfig_item_index' ) ? $item->get_meta( '_wooconfig_item_index' ) : ($i + 1) ); ?></strong></td>
-                                        <td><?php echo esc_html( $item->get_name() ); ?></td>
-                                        <td><strong style="color: #0073aa; font-size: 15px;"><?php echo esc_html( $item->get_meta( __( 'Dorsal (#)', 'woo-config' ) ) ); ?></strong></td>
-                                        <td><strong style="text-transform: uppercase;"><?php echo esc_html( $item->get_meta( __( 'Nombre / Alias', 'woo-config' ) ) ); ?></strong></td>
-                                        <td><span style="display: inline-block; background: #e0e0e0; padding: 2px 8px; border-radius: 3px; font-weight: 700;"><?php echo esc_html( $item->get_meta( __( 'Talla', 'woo-config' ) ) ); ?></span></td>
-                                        <td><span style="font-size: 12px; color: #222; font-weight: 600;"><?php echo esc_html( $clean_ads_text ); ?></span></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
 
-                    <div style="background: #fdfdfd; border: 1px solid #e2e4e7; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px;">
-                        <strong style="display: block; margin-bottom: 6px; color: #111;">📝 Descripción e Instrucciones de Diseño:</strong>
-                        <p style="margin: 0; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #333;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px 15px; margin-bottom: 15px;">
+                        <strong style="display: block; margin-bottom: 4px; color: #1e293b; font-size: 13px;">📝 Instrucciones de Diseño y Observaciones:</strong>
+                        <p style="margin: 0; white-space: pre-wrap; font-size: 13px; line-height: 1.5; color: #334155;">
                             <?php echo esc_html( $design_desc ? $design_desc : '(Sin descripción de diseño ingresada)' ); ?>
                         </p>
                     </div>
 
                     <?php if ( ! empty( $files ) && is_array( $files ) ) : ?>
                         <div>
-                            <strong style="display: block; margin-bottom: 8px; color: #111;">📁 Archivos Adjuntos / Referencias / Planillas:</strong>
+                            <strong style="display: block; margin-bottom: 8px; color: #1e293b; font-size: 13px;">📁 Archivos y Logos Adjuntos:</strong>
                             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                                 <?php foreach ( $files as $f ) :
                                     $file_url  = isset( $f['file_url'] ) ? $f['file_url'] : '';
                                     $orig_name = isset( $f['original_name'] ) ? $f['original_name'] : 'Archivo adjunto';
                                     $is_img    = isset( $f['is_image'] ) ? $f['is_image'] : false;
                                     ?>
-                                    <div style="border: 1px solid #ddd; border-radius: 6px; padding: 10px; background: #fafafa; display: flex; align-items: center; gap: 10px; max-width: 320px;">
+                                    <div style="border: 1px solid #ccd0d4; border-radius: 4px; padding: 8px 10px; background: #fff; display: flex; align-items: center; gap: 10px; max-width: 320px;">
                                         <?php if ( $is_img && ! empty( $file_url ) ) : ?>
                                             <a href="<?php echo esc_url( $file_url ); ?>" target="_blank">
-                                                <img src="<?php echo esc_url( $file_url ); ?>" style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">
+                                                <img src="<?php echo esc_url( $file_url ); ?>" style="width: 44px; height: 44px; object-fit: cover; border-radius: 3px; border: 1px solid #c3c4c7;">
                                             </a>
                                         <?php else : ?>
-                                            <div style="width: 48px; height: 48px; background: #e5e5e5; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                            <div style="width: 44px; height: 44px; background: #f0f0f1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
                                                 📄
                                             </div>
                                         <?php endif; ?>
                                         <div style="overflow: hidden;">
-                                            <div style="font-weight: 600; font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="<?php echo esc_attr( $orig_name ); ?>">
+                                            <div style="font-weight: 600; font-size: 12px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="<?php echo esc_attr( $orig_name ); ?>">
                                                 <?php echo esc_html( $orig_name ); ?>
                                             </div>
-                                            <a href="<?php echo esc_url( $file_url ); ?>" target="_blank" download class="button button-small" style="margin-top: 4px;">
+                                            <a href="<?php echo esc_url( $file_url ); ?>" target="_blank" download class="button button-small" style="margin-top: 3px;">
                                                 ⬇ Descargar
                                             </a>
                                         </div>
@@ -549,6 +592,113 @@ class WC_Config_Order {
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+
+            <!-- Modal para Añadir Prendas / Equipo al Pedido (Estilo Nativo WooCommerce) -->
+            <div id="wooconfig-admin-modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 100000; align-items: center; justify-content: center;">
+                <div class="wooconfig-modal-container" style="background: #fff; border-radius: 6px; width: 95%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden;">
+                    <div class="wooconfig-modal-header" style="padding: 14px 20px; border-bottom: 1px solid #dcdcde; display: flex; justify-content: space-between; align-items: center; background: #f6f7f7;">
+                        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #1d2327;">
+                            ➕ Añadir Prendas / Uniformes al Pedido #<?php echo esc_html( $order->get_id() ); ?>
+                        </h2>
+                        <button type="button" class="button-link" id="wooconfig-modal-close-btn" style="font-size: 20px; line-height: 1; color: #646970; text-decoration: none; cursor: pointer;">
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="wooconfig-modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                        <div class="notice notice-info inline" style="margin: 0 0 15px 0;">
+                            <p>Configura las opciones tal como en la tienda: producto base, notas de diseño, logos de patrocinadores y cada uniforme uno a uno con su dorsal, nombre, talla y adicionales.</p>
+                        </div>
+
+                        <!-- Step 1: Producto base y Título del Grupo -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin-bottom: 15px;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #1e293b;">1. Selecciona la Prenda / Producto</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Producto Configurable:</label>
+                                    <select id="wooconfig-modal-product-select" style="width: 100%;">
+                                        <option value="">-- Cargando productos... --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Nombre del Equipo / Grupo:</label>
+                                    <input type="text" id="wooconfig-modal-group-title" style="width: 100%;" placeholder="Ej: Camisetas Titulares / Titular Adulto" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Diseño y Sponsors -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin-bottom: 15px;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #1e293b;">2. Diseño, Sponsors y Archivos</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Instrucciones de Diseño:</label>
+                                    <textarea id="wooconfig-modal-design-notes" rows="3" style="width: 100%;" placeholder="Colores, detalles, franjas, cuello, vivos..."></textarea>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Observaciones de Sponsors / Publicidad:</label>
+                                    <textarea id="wooconfig-modal-sponsor-notes" rows="3" style="width: 100%;" placeholder="Ubicación de logos (pecho, espalda, mangas)..."></textarea>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Archivos Adjuntos (Bocetos, logos en alta resolución, escudos):</label>
+                                <button type="button" class="button button-secondary" id="wooconfig-modal-upload-files-btn">
+                                    📁 Seleccionar o Subir Archivos (Biblioteca de Medios)
+                                </button>
+                                <div id="wooconfig-modal-files-list" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Tabla de Uniformes Uno a Uno -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b;">3. Detalle de Uniformes (Uno a Uno)</h3>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-row-btn">
+                                        ➕ Añadir Fila
+                                    </button>
+                                    <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-5rows-btn">
+                                        ➕ Añadir 5 Filas
+                                    </button>
+                                </div>
+                            </div>
+
+                            <table class="widefat fixed striped" id="wooconfig-modal-players-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px; text-align: center;">#</th>
+                                        <th style="width: 80px;">Dorsal</th>
+                                        <th>Nombre / Alias</th>
+                                        <th style="width: 110px;">Talla</th>
+                                        <th>Adicionales</th>
+                                        <th style="width: 45px; text-align: center;">✕</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rows added via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="wooconfig-modal-footer" style="padding: 12px 20px; border-top: 1px solid #dcdcde; background: #f6f7f7; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <button type="button" class="button button-secondary" id="wooconfig-modal-preview-btn">
+                                👁 Previsualizar Ficha de Taller (Borrador)
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="button button-secondary" id="wooconfig-modal-cancel-btn">
+                                Cancelar
+                            </button>
+                            <button type="button" class="button button-primary" id="wooconfig-modal-save-btn">
+                                Guardar y Añadir al Pedido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <?php
     }
@@ -782,6 +932,376 @@ class WC_Config_Order {
         if ( ! empty( $preferred_contact ) ) {
             echo '<p style="margin-top: 12px;"><strong>' . esc_html__( 'Medio de contacto preferido (Boceto):', 'woo-config' ) . '</strong><br><span style="display:inline-block; background:#0284c7; color:#fff; padding:4px 12px; border-radius:4px; font-weight:700; margin-top:4px;">💬 ' . esc_html( $preferred_contact ) . '</span></p>';
         }
+    }
+
+    /* ==========================================================================
+       AJAX ENDPOINTS FOR BACKEND ORDER MANAGEMENT & WORKSHOP PREVIEW
+       ========================================================================== */
+
+    public static function ajax_get_configurable_products() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $args = array(
+            'status' => 'publish',
+            'limit'  => 100,
+            'return' => 'ids',
+        );
+        $product_ids = wc_get_products( $args );
+        $list = array();
+
+        $default_sizes = array( '4', '6', '8', '10', '12', '14', '16', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
+
+        foreach ( $product_ids as $pid ) {
+            $type = get_post_meta( $pid, '_wooconfig_type', true );
+            if ( empty( $type ) || 'disabled' === $type ) {
+                continue;
+            }
+
+            $product = wc_get_product( $pid );
+            if ( ! $product ) continue;
+
+            $sizes = array();
+            $attrs = $product->get_attributes();
+            foreach ( $attrs as $attr_name => $attr_obj ) {
+                if ( false !== stripos( $attr_name, 'talla' ) || false !== stripos( $attr_name, 'size' ) ) {
+                    if ( is_object( $attr_obj ) && method_exists( $attr_obj, 'get_terms' ) ) {
+                        foreach ( $attr_obj->get_terms() as $t ) {
+                            $sizes[] = $t->name;
+                        }
+                    } elseif ( is_object( $attr_obj ) && method_exists( $attr_obj, 'get_options' ) ) {
+                        $sizes = array_merge( $sizes, $attr_obj->get_options() );
+                    }
+                }
+            }
+            if ( empty( $sizes ) ) {
+                $sizes = $default_sizes;
+            }
+            $sizes = array_values( array_unique( $sizes ) );
+
+            $adicionales = get_post_meta( $pid, '_wooconfig_adicionales', true );
+            if ( ! is_array( $adicionales ) ) {
+                $adicionales = array(
+                    'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
+                    'manga_larga' => array( 'id' => 'manga_larga', 'enabled' => 'yes', 'label' => __( 'Manga larga', 'woo-config' ), 'price' => 2500 ),
+                );
+            }
+            $active_ads = array();
+            foreach ( $adicionales as $k => $ad ) {
+                if ( isset( $ad['enabled'] ) && 'yes' === $ad['enabled'] ) {
+                    $active_ads[$k] = $ad;
+                }
+            }
+
+            $list[] = array(
+                'id'          => $pid,
+                'name'        => $product->get_name(),
+                'price'       => (float) $product->get_price(),
+                'price_html'  => wc_price( $product->get_price() ),
+                'sizes'       => $sizes,
+                'adicionales' => $active_ads,
+            );
+        }
+
+        wp_send_json_success( array( 'products' => $list ) );
+    }
+
+    public static function ajax_save_group() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        $order    = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        $product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+        $product    = wc_get_product( $product_id );
+        if ( ! $product ) {
+            wp_send_json_error( array( 'message' => __( 'Producto seleccionado no válido.', 'woo-config' ) ) );
+        }
+
+        $group_title = isset( $_POST['group_title'] ) ? sanitize_text_field( wp_unslash( $_POST['group_title'] ) ) : '';
+        if ( empty( $group_title ) ) {
+            $group_title = sprintf( __( 'Equipo: %s', 'woo-config' ), $product->get_name() );
+        }
+
+        $design_notes  = isset( $_POST['design_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_notes'] ) ) : '';
+        $sponsor_notes = isset( $_POST['sponsor_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sponsor_notes'] ) ) : '';
+
+        $desc_parts = array();
+        if ( ! empty( $design_notes ) ) {
+            $desc_parts[] = __( 'Diseño:', 'woo-config' ) . ' ' . $design_notes;
+        }
+        if ( ! empty( $sponsor_notes ) ) {
+            $desc_parts[] = __( 'Sponsors:', 'woo-config' ) . ' ' . $sponsor_notes;
+        }
+        $combined_desc = implode( "\n\n", $desc_parts );
+
+        $files_raw = isset( $_POST['files'] ) ? wp_unslash( $_POST['files'] ) : '[]';
+        $files     = json_decode( $files_raw, true );
+        if ( ! is_array( $files ) ) {
+            $files = array();
+        }
+
+        $items_raw = isset( $_POST['items'] ) ? wp_unslash( $_POST['items'] ) : '[]';
+        $items_data = json_decode( $items_raw, true );
+        if ( ! is_array( $items_data ) || empty( $items_data ) ) {
+            wp_send_json_error( array( 'message' => __( 'Debes añadir al menos 1 prenda o uniforme con su talla.', 'woo-config' ) ) );
+        }
+
+        // Product configured adicionales
+        $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+        if ( ! is_array( $product_adicionales ) ) {
+            $product_adicionales = array(
+                'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
+                'manga_larga' => array( 'id' => 'manga_larga', 'enabled' => 'yes', 'label' => __( 'Manga larga', 'woo-config' ), 'price' => 2500 ),
+            );
+        }
+
+        $base_price = (float) $product->get_price();
+        $group_id   = 'group_admin_' . wp_generate_uuid4();
+
+        // Save new group metadata
+        $groups = $order->get_meta( '_wooconfig_order_groups' );
+        if ( ! is_array( $groups ) ) {
+            $groups = array();
+        }
+        $groups[$group_id] = array(
+            'group_id'    => $group_id,
+            'flow'        => 'wizard',
+            'group_title' => $group_title,
+            'design_desc' => $combined_desc,
+            'files'       => $files,
+        );
+        $order->update_meta_data( '_wooconfig_order_groups', $groups );
+
+        // Add line items
+        $idx = 1;
+        foreach ( $items_data as $row ) {
+            $dorsal = isset( $row['dorsal'] ) ? sanitize_text_field( $row['dorsal'] ) : '';
+            $name   = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
+            $size   = isset( $row['size'] ) ? sanitize_text_field( $row['size'] ) : 'M';
+
+            $assigned_ads = isset( $row['adicionales'] ) && is_array( $row['adicionales'] ) ? $row['adicionales'] : array();
+            $ad_labels = array();
+            $ad_cost   = 0;
+            foreach ( $assigned_ads as $ad_key ) {
+                if ( isset( $product_adicionales[$ad_key] ) ) {
+                    $ad_info = $product_adicionales[$ad_key];
+                    $cost    = (float) $ad_info['price'];
+                    $ad_cost += $cost;
+                    $ad_labels[] = $ad_info['label'] . ' (+' . wc_price( $cost ) . ')';
+                }
+            }
+
+            $unit_price = $base_price + $ad_cost;
+
+            $item = new WC_Order_Item_Product();
+            $item->set_product( $product );
+            $item->set_name( $product->get_name() );
+            $item->set_quantity( 1 );
+            $item->set_subtotal( $unit_price );
+            $item->set_total( $unit_price );
+
+            $item->add_meta_data( '_wooconfig_group_id', $group_id );
+            $item->add_meta_data( '_wooconfig_group_title', $group_title );
+            $item->add_meta_data( '_wooconfig_item_index', $idx );
+            $item->add_meta_data( '_wooconfig_flow', 'wizard' );
+            $item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), $dorsal );
+            $item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), $name );
+            $item->add_meta_data( __( 'Talla', 'woo-config' ), $size );
+            $item->add_meta_data( __( 'Adicionales', 'woo-config' ), $ad_labels );
+            $item->add_meta_data( '_wooconfig_adicionales_raw', $assigned_ads );
+            $item->add_meta_data( '_wooconfig_full_unit_price', $unit_price );
+
+            $order->add_item( $item );
+            $idx++;
+        }
+
+        $order->calculate_totals();
+        $order->save();
+
+        wp_send_json_success( array(
+            'message'  => __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' ),
+            'group_id' => $group_id,
+        ) );
+    }
+
+    public static function ajax_delete_item() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        $item_id  = isset( $_POST['item_id'] ) ? absint( $_POST['item_id'] ) : 0;
+
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        $item = $order->get_item( $item_id );
+        if ( ! $item ) {
+            wp_send_json_error( array( 'message' => __( 'Prenda no encontrada.', 'woo-config' ) ) );
+        }
+
+        $order->remove_item( $item_id );
+        $order->calculate_totals();
+        $order->save();
+
+        wp_send_json_success( array( 'message' => __( 'Prenda eliminada correctamente.', 'woo-config' ) ) );
+    }
+
+    public static function ajax_update_item() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        $item_id  = isset( $_POST['item_id'] ) ? absint( $_POST['item_id'] ) : 0;
+
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        $item = $order->get_item( $item_id );
+        if ( ! $item ) {
+            wp_send_json_error( array( 'message' => __( 'Prenda no encontrada.', 'woo-config' ) ) );
+        }
+
+        if ( isset( $_POST['dorsal'] ) ) {
+            $item->update_meta_data( __( 'Dorsal (#)', 'woo-config' ), sanitize_text_field( wp_unslash( $_POST['dorsal'] ) ) );
+        }
+        if ( isset( $_POST['name'] ) ) {
+            $item->update_meta_data( __( 'Nombre / Alias', 'woo-config' ), sanitize_text_field( wp_unslash( $_POST['name'] ) ) );
+        }
+        if ( isset( $_POST['size'] ) ) {
+            $item->update_meta_data( __( 'Talla', 'woo-config' ), sanitize_text_field( wp_unslash( $_POST['size'] ) ) );
+        }
+
+        $item->save();
+        $order->save();
+
+        wp_send_json_success( array( 'message' => __( 'Prenda actualizada correctamente.', 'woo-config' ) ) );
+    }
+
+    public static function ajax_add_item() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        $group_id = isset( $_POST['group_id'] ) ? sanitize_text_field( wp_unslash( $_POST['group_id'] ) ) : '';
+
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        // Find reference item in group to inherit product and group title
+        $reference_item = null;
+        $max_index = 0;
+        foreach ( $order->get_items() as $it ) {
+            if ( $it->get_meta( '_wooconfig_group_id' ) === $group_id ) {
+                $reference_item = $it;
+                $idx = (int) $it->get_meta( '_wooconfig_item_index' );
+                if ( $idx > $max_index ) {
+                    $max_index = $idx;
+                }
+            }
+        }
+
+        $product_id = $reference_item ? $reference_item->get_product_id() : ( isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0 );
+        $product    = wc_get_product( $product_id );
+        if ( ! $product ) {
+            wp_send_json_error( array( 'message' => __( 'Producto no encontrado.', 'woo-config' ) ) );
+        }
+
+        $dorsal = isset( $_POST['dorsal'] ) ? sanitize_text_field( wp_unslash( $_POST['dorsal'] ) ) : '';
+        $name   = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+        $size   = isset( $_POST['size'] ) ? sanitize_text_field( wp_unslash( $_POST['size'] ) ) : 'M';
+
+        $base_price = (float) $product->get_price();
+
+        $item = new WC_Order_Item_Product();
+        $item->set_product( $product );
+        $item->set_name( $product->get_name() );
+        $item->set_quantity( 1 );
+        $item->set_subtotal( $base_price );
+        $item->set_total( $base_price );
+
+        $item->add_meta_data( '_wooconfig_group_id', $group_id );
+        $item->add_meta_data( '_wooconfig_group_title', $reference_item ? $reference_item->get_meta( '_wooconfig_group_title' ) : $product->get_name() );
+        $item->add_meta_data( '_wooconfig_item_index', $max_index + 1 );
+        $item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), $dorsal );
+        $item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), $name );
+        $item->add_meta_data( __( 'Talla', 'woo-config' ), $size );
+        $item->add_meta_data( '_wooconfig_full_unit_price', $base_price );
+
+        $order->add_item( $item );
+        $order->calculate_totals();
+        $order->save();
+
+        wp_send_json_success( array(
+            'message' => __( 'Prenda añadida correctamente.', 'woo-config' ),
+            'item_id' => $item->get_id(),
+        ) );
+    }
+
+    public static function ajax_preview_sheet() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        $order    = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        $group_title = isset( $_POST['group_title'] ) ? sanitize_text_field( wp_unslash( $_POST['group_title'] ) ) : 'Vista Previa de Taller';
+        $design_desc = isset( $_POST['design_desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_desc'] ) ) : '';
+        $files_raw   = isset( $_POST['files'] ) ? wp_unslash( $_POST['files'] ) : '[]';
+        $files       = json_decode( $files_raw, true );
+        if ( ! is_array( $files ) ) $files = array();
+
+        $items_raw   = isset( $_POST['items'] ) ? wp_unslash( $_POST['items'] ) : '[]';
+        $items       = json_decode( $items_raw, true );
+        if ( ! is_array( $items ) ) $items = array();
+
+        $draft_data = array(
+            'group_title' => $group_title,
+            'design_desc' => $design_desc,
+            'files'       => $files,
+            'items'       => $items,
+        );
+
+        $draft_key = 'wooconfig_draft_' . wp_generate_uuid4();
+        set_transient( $draft_key, $draft_data, 15 * MINUTE_IN_SECONDS );
+
+        $preview_url = admin_url( 'admin.php?action=wooconfig_production_sheet&order_id=' . $order_id . '&draft_key=' . $draft_key . '&_wpnonce=' . wp_create_nonce( 'wooconfig_pdf_' . $order_id ) );
+
+        wp_send_json_success( array(
+            'preview_url' => $preview_url,
+            'draft_key'   => $draft_key,
+        ) );
     }
 }
 

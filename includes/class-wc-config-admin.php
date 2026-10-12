@@ -83,6 +83,19 @@ class WC_Config_Admin {
             $preferred_contact_options = isset( $_POST['wooconfig_preferred_contact_options'] ) ? sanitize_text_field( $_POST['wooconfig_preferred_contact_options'] ) : '';
             update_option( 'wooconfig_preferred_contact_options', $preferred_contact_options );
 
+            // Venta Mayorista / Precios por Mayor
+            $wholesale_cart_qty = isset( $_POST['wooconfig_wholesale_cart_qty'] ) ? max( 1, absint( $_POST['wooconfig_wholesale_cart_qty'] ) ) : 50;
+            update_option( 'wooconfig_wholesale_cart_qty', $wholesale_cart_qty );
+
+            $wholesale_override = isset( $_POST['wooconfig_wholesale_override_product_rules'] ) ? 'yes' : 'no';
+            update_option( 'wooconfig_wholesale_override_product_rules', $wholesale_override );
+
+            $wholesale_modal_title = isset( $_POST['wooconfig_wholesale_modal_title'] ) ? sanitize_text_field( $_POST['wooconfig_wholesale_modal_title'] ) : '';
+            update_option( 'wooconfig_wholesale_modal_title', $wholesale_modal_title );
+
+            $wholesale_modal_content = isset( $_POST['wooconfig_wholesale_modal_content'] ) ? wp_kses_post( $_POST['wooconfig_wholesale_modal_content'] ) : '';
+            update_option( 'wooconfig_wholesale_modal_content', $wholesale_modal_content );
+
             $message = __( 'Ajustes de WooConfig guardados correctamente.', 'woo-config' );
         }
 
@@ -121,6 +134,11 @@ class WC_Config_Admin {
         $preferred_contact_enabled = get_option( 'wooconfig_preferred_contact_enabled', 'yes' );
         $preferred_contact_label   = get_option( 'wooconfig_preferred_contact_label', __( 'Medio de contacto preferido para recepción de boceto', 'woo-config' ) );
         $preferred_contact_options = get_option( 'wooconfig_preferred_contact_options', 'WhatsApp, Correo electrónico, Llamada telefónica' );
+        
+        $wholesale_cart_qty        = max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) );
+        $wholesale_override        = get_option( 'wooconfig_wholesale_override_product_rules', 'yes' );
+        $wholesale_modal_title     = get_option( 'wooconfig_wholesale_modal_title', __( 'Condiciones de Precios por Mayor', 'woo-config' ) );
+        $wholesale_modal_content   = get_option( 'wooconfig_wholesale_modal_content', WC_Config_Wholesale::get_default_modal_content() );
 
         // Fetch Live Storage Statistics
         $stats = WC_Config_Uploader::get_storage_stats();
@@ -308,6 +326,68 @@ class WC_Config_Admin {
                                         <input name="wooconfig_min_units" type="number" id="wooconfig_min_units" value="<?php echo esc_attr( $min_units ); ?>" min="1" step="1" class="small-text" style="width: 100px; padding: 6px 10px; font-size: 14px; font-weight: 700;" />
                                         <p class="description" style="margin-top: 6px;">
                                             <?php esc_html_e( 'Total de prendas personalizadas que el cliente debe acumular en su carrito para poder finalizar la compra (puede combinar distintos modelos y productos).', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sección: Precios por Mayor y Reglas de Carrito -->
+                <div class="postbox" style="border-radius: 8px; border: 1px solid #c3c4c7; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px;">
+                    <div class="postbox-header" style="padding: 14px 18px; border-bottom: 1px solid #dcdcde; background: #fafafa;">
+                        <h2 style="font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span>🏷️</span> <?php esc_html_e( 'Precios Mayoristas y Reglas de Volumen (Nivel Carrito)', 'woo-config' ); ?>
+                        </h2>
+                    </div>
+                    <div class="inside" style="padding: 20px 22px; margin: 0;">
+                        <p style="font-size: 13px; color: #50575e; margin: 0 0 16px;">
+                            <?php esc_html_e( 'Define las condiciones globales de volumen para que cualquier cliente active tarifas mayoristas en su pedido al cruzar el umbral en el carrito.', 'woo-config' ); ?>
+                        </p>
+                        <table class="form-table" role="presentation" style="margin: 0;">
+                            <tbody>
+                                <tr>
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_cart_qty"><?php esc_html_e( 'Umbral global de carrito (unidades)', 'woo-config' ); ?></label>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <input name="wooconfig_wholesale_cart_qty" type="number" id="wooconfig_wholesale_cart_qty" value="<?php echo esc_attr( $wholesale_cart_qty ); ?>" min="1" step="1" class="small-text" style="width: 100px; padding: 6px 10px; font-size: 14px; font-weight: 700;" />
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Cantidad total de prendas en el carrito requeridas para activar la tarifa mayorista global (por defecto: 50).', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <?php esc_html_e( 'Anulación de mínimos individuales', 'woo-config' ); ?>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_override_product_rules" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                                            <input name="wooconfig_wholesale_override_product_rules" type="checkbox" id="wooconfig_wholesale_override_product_rules" value="yes" <?php checked( 'yes' === $wholesale_override ); ?> style="margin: 0;" />
+                                            <?php esc_html_e( 'Anular la cantidad de productos para precio mayorista individuales cuando se alcanza el umbral de carrito', 'woo-config' ); ?>
+                                        </label>
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Si está marcado, cuando el carrito sume la cantidad de productos indicada arriba, no importan las reglas mínimas por producto: se activa el precio mayorista para todos los productos del carro que tengan precio mayorista asignado.', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_modal_title"><?php esc_html_e( 'Título de la ventana de condiciones (i)', 'woo-config' ); ?></label>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <input name="wooconfig_wholesale_modal_title" type="text" id="wooconfig_wholesale_modal_title" value="<?php echo esc_attr( $wholesale_modal_title ); ?>" class="large-text" style="padding: 6px 10px; font-size: 14px;" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_modal_content"><?php esc_html_e( 'Contenido explicativo del Lightbox (i)', 'woo-config' ); ?></label>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <textarea name="wooconfig_wholesale_modal_content" id="wooconfig_wholesale_modal_content" rows="6" class="large-text" style="padding: 8px; font-size: 13px; font-family: monospace;"><?php echo esc_textarea( $wholesale_modal_content ); ?></textarea>
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Texto y formato HTML que verá el cliente al hacer clic sobre el icono informativo (i) junto al precio mayorista en la ficha o catálogo.', 'woo-config' ); ?>
                                         </p>
                                     </td>
                                 </tr>
@@ -557,6 +637,41 @@ class WC_Config_Admin {
                 ?>
             </div>
 
+            <!-- Grupo: Tarifa Mayorista por Producto -->
+            <div class="options_group">
+                <h4 style="margin: 15px; font-size: 14px; font-weight: 700; color: #1e293b;">
+                    🏷️ <?php esc_html_e( 'Precio Mayorista y Reglas de Producto', 'woo-config' ); ?>
+                </h4>
+                <p style="margin: 0 15px 15px; font-size: 12px; color: #64748b;">
+                    <?php esc_html_e( 'Configura la tarifa mayorista para este producto y el mínimo de unidades necesario para activarla individualmente. Si el carrito del cliente suma 50 o más unidades en total (o el umbral global), se activará automáticamente ignorando este mínimo si la regla de override está activa.', 'woo-config' ); ?>
+                </p>
+
+                <?php
+                woocommerce_wp_text_input( array(
+                    'id'          => '_wooconfig_wholesale_price',
+                    'label'       => __( 'Precio Mayorista ($)', 'woo-config' ),
+                    'placeholder' => __( 'Ej: 14990 (dejar vacío si no aplica)', 'woo-config' ),
+                    'description' => __( 'Precio base por unidad al comprar por mayor. Si se deja en blanco, el producto mantendrá su precio regular.', 'woo-config' ),
+                    'desc_tip'    => true,
+                    'type'        => 'text',
+                    'data_type'   => 'price',
+                ) );
+
+                woocommerce_wp_text_input( array(
+                    'id'          => '_wooconfig_wholesale_min_qty',
+                    'label'       => __( 'Mínimo de unidades (Individual)', 'woo-config' ),
+                    'placeholder' => '1',
+                    'description' => __( 'Cantidad mínima de unidades requerida de este producto para activar su precio mayorista independientemente del carrito global. Por defecto: 1.', 'woo-config' ),
+                    'desc_tip'    => true,
+                    'type'        => 'number',
+                    'custom_attributes' => array(
+                        'step' => '1',
+                        'min'  => '1',
+                    ),
+                ) );
+                ?>
+            </div>
+
             <div class="options_group">
                 <h4 style="margin: 15px; font-size: 14px; font-weight: 700; color: #333;">
                     <?php esc_html_e( 'Adicionales de Confección (Add-ons / Extras)', 'woo-config' ); ?>
@@ -640,6 +755,21 @@ class WC_Config_Admin {
 
         $show_widget_guide = isset( $_POST['_wooconfig_show_widget_size_guide'] ) ? 'yes' : 'no';
         update_post_meta( $post_id, '_wooconfig_show_widget_size_guide', $show_widget_guide );
+
+        // Save Wholesale Product Meta
+        if ( isset( $_POST['_wooconfig_wholesale_price'] ) ) {
+            $ws_raw = sanitize_text_field( $_POST['_wooconfig_wholesale_price'] );
+            if ( '' === $ws_raw ) {
+                delete_post_meta( $post_id, '_wooconfig_wholesale_price' );
+            } else {
+                update_post_meta( $post_id, '_wooconfig_wholesale_price', wc_format_decimal( $ws_raw ) );
+            }
+        }
+
+        if ( isset( $_POST['_wooconfig_wholesale_min_qty'] ) ) {
+            $ws_min = max( 1, absint( $_POST['_wooconfig_wholesale_min_qty'] ) );
+            update_post_meta( $post_id, '_wooconfig_wholesale_min_qty', $ws_min );
+        }
 
         // Save Adicionales
         $adicionales = array();

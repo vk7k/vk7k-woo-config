@@ -3,8 +3,34 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$groups = $order->get_meta( '_wooconfig_order_groups' );
-$items  = $order->get_items();
+$is_draft = isset( $is_draft ) && $is_draft;
+if ( $is_draft && isset( $draft_data ) ) {
+    $groups = array(
+        'draft_preview' => array(
+            'group_id'    => 'draft_preview',
+            'flow'        => 'wizard',
+            'group_title' => $draft_data['group_title'],
+            'design_desc' => $draft_data['design_desc'],
+            'files'       => $draft_data['files'],
+        )
+    );
+    $items = array();
+    foreach ( $draft_data['items'] as $d_idx => $d_item ) {
+        $mock_item = new WC_Order_Item_Product();
+        $mock_item->set_name( $d_item['product_name'] );
+        $mock_item->set_quantity( 1 );
+        $mock_item->add_meta_data( '_wooconfig_group_id', 'draft_preview' );
+        $mock_item->add_meta_data( '_wooconfig_item_index', $d_idx + 1 );
+        $mock_item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), $d_item['dorsal'] );
+        $mock_item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), $d_item['name'] );
+        $mock_item->add_meta_data( __( 'Talla', 'woo-config' ), $d_item['size'] );
+        $mock_item->add_meta_data( __( 'Adicionales', 'woo-config' ), $d_item['adicionales'] );
+        $items[] = $mock_item;
+    }
+} else {
+    $groups = $order->get_meta( '_wooconfig_order_groups' );
+    $items  = $order->get_items();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -68,21 +94,27 @@ $items  = $order->get_items();
             <span>Taller de Confección, Sublimación y Personalización</span>
         </div>
         <div class="order-meta-box">
-            <h2>ORDEN #<?php echo esc_html( $order->get_order_number() ); ?></h2>
-            <p>Fecha: <?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></p>
-            <p>Estado: <strong><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></strong></p>
+            <?php if ( $is_draft ) : ?>
+                <h2>PREVISUALIZACIÓN DE TALLER</h2>
+                <p>Fecha: <strong><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) ); ?></strong></p>
+                <p>Modo: <strong style="color: #0073aa;">Borrador / Previsualización en vivo</strong></p>
+            <?php else : ?>
+                <h2>ORDEN #<?php echo esc_html( $order->get_order_number() ); ?></h2>
+                <p>Fecha: <?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></p>
+                <p>Estado: <strong><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></strong></p>
+            <?php endif; ?>
         </div>
     </div>
 
     <div class="client-info-grid">
         <div>
-            <p><strong>Cliente:</strong> <?php echo esc_html( $order->get_formatted_billing_full_name() ); ?></p>
-            <p><strong>Email:</strong> <?php echo esc_html( $order->get_billing_email() ); ?></p>
-            <p><strong>Teléfono:</strong> <?php echo esc_html( $order->get_billing_phone() ); ?></p>
+            <p><strong>Cliente:</strong> <?php echo esc_html( $order ? $order->get_formatted_billing_full_name() : ( isset( $draft_data['client_name'] ) ? $draft_data['client_name'] : 'Cliente / Taller' ) ); ?></p>
+            <p><strong>Email:</strong> <?php echo esc_html( $order ? $order->get_billing_email() : ( isset( $draft_data['client_email'] ) ? $draft_data['client_email'] : '-' ) ); ?></p>
+            <p><strong>Teléfono:</strong> <?php echo esc_html( $order ? $order->get_billing_phone() : ( isset( $draft_data['client_phone'] ) ? $draft_data['client_phone'] : '-' ) ); ?></p>
         </div>
         <div>
-            <p><strong>Dirección de Envío:</strong> <?php echo esc_html( $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : $order->get_formatted_billing_address() ); ?></p>
-            <p><strong>Nota del Cliente:</strong> <?php echo esc_html( $order->get_customer_note() ? $order->get_customer_note() : 'Sin notas adicionales' ); ?></p>
+            <p><strong>Dirección de Envío:</strong> <?php echo esc_html( $order ? ( $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : $order->get_formatted_billing_address() ) : 'Dirección por definir' ); ?></p>
+            <p><strong>Nota / Medio de contacto:</strong> <?php echo esc_html( $order ? ( $order->get_customer_note() ? $order->get_customer_note() : 'Sin notas adicionales' ) : 'Preparación interna desde backend' ); ?></p>
         </div>
     </div>
 

@@ -133,10 +133,30 @@
             this.saveDraft();
         },
 
+        getEffectiveBasePrice: function(qty) {
+            var regularPrice   = parseFloat(this.data.product_price) || 0;
+            var wsPrice        = parseFloat(this.data.wholesale_price) || 0;
+            var wsMinQty       = parseInt(this.data.wholesale_min_qty, 10) || 1;
+            var wsCartQty      = parseInt(this.data.wholesale_cart_qty, 10) || 50;
+            var wsOverride     = !!this.data.wholesale_override;
+
+            if (wsPrice <= 0) {
+                return regularPrice;
+            }
+
+            // If local product threshold met OR global cart threshold met in widget
+            if (qty >= wsMinQty || (wsOverride && qty >= wsCartQty)) {
+                return wsPrice;
+            }
+
+            return regularPrice;
+        },
+
         renderOnPageValues: function() {
             var self = this;
-            var basePrice = parseFloat(this.data.product_price) || 0;
-            var mainSub = this.quantity * basePrice;
+            var totalQty  = Math.max(1, parseInt(this.quantity, 10) || 1);
+            var basePrice = this.getEffectiveBasePrice(totalQty);
+            var mainSub   = totalQty * basePrice;
             $('#wooconfig-main-subtotal').html(this.formatPrice(mainSub));
 
             if (this.data.adicionales) {
@@ -149,8 +169,8 @@
         },
 
         updateTotals: function() {
-            var basePrice = parseFloat(this.data.product_price) || 0;
             var totalQty  = Math.max(1, parseInt(this.quantity, 10) || 1);
+            var basePrice = this.getEffectiveBasePrice(totalQty);
 
             var extraTotal = 0;
             var totalAdsCount = 0;

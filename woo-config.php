@@ -3,7 +3,7 @@
  * Plugin Name: WooConfig - Configurador de Ropa Deportiva y Corporativa
  * Plugin URI:  http://www.uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.3.3
+ * Version:     1.4.0
  * Author:      uxcribe.cl
  * Text Domain: woo-config
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.3.3' );
+define( 'WOOCONFIG_VERSION', '1.4.0' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -46,6 +46,7 @@ final class WooConfig {
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-size-guide.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-uploader.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-cart.php';
+        require_once WOOCONFIG_PATH . 'includes/class-wc-config-wholesale.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-order.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-pdf.php';
     }
@@ -337,6 +338,10 @@ final class WooConfig {
             'size_guide_url'     => $size_guide_url,
             'size_guide_img'     => $size_guide_img,
             'max_file_size_mb'   => (int) get_option( 'wooconfig_max_file_size_mb', 20 ),
+            'wholesale_price'    => (float) get_post_meta( $product->get_id(), '_wooconfig_wholesale_price', true ),
+            'wholesale_min_qty'  => max( 1, (int) get_post_meta( $product->get_id(), '_wooconfig_wholesale_min_qty', true ) ),
+            'wholesale_cart_qty' => max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) ),
+            'wholesale_override' => ( 'yes' === get_option( 'wooconfig_wholesale_override_product_rules', 'yes' ) ),
             'help_images'        => array(
                 'cantidades'  => WOOCONFIG_URL . 'assets/images/help-cantidades.svg',
                 'adicionales' => WOOCONFIG_URL . 'assets/images/help-adicionales.svg',
@@ -370,6 +375,8 @@ final class WooConfig {
     }
 
     public function enqueue_admin_assets( $hook ) {
+        wp_enqueue_media();
+
         wp_enqueue_style(
             'wooconfig-admin-css',
             WOOCONFIG_URL . 'assets/css/admin.css',
@@ -384,6 +391,17 @@ final class WooConfig {
             WOOCONFIG_VERSION,
             true
         );
+
+        wp_localize_script( 'wooconfig-admin-js', 'wooconfig_admin', array(
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'nonce'    => wp_create_nonce( 'wooconfig_admin_nonce' ),
+            'i18n'     => array(
+                'confirm_delete' => __( '¿Confirmas que deseas eliminar esta prenda del pedido?', 'woo-config' ),
+                'saving'         => __( 'Guardando cambios...', 'woo-config' ),
+                'saved'          => __( '¡Guardado correctamente!', 'woo-config' ),
+                'error'          => __( 'Ocurrió un error al procesar la solicitud.', 'woo-config' ),
+            ),
+        ) );
     }
 
     public function setup_product_rendering_hooks() {
