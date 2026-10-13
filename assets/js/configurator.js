@@ -30,7 +30,7 @@
         init: function() {
             if (!this.data.product_id) return;
 
-            var minU = parseInt(this.data.cart_min_units, 10) || parseInt(this.data.min_units, 10) || 1;
+            var minU = parseInt(this.data.min_units, 10) || 1;
             this.quantity = Math.max(1, minU);
             this.paymentMode = (this.data.deposit_enabled) ? 'deposit' : 'full';
             this.initAdicionalesCounts();
@@ -135,12 +135,13 @@
 
         getEffectiveBasePrice: function(qty) {
             var regularPrice   = parseFloat(this.data.product_price) || 0;
-            var wsPrice        = parseFloat(this.data.wholesale_price) || 0;
+            var isWsEnabled    = this.data.wholesale_enabled !== false;
+            var wsPrice        = isWsEnabled ? (parseFloat(this.data.wholesale_price) || 0) : 0;
             var wsMinQty       = parseInt(this.data.wholesale_min_qty, 10) || 1;
             var wsCartQty      = parseInt(this.data.wholesale_cart_qty, 10) || 50;
             var wsOverride     = !!this.data.wholesale_override;
 
-            if (wsPrice <= 0) {
+            if (!isWsEnabled || wsPrice <= 0) {
                 return regularPrice;
             }
 
@@ -581,12 +582,12 @@
             var errors = [];
             var self = this;
 
-            // Step 1: Minimum quantity check
-            var minUnits = parseInt(this.data.cart_min_units, 10) || parseInt(this.data.min_units, 10) || 1;
+            // Step 1: Minimum quantity check (at product level, min is min_units or 1)
+            var minUnits = parseInt(this.data.min_units, 10) || 1;
             if (this.quantity < minUnits) {
                 errors.push({
                     step: 1,
-                    msg: 'Paso 1 (Cantidades): El pedido mínimo es de ' + minUnits + ' unidades.'
+                    msg: 'Paso 1 (Cantidades): Debes ingresar al menos ' + minUnits + (minUnits === 1 ? ' unidad.' : ' unidades.')
                 });
             }
 
@@ -732,7 +733,7 @@
 
             // ================= STEP 1: QUANTITY CONTROLS =================
             $(document).on('click', '#wooconfig-main-qty-minus', function() {
-                var min = parseInt(self.data.cart_min_units, 10) || parseInt(self.data.min_units, 10) || 1;
+                var min = parseInt(self.data.min_units, 10) || 1;
                 if (self.quantity > min) {
                     self.quantity--;
                     $('#wooconfig-main-qty-input').val(self.quantity);
@@ -753,7 +754,7 @@
             });
 
             $(document).on('change input', '#wooconfig-main-qty-input', function() {
-                var min = parseInt(self.data.cart_min_units, 10) || parseInt(self.data.min_units, 10) || 1;
+                var min = parseInt(self.data.min_units, 10) || 1;
                 var val = parseInt($(this).val(), 10) || min;
                 if (val < min) val = min;
                 self.quantity = val;

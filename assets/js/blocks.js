@@ -169,4 +169,64 @@
         }
     });
 
+    // ================= 3. BLOCK: PRECIO MAYORISTA =================
+    registerBlockType('wooconfig/wholesale-price', {
+        title: __('Precio Mayorista (WooConfig)', 'woo-config'),
+        description: __('Etiqueta con precio mayorista dinámico y botón de información emergente para el producto actual.', 'woo-config'),
+        icon: 'tag',
+        category: 'woocommerce',
+        keywords: [__('mayorista', 'woo-config'), __('precio mayorista', 'woo-config'), __('descuento', 'woo-config'), __('cafu', 'woo-config')],
+        supports: {
+            align: ['left', 'center', 'right', 'wide'],
+            html: false
+        },
+        attributes: {
+            align: {
+                type: 'string',
+                default: 'left'
+            }
+        },
+        edit: function(props) {
+            return el(
+                'div',
+                {
+                    className: 'wooconfig-wholesale-price-tag',
+                    style: {
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 10px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '6px',
+                        fontSize: '13px'
+                    }
+                },
+                el('span', { style: { fontWeight: '700', color: '#64748b', fontSize: '11px', textTransform: 'uppercase' } }, __('x mayor:', 'woo-config')),
+                el('strong', { style: { fontWeight: '800', color: '#0f172a' } }, '$19.791'),
+                el('button', {
+                    type: 'button',
+                    style: {
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        background: '#0f172a',
+                        color: '#94ec00',
+                        border: 'none',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        cursor: 'default',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        lineHeight: '1'
+                    }
+                }, 'i')
+            );
+        },
+        save: function() {
+            return null;
+        }
+    });
+
 })(window.wp);

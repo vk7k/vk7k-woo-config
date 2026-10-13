@@ -37,7 +37,7 @@ foreach ( $adicionales as $key => $ad ) {
 
 $deposit_enabled = get_option( 'wooconfig_deposit_enabled', 'yes' );
 $deposit_percent = (int) get_option( 'wooconfig_deposit_percent', 50 );
-$init_qty        = max( 1, $cart_min_units );
+$init_qty        = 1;
 $init_total      = $base_price * $init_qty;
 $init_deposit    = round( $init_total * ( $deposit_percent / 100 ) );
 ?>

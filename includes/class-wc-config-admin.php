@@ -84,6 +84,9 @@ class WC_Config_Admin {
             update_option( 'wooconfig_preferred_contact_options', $preferred_contact_options );
 
             // Venta Mayorista / Precios por Mayor
+            $wholesale_enabled = isset( $_POST['wooconfig_wholesale_enabled'] ) ? 'yes' : 'no';
+            update_option( 'wooconfig_wholesale_enabled', $wholesale_enabled );
+
             $wholesale_cart_qty = isset( $_POST['wooconfig_wholesale_cart_qty'] ) ? max( 1, absint( $_POST['wooconfig_wholesale_cart_qty'] ) ) : 50;
             update_option( 'wooconfig_wholesale_cart_qty', $wholesale_cart_qty );
 
@@ -135,6 +138,7 @@ class WC_Config_Admin {
         $preferred_contact_label   = get_option( 'wooconfig_preferred_contact_label', __( 'Medio de contacto preferido para recepción de boceto', 'woo-config' ) );
         $preferred_contact_options = get_option( 'wooconfig_preferred_contact_options', 'WhatsApp, Correo electrónico, Llamada telefónica' );
         
+        $wholesale_enabled         = get_option( 'wooconfig_wholesale_enabled', 'yes' );
         $wholesale_cart_qty        = max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) );
         $wholesale_override        = get_option( 'wooconfig_wholesale_override_product_rules', 'yes' );
         $wholesale_modal_title     = get_option( 'wooconfig_wholesale_modal_title', __( 'Condiciones de Precios por Mayor', 'woo-config' ) );
@@ -347,6 +351,20 @@ class WC_Config_Admin {
                         </p>
                         <table class="form-table" role="presentation" style="margin: 0;">
                             <tbody>
+                                <tr>
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <?php esc_html_e( 'Funcionalidad Mayorista', 'woo-config' ); ?>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_enabled" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                                            <input name="wooconfig_wholesale_enabled" type="checkbox" id="wooconfig_wholesale_enabled" value="yes" <?php checked( 'yes' === $wholesale_enabled ); ?> style="margin: 0;" />
+                                            <?php esc_html_e( 'Activar funcionalidad de precios y tarifas mayoristas en la tienda', 'woo-config' ); ?>
+                                        </label>
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Si se desmarca, se desactivará por completo la funcionalidad de mayorista: se ocultarán los widgets y etiquetas de precio mayorista, modales informativos de condiciones, avisos en carrito y el recálculo dinámico de precios mayoristas.', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
                                 <tr>
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
                                         <label for="wooconfig_wholesale_cart_qty"><?php esc_html_e( 'Umbral global de carrito (unidades)', 'woo-config' ); ?></label>
@@ -638,6 +656,7 @@ class WC_Config_Admin {
             </div>
 
             <!-- Grupo: Tarifa Mayorista por Producto -->
+            <?php if ( WC_Config_Wholesale::is_enabled() ) : ?>
             <div class="options_group">
                 <h4 style="margin: 15px; font-size: 14px; font-weight: 700; color: #1e293b;">
                     🏷️ <?php esc_html_e( 'Precio Mayorista y Reglas de Producto', 'woo-config' ); ?>
@@ -671,6 +690,19 @@ class WC_Config_Admin {
                 ) );
                 ?>
             </div>
+            <?php else : ?>
+            <div class="options_group">
+                <div style="margin: 15px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <span style="font-size: 13px; color: #991b1b;">
+                        🏷️ <strong><?php esc_html_e( 'Módulo de Precios Mayoristas Desactivado:', 'woo-config' ); ?></strong>
+                        <?php esc_html_e( 'La funcionalidad de precios por mayor se encuentra desactivada globalmente en los ajustes de WooConfig.', 'woo-config' ); ?>
+                    </span>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=wooconfig-settings' ) ); ?>" class="button button-small" target="_blank">
+                        <?php esc_html_e( 'Activar en Ajustes →', 'woo-config' ); ?>
+                    </a>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <div class="options_group">
                 <h4 style="margin: 15px; font-size: 14px; font-weight: 700; color: #333;">

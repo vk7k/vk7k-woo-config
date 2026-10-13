@@ -5,7 +5,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Config_Wholesale {
 
+    /**
+     * Check if the wholesale system is enabled globally
+     *
+     * @return bool
+     */
+    public static function is_enabled() {
+        return 'yes' === get_option( 'wooconfig_wholesale_enabled', 'yes' );
+    }
+
     public static function init() {
+        if ( ! self::is_enabled() ) {
+            return;
+        }
+
         // Enqueue frontend wholesale assets (CSS & JS for wholesale notice and info modal)
         add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 
@@ -21,6 +34,9 @@ class WC_Config_Wholesale {
         // Cart totals calculations & dynamic pricing
         add_action( 'woocommerce_before_calculate_totals', array( __CLASS__, 'apply_wholesale_cart_pricing' ), 25, 1 );
 
+        // Shortcodes & Gutenberg Blocks
+        add_action( 'init', array( __CLASS__, 'register_blocks_and_shortcodes' ) );
+
         // Feedback notice in cart and checkout
         add_action( 'woocommerce_before_cart', array( __CLASS__, 'render_cart_wholesale_notice' ) );
         add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'render_cart_wholesale_notice' ) );
@@ -33,6 +49,10 @@ class WC_Config_Wholesale {
      * Enqueue wholesale CSS and JavaScript
      */
     public static function enqueue_assets() {
+        if ( ! self::is_enabled() ) {
+            return;
+        }
+
         wp_enqueue_style(
             'wooconfig-wholesale-css',
             WOOCONFIG_URL . 'assets/css/wholesale.css',
@@ -54,6 +74,7 @@ class WC_Config_Wholesale {
      */
     public static function get_options() {
         return array(
+            'enabled'         => self::is_enabled(),
             'cart_threshold'  => max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) ),
             'global_override' => 'yes' === get_option( 'wooconfig_wholesale_override_product_rules', 'yes' ),
             'modal_title'     => get_option( 'wooconfig_wholesale_modal_title', __( 'Condiciones de Precios por Mayor', 'woo-config' ) ),
@@ -112,6 +133,10 @@ class WC_Config_Wholesale {
      * @return string
      */
     public static function append_wholesale_price_html( $price_html, $product ) {
+        if ( ! self::is_enabled() ) {
+            return $price_html;
+        }
+
         if ( is_admin() && ! wp_doing_ajax() ) {
             return $price_html;
         }
@@ -139,20 +164,131 @@ class WC_Config_Wholesale {
             ? __( 'mín. 1 ud.*', 'woo-config' )
             : sprintf( __( 'mín. %d uds.*', 'woo-config' ), $min_qty );
 
-        $tag_html = '<div class="wooconfig-wholesale-price-tag">' .
-            '<span class="wooconfig-ws-label">' . esc_html__( 'Mayorista:', 'woo-config' ) . '</span> ' .
+        $tag_html = self::render_price_badge( $target_id );
+        return $price_html . $tag_html;
+    }
+
+    /**
+     * Render standalone wholesale price badge HTML for a product
+     *
+     * @param int|WC_Product $product
+     * @param array $args
+     * @return string
+     */
+    public static function render_price_badge( $product = null, $args = array() ) {
+        if ( ! self::is_enabled() ) {
+            return '';
+        }
+
+        if ( ! $product ) {
+            global $product;
+            if ( ! $product ) {
+                $pid = get_the_ID();
+                if ( ! $pid ) {
+                    $pid = get_queried_object_id();
+                }
+                if ( $pid ) {
+                    $product = wc_get_product( $pid );
+                }
+            }
+        } elseif ( is_numeric( $product ) ) {
+            $product = wc_get_product( $product );
+        }
+
+        if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+            return '';
+        }
+
+        $product_id = $product->get_id();
+        $parent_id  = $product->get_parent_id();
+        $target_id  = $parent_id > 0 ? $parent_id : $product_id;
+
+        $wholesale_price = get_post_meta( $target_id, '_wooconfig_wholesale_price', true );
+        if ( '' === $wholesale_price || null === $wholesale_price || (float) $wholesale_price <= 0 ) {
+            return '';
+        }
+
+        $min_qty = (int) get_post_meta( $target_id, '_wooconfig_wholesale_min_qty', true );
+        if ( $min_qty < 1 ) {
+            $min_qty = 1;
+        }
+
+        $formatted_wholesale_price = wc_price( (float) $wholesale_price );
+        $min_qty_html = '';
+        if ( $min_qty > 1 ) {
+            $min_qty_html = '<span class="wooconfig-ws-min">(' . sprintf( esc_html__( 'mín. %d uds.', 'woo-config' ), $min_qty ) . ')</span> ';
+        }
+
+        $extra_class = isset( $args['class'] ) ? ' ' . esc_attr( $args['class'] ) : '';
+
+        return '<div class="wooconfig-wholesale-price-tag' . $extra_class . '">' .
+            '<span class="wooconfig-ws-label">' . esc_html__( 'x mayor:', 'woo-config' ) . '</span> ' .
             '<strong class="wooconfig-ws-amount">' . $formatted_wholesale_price . '</strong> ' .
-            '<span class="wooconfig-ws-min">(' . esc_html( $min_label ) . ')</span> ' .
+            $min_qty_html .
             '<button type="button" class="wooconfig-ws-info-btn" data-action="open-wholesale-modal" title="' . esc_attr__( 'Ver condiciones mayoristas', 'woo-config' ) . '" aria-label="' . esc_attr__( 'Información de precio mayorista', 'woo-config' ) . '">i</button>' .
         '</div>';
+    }
 
-        return $price_html . $tag_html;
+    /**
+     * Register Gutenberg block and Shortcode for wholesale price
+     */
+    public static function register_blocks_and_shortcodes() {
+        // Shortcodes: [wooconfig_wholesale_price]
+        add_shortcode( 'wooconfig_wholesale_price', array( __CLASS__, 'render_shortcode' ) );
+        add_shortcode( 'wooconfig_precio_mayorista', array( __CLASS__, 'render_shortcode' ) );
+
+        // Gutenberg Block: wooconfig/wholesale-price
+        if ( function_exists( 'register_block_type' ) ) {
+            register_block_type( 'wooconfig/wholesale-price', array(
+                'editor_script'   => 'wooconfig-blocks-js',
+                'editor_style'    => 'wooconfig-modal-css',
+                'render_callback' => array( __CLASS__, 'render_block' ),
+                'attributes'      => array(
+                    'align' => array(
+                        'type'    => 'string',
+                        'default' => 'left',
+                    ),
+                    'className' => array(
+                        'type'    => 'string',
+                        'default' => '',
+                    ),
+                ),
+            ) );
+        }
+    }
+
+    /**
+     * Shortcode callback
+     */
+    public static function render_shortcode( $atts ) {
+        $a = shortcode_atts( array(
+            'product_id' => 0,
+            'class'      => '',
+        ), $atts, 'wooconfig_wholesale_price' );
+
+        $product = ! empty( $a['product_id'] ) ? wc_get_product( absint( $a['product_id'] ) ) : null;
+        return self::render_price_badge( $product, array( 'class' => $a['class'] ) );
+    }
+
+    /**
+     * Block callback
+     */
+    public static function render_block( $attributes, $content ) {
+        $align = ! empty( $attributes['align'] ) ? 'align' . $attributes['align'] : '';
+        $custom_class = ! empty( $attributes['className'] ) ? $attributes['className'] : '';
+        $classes = trim( $align . ' ' . $custom_class );
+
+        return self::render_price_badge( null, array( 'class' => $classes ) );
     }
 
     /**
      * Filter Block Theme product-price block if needed
      */
     public static function filter_block_price_html( $block_content, $block ) {
+        if ( ! self::is_enabled() ) {
+            return $block_content;
+        }
+
         if ( is_admin() || empty( $block['blockName'] ) ) {
             return $block_content;
         }

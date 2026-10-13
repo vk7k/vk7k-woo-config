@@ -6,37 +6,44 @@
 .wooconfig-wholesale-price-tag {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     margin-top: 6px;
     margin-bottom: 4px;
-    padding: 3px 10px;
+    padding: 4px 10px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 13px;
-    line-height: 1.4;
+    line-height: 1.3;
     color: #475569;
     vertical-align: middle;
+    white-space: nowrap;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .wooconfig-wholesale-price-tag .wooconfig-ws-label {
-    font-weight: 600;
+    font-weight: 700;
     color: #64748b;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.3px;
+    white-space: nowrap;
 }
 
 .wooconfig-wholesale-price-tag .wooconfig-ws-amount {
     font-weight: 800;
     color: #0f172a;
-    font-size: 14px;
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 .wooconfig-wholesale-price-tag .wooconfig-ws-min {
     font-size: 11px;
     color: #94a3b8;
     font-style: italic;
+    white-space: nowrap;
 }
 
 /* Info Icon Button (i) */

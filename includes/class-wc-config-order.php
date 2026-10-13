@@ -40,6 +40,7 @@ class WC_Config_Order {
         add_action( 'wp_ajax_wooconfig_admin_update_item', array( __CLASS__, 'ajax_update_item' ) );
         add_action( 'wp_ajax_wooconfig_admin_add_item', array( __CLASS__, 'ajax_add_item' ) );
         add_action( 'wp_ajax_wooconfig_admin_preview_sheet', array( __CLASS__, 'ajax_preview_sheet' ) );
+        add_action( 'wp_ajax_wooconfig_admin_convert_standard_items', array( __CLASS__, 'ajax_convert_standard_items' ) );
     }
 
     public static function handle_order_deletion( $order_id ) {
@@ -294,17 +295,25 @@ class WC_Config_Order {
         $groups              = $order->get_meta( '_wooconfig_order_groups' );
         $items               = $order->get_items();
         $has_wooconfig_items = false;
+        $standard_configurable = array();
 
-        foreach ( $items as $item ) {
+        foreach ( $items as $item_id => $item ) {
             if ( $item->get_meta( '_wooconfig_group_id' ) ) {
                 $has_wooconfig_items = true;
-                break;
+            } else {
+                $product_id = $item->get_product_id();
+                if ( $product_id ) {
+                    $wc_type = get_post_meta( $product_id, '_wooconfig_type', true );
+                    if ( ! empty( $wc_type ) && 'disabled' !== $wc_type ) {
+                        $standard_configurable[] = array(
+                            'item_id'      => $item_id,
+                            'product_id'   => $product_id,
+                            'product_name' => $item->get_name(),
+                            'quantity'     => $item->get_quantity(),
+                        );
+                    }
+                }
             }
-        }
-
-        if ( ! $has_wooconfig_items ) {
-            echo '<p style="color: #666; font-style: italic;">' . esc_html__( 'Este pedido no contiene productos personalizados con WooConfig.', 'woo-config' ) . '</p>';
-            return;
         }
 
         $has_deposit         = 'yes' === $order->get_meta( '_wooconfig_has_deposit' );
@@ -348,6 +357,51 @@ class WC_Config_Order {
         ?>
 
         <div class="wooconfig-admin-order-box">
+
+            <?php if ( ! empty( $standard_configurable ) ) : ?>
+                <div class="wooconfig-desglosar-banner">
+                    <div class="wooconfig-desglosar-icon">⚡</div>
+                    <div class="wooconfig-desglosar-body">
+                        <strong style="font-size: 14px; color: #1e293b;"><?php esc_html_e( 'Artículos configurables detectados sin personalizar', 'woo-config' ); ?></strong>
+                        <p style="margin: 6px 0 0; font-size: 12.5px; color: #64748b;">
+                            <?php esc_html_e( 'Estos productos fueron añadidos con el botón nativo de WooCommerce. Puedes desglosarlos en uniformes individuales con dorsal, nombre y talla.', 'woo-config' ); ?>
+                        </p>
+                        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            <?php foreach ( $standard_configurable as $sci ) : ?>
+                                <div class="wooconfig-desglosar-item-row">
+                                    <span>
+                                        <strong><?php echo esc_html( $sci['product_name'] ); ?></strong>
+                                        <span class="wooconfig-desglosar-qty">× <?php echo esc_html( $sci['quantity'] ); ?></span>
+                                    </span>
+                                    <button type="button" class="button button-primary wooconfig-btn-desglosar"
+                                        data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
+                                        data-item-id="<?php echo esc_attr( $sci['item_id'] ); ?>"
+                                        data-product-id="<?php echo esc_attr( $sci['product_id'] ); ?>"
+                                        data-product-name="<?php echo esc_attr( $sci['product_name'] ); ?>"
+                                        data-quantity="<?php echo esc_attr( $sci['quantity'] ); ?>">
+                                        ⚡ <?php printf( esc_html__( 'Configurar Tallas y Dorsales (%d prendas)', 'woo-config' ), $sci['quantity'] ); ?>
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if ( ! $has_wooconfig_items && empty( $standard_configurable ) ) : ?>
+                <div class="wooconfig-empty-state">
+                    <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.6;">🎽</div>
+                    <p style="margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1e293b;">
+                        <?php esc_html_e( 'Este pedido no contiene productos personalizados todavía.', 'woo-config' ); ?>
+                    </p>
+                    <p style="margin: 0 0 18px; font-size: 13px; color: #64748b;">
+                        <?php esc_html_e( 'Puedes crear un equipo completo desde cero con dorsales, nombres y tallas para cada prenda.', 'woo-config' ); ?>
+                    </p>
+                    <button type="button" class="button button-primary button-hero" id="wooconfig-btn-create-from-scratch" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+                        ➕ <?php esc_html_e( 'Crear y Configurar Equipo desde Cero', 'woo-config' ); ?>
+                    </button>
+                </div>
+            <?php endif; ?>
 
             <?php if ( ! empty( $preferred_contact ) ) : ?>
                 <div style="background: #e0f2fe; border: 1.5px solid #7dd3fc; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; color: #0369a1; display: flex; align-items: center; justify-content: space-between;">
@@ -593,12 +647,12 @@ class WC_Config_Order {
                 </div>
             <?php endforeach; ?>
 
-            <!-- Modal para Añadir Prendas / Equipo al Pedido (Estilo Nativo WooCommerce) -->
+            <!-- Modal para Añadir Prendas / Equipo al Pedido (Enhanced con Tabs) -->
             <div id="wooconfig-admin-modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 100000; align-items: center; justify-content: center;">
-                <div class="wooconfig-modal-container" style="background: #fff; border-radius: 6px; width: 95%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden;">
+                <div class="wooconfig-modal-container" style="background: #fff; border-radius: 6px; width: 95%; max-width: 960px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden;">
                     <div class="wooconfig-modal-header" style="padding: 14px 20px; border-bottom: 1px solid #dcdcde; display: flex; justify-content: space-between; align-items: center; background: #f6f7f7;">
-                        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #1d2327;">
-                            ➕ Añadir Prendas / Uniformes al Pedido #<?php echo esc_html( $order->get_id() ); ?>
+                        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #1d2327;" id="wooconfig-modal-title">
+                            ➕ <?php printf( esc_html__( 'Añadir Prendas / Uniformes al Pedido #%d', 'woo-config' ), $order->get_id() ); ?>
                         </h2>
                         <button type="button" class="button-link" id="wooconfig-modal-close-btn" style="font-size: 20px; line-height: 1; color: #646970; text-decoration: none; cursor: pointer;">
                             ✕
@@ -606,94 +660,201 @@ class WC_Config_Order {
                     </div>
 
                     <div class="wooconfig-modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
-                        <div class="notice notice-info inline" style="margin: 0 0 15px 0;">
-                            <p>Configura las opciones tal como en la tienda: producto base, notas de diseño, logos de patrocinadores y cada uniforme uno a uno con su dorsal, nombre, talla y adicionales.</p>
-                        </div>
+                        <input type="hidden" id="wooconfig-modal-convert-item-id" value="0" />
 
                         <!-- Step 1: Producto base y Título del Grupo -->
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin-bottom: 15px;">
-                            <h3 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #1e293b;">1. Selecciona la Prenda / Producto</h3>
+                        <div class="wooconfig-modal-step-section">
+                            <h3 class="wooconfig-modal-step-heading">1. <?php esc_html_e( 'Selecciona la Prenda / Producto', 'woo-config' ); ?></h3>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                 <div>
-                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Producto Configurable:</label>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;"><?php esc_html_e( 'Producto Configurable:', 'woo-config' ); ?></label>
                                     <select id="wooconfig-modal-product-select" style="width: 100%;">
-                                        <option value="">-- Cargando productos... --</option>
+                                        <option value="">-- <?php esc_html_e( 'Cargando productos...', 'woo-config' ); ?> --</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Nombre del Equipo / Grupo:</label>
-                                    <input type="text" id="wooconfig-modal-group-title" style="width: 100%;" placeholder="Ej: Camisetas Titulares / Titular Adulto" />
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;"><?php esc_html_e( 'Nombre del Equipo / Grupo:', 'woo-config' ); ?></label>
+                                    <input type="text" id="wooconfig-modal-group-title" style="width: 100%;" placeholder="<?php esc_attr_e( 'Ej: Camisetas Titulares / Titular Adulto', 'woo-config' ); ?>" />
                                 </div>
                             </div>
                         </div>
 
                         <!-- Step 2: Diseño y Sponsors -->
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin-bottom: 15px;">
-                            <h3 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #1e293b;">2. Diseño, Sponsors y Archivos</h3>
+                        <div class="wooconfig-modal-step-section">
+                            <h3 class="wooconfig-modal-step-heading">2. <?php esc_html_e( 'Diseño, Sponsors y Archivos', 'woo-config' ); ?></h3>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
                                 <div>
-                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Instrucciones de Diseño:</label>
-                                    <textarea id="wooconfig-modal-design-notes" rows="3" style="width: 100%;" placeholder="Colores, detalles, franjas, cuello, vivos..."></textarea>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;"><?php esc_html_e( 'Instrucciones de Diseño:', 'woo-config' ); ?></label>
+                                    <textarea id="wooconfig-modal-design-notes" rows="3" style="width: 100%;" placeholder="<?php esc_attr_e( 'Colores, detalles, franjas, cuello, vivos...', 'woo-config' ); ?>"></textarea>
                                 </div>
                                 <div>
-                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Observaciones de Sponsors / Publicidad:</label>
-                                    <textarea id="wooconfig-modal-sponsor-notes" rows="3" style="width: 100%;" placeholder="Ubicación de logos (pecho, espalda, mangas)..."></textarea>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 5px;"><?php esc_html_e( 'Observaciones de Sponsors / Publicidad:', 'woo-config' ); ?></label>
+                                    <textarea id="wooconfig-modal-sponsor-notes" rows="3" style="width: 100%;" placeholder="<?php esc_attr_e( 'Ubicación de logos (pecho, espalda, mangas)...', 'woo-config' ); ?>"></textarea>
                                 </div>
                             </div>
 
                             <div>
-                                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Archivos Adjuntos (Bocetos, logos en alta resolución, escudos):</label>
+                                <label style="display: block; font-weight: 600; margin-bottom: 5px;"><?php esc_html_e( 'Archivos Adjuntos (Bocetos, logos en alta resolución, escudos, planillas):', 'woo-config' ); ?></label>
                                 <button type="button" class="button button-secondary" id="wooconfig-modal-upload-files-btn">
-                                    📁 Seleccionar o Subir Archivos (Biblioteca de Medios)
+                                    📁 <?php esc_html_e( 'Seleccionar o Subir Archivos (Biblioteca de Medios)', 'woo-config' ); ?>
                                 </button>
                                 <div id="wooconfig-modal-files-list" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
                             </div>
                         </div>
 
-                        <!-- Step 3: Tabla de Uniformes Uno a Uno -->
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b;">3. Detalle de Uniformes (Uno a Uno)</h3>
-                                <div style="display: flex; gap: 6px;">
+                        <!-- Step 3: Método de Ingreso con Tabs -->
+                        <div class="wooconfig-modal-step-section">
+                            <h3 class="wooconfig-modal-step-heading">3. <?php esc_html_e( '¿Cómo deseas ingresar los uniformes?', 'woo-config' ); ?></h3>
+
+                            <!-- Tab Navigation -->
+                            <div class="wooconfig-input-tabs">
+                                <button type="button" class="wooconfig-input-tab is-active" data-tab="paste">
+                                    📋 <?php esc_html_e( 'Pegar desde Excel / WhatsApp', 'woo-config' ); ?>
+                                </button>
+                                <button type="button" class="wooconfig-input-tab" data-tab="manual">
+                                    ✍ <?php esc_html_e( 'Tabla Manual', 'woo-config' ); ?>
+                                </button>
+                                <button type="button" class="wooconfig-input-tab" data-tab="quick">
+                                    📁 <?php esc_html_e( 'Modo Rápido (Planilla / Foto)', 'woo-config' ); ?>
+                                </button>
+                            </div>
+
+                            <!-- Tab A: Pegar desde Excel / WhatsApp -->
+                            <div class="wooconfig-input-panel is-active" data-panel="paste">
+                                <p style="margin: 0 0 8px; font-size: 13px; color: #475569;">
+                                    <?php esc_html_e( 'Copia las filas desde Excel, Google Sheets o WhatsApp y pégalas aquí. Formato:', 'woo-config' ); ?>
+                                    <code style="font-size: 12px;">Dorsal | Nombre | Talla | Adicionales</code>
+                                </p>
+                                <textarea id="wooconfig-paste-area" rows="7" style="width: 100%; font-family: monospace; font-size: 13px; border: 2px dashed #94a3b8; border-radius: 4px; padding: 12px; background: #f8fafc; resize: vertical;" placeholder="10&#9;JUAN PÉREZ&#9;L&#10;7&#9;CARLOS SOTO&#9;M&#9;manga larga&#10;1&#9;DIEGO BRAVO&#9;XL&#10;&#10;También acepta: comas, punto y coma, guiones, o múltiples espacios como separador."></textarea>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                                    <button type="button" class="button button-primary" id="wooconfig-paste-parse-btn">
+                                        📋 <?php esc_html_e( 'Cargar a la Tabla', 'woo-config' ); ?>
+                                    </button>
+                                    <span id="wooconfig-paste-result" style="font-size: 12px; color: #059669; font-weight: 600; display: none;"></span>
+                                </div>
+                                <p class="description" style="margin-top: 8px;">
+                                    <?php esc_html_e( 'Detecta automáticamente tallas (S, M, L, XL, 4-16), dorsales numéricos, nombres y adicionales (manga larga, piqué).', 'woo-config' ); ?>
+                                </p>
+                            </div>
+
+                            <!-- Tab B: Tabla Manual -->
+                            <div class="wooconfig-input-panel" data-panel="manual">
+                                <div class="wooconfig-batch-controls">
+                                    <label style="font-weight: 600; font-size: 13px;"><?php esc_html_e( 'Cantidad de prendas:', 'woo-config' ); ?></label>
+                                    <input type="number" id="wooconfig-batch-qty" min="1" max="100" value="10" style="width: 70px;">
+                                    <button type="button" class="button button-primary" id="wooconfig-batch-generate-btn">
+                                        ⚡ <?php esc_html_e( 'Generar Filas', 'woo-config' ); ?>
+                                    </button>
+                                    <span class="description" style="margin-left: 6px;">
+                                        <?php esc_html_e( 'Genera filas con talla M y dorsales correlativos.', 'woo-config' ); ?>
+                                    </span>
+                                </div>
+                                <div style="display: flex; gap: 6px; margin-top: 10px;">
                                     <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-row-btn">
-                                        ➕ Añadir Fila
+                                        ➕ <?php esc_html_e( 'Añadir 1 Fila', 'woo-config' ); ?>
                                     </button>
                                     <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-5rows-btn">
-                                        ➕ Añadir 5 Filas
+                                        ➕ <?php esc_html_e( 'Añadir 5 Filas', 'woo-config' ); ?>
+                                    </button>
+                                    <button type="button" class="button button-link-delete button-small" id="wooconfig-modal-clear-table-btn" style="margin-left: auto;">
+                                        🗑 <?php esc_html_e( 'Limpiar Tabla', 'woo-config' ); ?>
                                     </button>
                                 </div>
                             </div>
 
-                            <table class="widefat fixed striped" id="wooconfig-modal-players-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 40px; text-align: center;">#</th>
-                                        <th style="width: 80px;">Dorsal</th>
-                                        <th>Nombre / Alias</th>
-                                        <th style="width: 110px;">Talla</th>
-                                        <th>Adicionales</th>
-                                        <th style="width: 45px; text-align: center;">✕</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Rows added via JS -->
-                                </tbody>
-                            </table>
+                            <!-- Tab C: Modo Rápido (Planilla / Foto) -->
+                            <div class="wooconfig-input-panel" data-panel="quick">
+                                <div class="wooconfig-quick-mode-box">
+                                    <div class="wooconfig-quick-mode-icon">📋</div>
+                                    <div>
+                                        <strong style="font-size: 14px; color: #1e293b;"><?php esc_html_e( 'Modo Rápido: El cliente envió una planilla o foto', 'woo-config' ); ?></strong>
+                                        <p style="margin: 4px 0 12px; font-size: 12.5px; color: #64748b;">
+                                            <?php esc_html_e( 'Ingresa la cantidad de prendas y sube el archivo adjunto en la sección de Archivos (paso 2). Se generarán las prendas con talla predeterminada; los datos exactos quedan en el archivo.', 'woo-config' ); ?>
+                                        </p>
+                                        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                            <div>
+                                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Cantidad de prendas:', 'woo-config' ); ?></label>
+                                                <input type="number" id="wooconfig-quick-qty" min="1" max="100" value="10" style="width: 70px;">
+                                            </div>
+                                            <div>
+                                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Talla predeterminada:', 'woo-config' ); ?></label>
+                                                <select id="wooconfig-quick-default-size" style="width: 80px;">
+                                                    <option value="S">S</option>
+                                                    <option value="M" selected>M</option>
+                                                    <option value="L">L</option>
+                                                    <option value="XL">XL</option>
+                                                </select>
+                                            </div>
+                                            <div style="margin-top: 18px;">
+                                                <button type="button" class="button button-primary" id="wooconfig-quick-generate-btn">
+                                                    ⚡ <?php esc_html_e( 'Preparar Prendas', 'woo-config' ); ?>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p class="description" style="margin-top: 10px;">
+                                            ⚠ <?php esc_html_e( 'Recuerda adjuntar la planilla o foto en la sección de Archivos (paso 2) antes de guardar.', 'woo-config' ); ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabla Compartida de Uniformes (visible en Tab A y B) -->
+                            <div id="wooconfig-modal-table-wrapper">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 6px;">
+                                    <span style="font-size: 13px; font-weight: 600; color: #1e293b;" id="wooconfig-table-count-label"></span>
+                                </div>
+                                <table class="widefat fixed striped" id="wooconfig-modal-players-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px; text-align: center;">#</th>
+                                            <th style="width: 80px;"><?php esc_html_e( 'Dorsal', 'woo-config' ); ?></th>
+                                            <th><?php esc_html_e( 'Nombre / Alias', 'woo-config' ); ?></th>
+                                            <th style="width: 110px;"><?php esc_html_e( 'Talla', 'woo-config' ); ?></th>
+                                            <th><?php esc_html_e( 'Adicionales', 'woo-config' ); ?></th>
+                                            <th style="width: 45px; text-align: center;">✕</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Rows added via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Anticipo y Saldo -->
+                        <div class="wooconfig-modal-step-section">
+                            <h3 class="wooconfig-modal-step-heading">4. <?php esc_html_e( 'Anticipo y Saldo', 'woo-config' ); ?></h3>
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                <label class="wooconfig-payment-option">
+                                    <input type="radio" name="wooconfig_modal_payment_mode" value="full" checked>
+                                    <span class="wooconfig-payment-option-label">
+                                        <strong>💯 <?php esc_html_e( '100% Pago completo', 'woo-config' ); ?></strong>
+                                        <small><?php esc_html_e( 'El cliente paga el total al confirmar', 'woo-config' ); ?></small>
+                                    </span>
+                                </label>
+                                <label class="wooconfig-payment-option">
+                                    <input type="radio" name="wooconfig_modal_payment_mode" value="deposit">
+                                    <span class="wooconfig-payment-option-label">
+                                        <strong>💳 <?php esc_html_e( '50% Anticipo', 'woo-config' ); ?></strong>
+                                        <small><?php esc_html_e( 'Saldo restante al retirar / pre-despacho', 'woo-config' ); ?></small>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
                     <div class="wooconfig-modal-footer" style="padding: 12px 20px; border-top: 1px solid #dcdcde; background: #f6f7f7; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <button type="button" class="button button-secondary" id="wooconfig-modal-preview-btn">
-                                👁 Previsualizar Ficha de Taller (Borrador)
+                                👁 <?php esc_html_e( 'Previsualizar Ficha de Taller (Borrador)', 'woo-config' ); ?>
                             </button>
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button type="button" class="button button-secondary" id="wooconfig-modal-cancel-btn">
-                                Cancelar
+                                <?php esc_html_e( 'Cancelar', 'woo-config' ); ?>
                             </button>
                             <button type="button" class="button button-primary" id="wooconfig-modal-save-btn">
-                                Guardar y Añadir al Pedido
+                                <?php esc_html_e( 'Guardar y Añadir al Pedido', 'woo-config' ); ?>
                             </button>
                         </div>
                     </div>
@@ -1126,6 +1287,51 @@ class WC_Config_Order {
             $idx++;
         }
 
+        // Remove original standard item if this is a desglosar/conversion
+        $convert_item_id = isset( $_POST['convert_item_id'] ) ? absint( $_POST['convert_item_id'] ) : 0;
+        if ( $convert_item_id > 0 ) {
+            $convert_item = $order->get_item( $convert_item_id );
+            if ( $convert_item ) {
+                $order->remove_item( $convert_item_id );
+                $order->add_order_note( sprintf(
+                    __( '⚡ Artículo estándar "%s" (×%d) desglosado en %d uniformes individuales con dorsales y tallas.', 'woo-config' ),
+                    $convert_item->get_name(),
+                    $convert_item->get_quantity(),
+                    count( $items_data )
+                ) );
+            }
+        }
+
+        // Handle payment mode (deposit vs full)
+        $payment_mode = isset( $_POST['payment_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_mode'] ) ) : 'full';
+        if ( 'deposit' === $payment_mode ) {
+            $deposit_percent = 50;
+            $total_items_cost = 0;
+            foreach ( $items_data as $row ) {
+                $assigned_ads = isset( $row['adicionales'] ) && is_array( $row['adicionales'] ) ? $row['adicionales'] : array();
+                $ad_cost = 0;
+                foreach ( $assigned_ads as $ad_key ) {
+                    if ( isset( $product_adicionales[$ad_key] ) ) {
+                        $ad_cost += (float) $product_adicionales[$ad_key]['price'];
+                    }
+                }
+                $total_items_cost += $base_price + $ad_cost;
+            }
+            $deposit_total = round( $total_items_cost * ( $deposit_percent / 100 ), 0 );
+            $balance_total = $total_items_cost - $deposit_total;
+
+            $order->update_meta_data( '_wooconfig_has_deposit', 'yes' );
+            $existing_full = (float) $order->get_meta( '_wooconfig_order_full_total' );
+            $existing_dep  = (float) $order->get_meta( '_wooconfig_order_deposit_total' );
+            $existing_bal  = (float) $order->get_meta( '_wooconfig_order_balance_total' );
+            $order->update_meta_data( '_wooconfig_order_full_total', $existing_full + $total_items_cost );
+            $order->update_meta_data( '_wooconfig_order_deposit_total', $existing_dep + $deposit_total );
+            $order->update_meta_data( '_wooconfig_order_balance_total', $existing_bal + $balance_total );
+            if ( ! $order->get_meta( '_wooconfig_balance_status' ) ) {
+                $order->update_meta_data( '_wooconfig_balance_status', 'pending' );
+            }
+        }
+
         $order->calculate_totals();
         $order->save();
 
@@ -1301,6 +1507,94 @@ class WC_Config_Order {
         wp_send_json_success( array(
             'preview_url' => $preview_url,
             'draft_key'   => $draft_key,
+        ) );
+    }
+
+    /**
+     * AJAX: Convert standard WooCommerce items into individual WooConfig uniforms.
+     * Used for direct conversion without going through the full modal.
+     */
+    public static function ajax_convert_standard_items() {
+        check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'woo-config' ) ) );
+        }
+
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        $item_id  = isset( $_POST['item_id'] ) ? absint( $_POST['item_id'] ) : 0;
+
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        $original_item = $order->get_item( $item_id );
+        if ( ! $original_item ) {
+            wp_send_json_error( array( 'message' => __( 'Artículo no encontrado.', 'woo-config' ) ) );
+        }
+
+        $product_id = $original_item->get_product_id();
+        $product    = wc_get_product( $product_id );
+        if ( ! $product ) {
+            wp_send_json_error( array( 'message' => __( 'Producto no encontrado.', 'woo-config' ) ) );
+        }
+
+        $quantity    = $original_item->get_quantity();
+        $base_price  = (float) $product->get_price();
+        $group_id    = 'group_admin_' . wp_generate_uuid4();
+        $group_title = sprintf( __( 'Equipo: %s', 'woo-config' ), $product->get_name() );
+
+        // Create group meta
+        $groups = $order->get_meta( '_wooconfig_order_groups' );
+        if ( ! is_array( $groups ) ) {
+            $groups = array();
+        }
+        $groups[ $group_id ] = array(
+            'group_id'    => $group_id,
+            'flow'        => 'wizard',
+            'group_title' => $group_title,
+            'design_desc' => sprintf( __( 'Desglosado automáticamente desde artículo estándar ×%d.', 'woo-config' ), $quantity ),
+            'files'       => array(),
+        );
+        $order->update_meta_data( '_wooconfig_order_groups', $groups );
+
+        // Create individual items
+        for ( $i = 1; $i <= $quantity; $i++ ) {
+            $item = new WC_Order_Item_Product();
+            $item->set_product( $product );
+            $item->set_name( $product->get_name() );
+            $item->set_quantity( 1 );
+            $item->set_subtotal( $base_price );
+            $item->set_total( $base_price );
+
+            $item->add_meta_data( '_wooconfig_group_id', $group_id );
+            $item->add_meta_data( '_wooconfig_group_title', $group_title );
+            $item->add_meta_data( '_wooconfig_item_index', $i );
+            $item->add_meta_data( '_wooconfig_flow', 'wizard' );
+            $item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), '' );
+            $item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), '' );
+            $item->add_meta_data( __( 'Talla', 'woo-config' ), 'M' );
+            $item->add_meta_data( '_wooconfig_full_unit_price', $base_price );
+
+            $order->add_item( $item );
+        }
+
+        // Remove original item
+        $order->remove_item( $item_id );
+        $order->add_order_note( sprintf(
+            __( '⚡ Artículo estándar "%s" (×%d) desglosado en %d uniformes individuales.', 'woo-config' ),
+            $product->get_name(),
+            $quantity,
+            $quantity
+        ) );
+
+        $order->calculate_totals();
+        $order->save();
+
+        wp_send_json_success( array(
+            'message'  => sprintf( __( '%d prendas desglosadas correctamente. Ahora puedes configurar tallas y dorsales.', 'woo-config' ), $quantity ),
+            'group_id' => $group_id,
         ) );
     }
 }

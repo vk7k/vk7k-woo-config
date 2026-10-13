@@ -3,7 +3,7 @@
  * Plugin Name: WooConfig - Configurador de Ropa Deportiva y Corporativa
  * Plugin URI:  http://www.uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.4.0
+ * Version:     1.5.0
  * Author:      uxcribe.cl
  * Text Domain: woo-config
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.4.0' );
+define( 'WOOCONFIG_VERSION', '1.5.0' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -135,6 +135,9 @@ final class WooConfig {
         }
         if ( false === get_option( 'wooconfig_retention_days' ) ) {
             update_option( 'wooconfig_retention_days', 0 );
+        }
+        if ( false === get_option( 'wooconfig_wholesale_enabled' ) ) {
+            update_option( 'wooconfig_wholesale_enabled', 'yes' );
         }
     }
 
@@ -338,7 +341,8 @@ final class WooConfig {
             'size_guide_url'     => $size_guide_url,
             'size_guide_img'     => $size_guide_img,
             'max_file_size_mb'   => (int) get_option( 'wooconfig_max_file_size_mb', 20 ),
-            'wholesale_price'    => (float) get_post_meta( $product->get_id(), '_wooconfig_wholesale_price', true ),
+            'wholesale_enabled'  => WC_Config_Wholesale::is_enabled(),
+            'wholesale_price'    => WC_Config_Wholesale::is_enabled() ? (float) get_post_meta( $product->get_id(), '_wooconfig_wholesale_price', true ) : 0,
             'wholesale_min_qty'  => max( 1, (int) get_post_meta( $product->get_id(), '_wooconfig_wholesale_min_qty', true ) ),
             'wholesale_cart_qty' => max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) ),
             'wholesale_override' => ( 'yes' === get_option( 'wooconfig_wholesale_override_product_rules', 'yes' ) ),
