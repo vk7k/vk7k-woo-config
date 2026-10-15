@@ -14,6 +14,18 @@ class WC_Config_Wholesale {
         return 'yes' === get_option( 'wooconfig_wholesale_enabled', 'yes' );
     }
 
+    /**
+     * Check if wholesale price tags and badges should be displayed in catalog / product pages
+     *
+     * @return bool
+     */
+    public static function are_prices_visible() {
+        if ( ! self::is_enabled() ) {
+            return false;
+        }
+        return 'yes' === get_option( 'wooconfig_wholesale_show_prices', 'no' );
+    }
+
     public static function init() {
         if ( ! self::is_enabled() ) {
             return;
@@ -25,11 +37,11 @@ class WC_Config_Wholesale {
         // Render wholesale terms modal in footer
         add_action( 'wp_footer', array( __CLASS__, 'render_wholesale_modal' ) );
 
-        // Filter WooCommerce price html across catalog, single product, and loops
-        add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'append_wholesale_price_html' ), 25, 2 );
-
-        // In Single Product page: if block theme doesn't trigger woocommerce_get_price_html or needs extra badge
-        add_filter( 'render_block', array( __CLASS__, 'filter_block_price_html' ), 10, 2 );
+        // Filter WooCommerce price html across catalog, single product, and loops (only if show_prices is active)
+        if ( self::are_prices_visible() ) {
+            add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'append_wholesale_price_html' ), 25, 2 );
+            add_filter( 'render_block', array( __CLASS__, 'filter_block_price_html' ), 10, 2 );
+        }
 
         // Cart totals calculations & dynamic pricing
         add_action( 'woocommerce_before_calculate_totals', array( __CLASS__, 'apply_wholesale_cart_pricing' ), 25, 1 );
@@ -75,6 +87,7 @@ class WC_Config_Wholesale {
     public static function get_options() {
         return array(
             'enabled'         => self::is_enabled(),
+            'show_prices'     => self::are_prices_visible(),
             'cart_threshold'  => max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) ),
             'global_override' => 'yes' === get_option( 'wooconfig_wholesale_override_product_rules', 'yes' ),
             'modal_title'     => get_option( 'wooconfig_wholesale_modal_title', __( 'Condiciones de Precios por Mayor', 'woo-config' ) ),
@@ -176,7 +189,7 @@ class WC_Config_Wholesale {
      * @return string
      */
     public static function render_price_badge( $product = null, $args = array() ) {
-        if ( ! self::is_enabled() ) {
+        if ( ! self::is_enabled() || ! self::are_prices_visible() ) {
             return '';
         }
 

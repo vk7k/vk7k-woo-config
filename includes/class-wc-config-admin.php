@@ -87,6 +87,9 @@ class WC_Config_Admin {
             $wholesale_enabled = isset( $_POST['wooconfig_wholesale_enabled'] ) ? 'yes' : 'no';
             update_option( 'wooconfig_wholesale_enabled', $wholesale_enabled );
 
+            $wholesale_show_prices = isset( $_POST['wooconfig_wholesale_show_prices'] ) ? 'yes' : 'no';
+            update_option( 'wooconfig_wholesale_show_prices', $wholesale_show_prices );
+
             $wholesale_cart_qty = isset( $_POST['wooconfig_wholesale_cart_qty'] ) ? max( 1, absint( $_POST['wooconfig_wholesale_cart_qty'] ) ) : 50;
             update_option( 'wooconfig_wholesale_cart_qty', $wholesale_cart_qty );
 
@@ -139,6 +142,7 @@ class WC_Config_Admin {
         $preferred_contact_options = get_option( 'wooconfig_preferred_contact_options', 'WhatsApp, Correo electrónico, Llamada telefónica' );
         
         $wholesale_enabled         = get_option( 'wooconfig_wholesale_enabled', 'yes' );
+        $wholesale_show_prices     = get_option( 'wooconfig_wholesale_show_prices', 'no' );
         $wholesale_cart_qty        = max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) );
         $wholesale_override        = get_option( 'wooconfig_wholesale_override_product_rules', 'yes' );
         $wholesale_modal_title     = get_option( 'wooconfig_wholesale_modal_title', __( 'Condiciones de Precios por Mayor', 'woo-config' ) );
@@ -357,11 +361,25 @@ class WC_Config_Admin {
                                     </th>
                                     <td style="padding: 12px 0;">
                                         <label for="wooconfig_wholesale_enabled" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
-                                            <input name="wooconfig_wholesale_enabled" type="checkbox" id="wooconfig_wholesale_enabled" value="yes" <?php checked( 'yes' === $wholesale_enabled ); ?> style="margin: 0;" />
+                                             <input name="wooconfig_wholesale_enabled" type="checkbox" id="wooconfig_wholesale_enabled" value="yes" <?php checked( 'yes' === $wholesale_enabled ); ?> style="margin: 0;" />
                                             <?php esc_html_e( 'Activar funcionalidad de precios y tarifas mayoristas en la tienda', 'woo-config' ); ?>
                                         </label>
                                         <p class="description" style="margin-top: 6px;">
                                             <?php esc_html_e( 'Si se desmarca, se desactivará por completo la funcionalidad de mayorista: se ocultarán los widgets y etiquetas de precio mayorista, modales informativos de condiciones, avisos en carrito y el recálculo dinámico de precios mayoristas.', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <?php esc_html_e( 'Visibilidad de Precios', 'woo-config' ); ?>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_show_prices" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                                            <input name="wooconfig_wholesale_show_prices" type="checkbox" id="wooconfig_wholesale_show_prices" value="yes" <?php checked( 'yes' === $wholesale_show_prices ); ?> style="margin: 0;" />
+                                            <?php esc_html_e( 'Mostrar etiquetas de precio por mayor en el catálogo y ficha de producto', 'woo-config' ); ?>
+                                        </label>
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Si está desactivado, los precios mayoristas y botones informativos no serán visibles en la tienda ni fichas de producto (el cálculo mayorista en carrito seguirá operando si la funcionalidad está activa).', 'woo-config' ); ?>
                                         </p>
                                     </td>
                                 </tr>
