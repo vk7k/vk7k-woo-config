@@ -15,6 +15,7 @@
     var el = wp.element.createElement;
     var __ = wp.i18n.__;
     var InspectorControls = wp.blockEditor ? wp.blockEditor.InspectorControls : wp.editor.InspectorControls;
+    var useBlockProps = (wp.blockEditor && wp.blockEditor.useBlockProps) || function(p) { return p || {}; };
     var PanelBody = wp.components ? wp.components.PanelBody : null;
     var TextControl = wp.components ? wp.components.TextControl : null;
     var SelectControl = wp.components ? wp.components.SelectControl : null;
@@ -244,7 +245,21 @@
         keywords: [__('mayorista', 'woo-config'), __('banner', 'woo-config'), __('cafu', 'woo-config'), __('wholesale', 'woo-config')],
         supports: {
             align: ['left', 'center', 'right', 'wide', 'full'],
-            html: false
+            html: false,
+            spacing: {
+                margin: true,
+                padding: true
+            },
+            color: {
+                background: true,
+                text: false
+            },
+            __experimentalBorder: {
+                radius: true,
+                color: true,
+                width: true,
+                style: true
+            }
         },
         attributes: {
             imageId: {
@@ -269,6 +284,9 @@
             var setAttributes = props.setAttributes;
 
             var defaultImg = attributes.imageUrl || '/wp-content/uploads/2026/10/banner-cafu-mayorista.jpg';
+            var blockProps = useBlockProps({
+                className: 'cafu-wholesale-home-banner-wrap'
+            });
 
             return el(
                 wp.element.Fragment,
@@ -298,39 +316,14 @@
                 ),
                 el(
                     'div',
-                    {
-                        className: 'cafu-wholesale-home-banner-wrap',
-                        style: {
-                            margin: '20px 0',
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
-                            textAlign: attributes.align || 'center',
-                            border: '1.5px dashed #94ec00',
-                            padding: '6px',
-                            background: '#0f172a'
-                        }
-                    },
-                    el('div', {
-                        style: {
-                            color: '#94ec00',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            marginBottom: '6px',
-                            textAlign: 'left',
-                            paddingLeft: '4px'
-                        }
-                    }, '⚡ Preview: Banner Portal Mayorista'),
+                    blockProps,
                     el('img', {
                         src: defaultImg,
                         alt: 'Zona Mayorista Cafú',
                         style: {
                             width: '100%',
                             height: 'auto',
-                            display: 'block',
-                            borderRadius: '8px'
+                            display: 'block'
                         }
                     })
                 )
@@ -357,23 +350,41 @@
         keywords: [__('mayorista', 'woo-config'), __('condicional', 'woo-config'), __('privado', 'woo-config'), __('cafu', 'woo-config')],
         supports: {
             align: ['wide', 'full'],
-            html: false
+            html: false,
+            spacing: {
+                margin: true,
+                padding: true,
+                blockGap: true
+            },
+            color: {
+                background: true,
+                text: true,
+                gradients: true
+            },
+            __experimentalBorder: {
+                radius: true,
+                color: true,
+                width: true,
+                style: true
+            },
+            layout: true
         },
         attributes: {},
         edit: function(props) {
+            var blockProps = useBlockProps({
+                className: 'wooconfig-conditional-wholesale-editor-wrap',
+                style: {
+                    border: '1.5px solid #94ec00',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    background: 'rgba(148, 236, 0, 0.03)',
+                    position: 'relative'
+                }
+            });
+
             return el(
                 'div',
-                {
-                    className: 'wooconfig-conditional-wholesale-editor-wrap',
-                    style: {
-                        border: '2px solid #94ec00',
-                        borderRadius: '10px',
-                        padding: '16px',
-                        background: 'rgba(148, 236, 0, 0.04)',
-                        position: 'relative',
-                        margin: '15px 0'
-                    }
-                },
+                blockProps,
                 el('div', {
                     style: {
                         display: 'inline-flex',
@@ -383,12 +394,12 @@
                         fontWeight: '800',
                         color: '#0f172a',
                         background: '#94ec00',
-                        padding: '3px 8px',
+                        padding: '2px 8px',
                         borderRadius: '4px',
-                        marginBottom: '12px',
+                        marginBottom: '8px',
                         textTransform: 'uppercase'
                     }
-                }, '👑 Visible Exclusivamente Para Clientes Mayoristas'),
+                }, '👑 Solo Clientes Mayoristas'),
                 InnerBlocks ? el(InnerBlocks, {
                     templateLock: false,
                     placeholder: __('Inserta bloques aquí (solo se mostrarán a mayoristas autenticados)...', 'woo-config')
@@ -414,23 +425,41 @@
         keywords: [__('publico', 'woo-config'), __('visitantes', 'woo-config'), __('no mayorista', 'woo-config'), __('teaser', 'woo-config')],
         supports: {
             align: ['wide', 'full'],
-            html: false
+            html: false,
+            spacing: {
+                margin: true,
+                padding: true,
+                blockGap: true
+            },
+            color: {
+                background: true,
+                text: true,
+                gradients: true
+            },
+            __experimentalBorder: {
+                radius: true,
+                color: true,
+                width: true,
+                style: true
+            },
+            layout: true
         },
         attributes: {},
         edit: function(props) {
+            var blockProps = useBlockProps({
+                className: 'wooconfig-conditional-not-wholesale-editor-wrap',
+                style: {
+                    border: '1.5px dashed #94a3b8',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    background: '#f8fafc',
+                    position: 'relative'
+                }
+            });
+
             return el(
                 'div',
-                {
-                    className: 'wooconfig-conditional-not-wholesale-editor-wrap',
-                    style: {
-                        border: '2px dashed #94a3b8',
-                        borderRadius: '10px',
-                        padding: '16px',
-                        background: '#f8fafc',
-                        position: 'relative',
-                        margin: '15px 0'
-                    }
-                },
+                blockProps,
                 el('div', {
                     style: {
                         display: 'inline-flex',
@@ -440,12 +469,12 @@
                         fontWeight: '800',
                         color: '#334155',
                         background: '#e2e8f0',
-                        padding: '3px 8px',
+                        padding: '2px 8px',
                         borderRadius: '4px',
-                        marginBottom: '12px',
+                        marginBottom: '8px',
                         textTransform: 'uppercase'
                     }
-                }, '🌐 Visible Solo Para Visitantes o Clientes Regulares'),
+                }, '🌐 Solo Visitantes o No Mayoristas'),
                 InnerBlocks ? el(InnerBlocks, {
                     templateLock: false,
                     placeholder: __('Inserta bloques aquí (invitación a mayoristas, banners públicos, etc.)...', 'woo-config')

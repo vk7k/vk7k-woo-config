@@ -384,6 +384,24 @@ class WC_Config_Wholesale {
                 'editor_script'   => 'wooconfig-blocks-js',
                 'editor_style'    => 'wooconfig-modal-css',
                 'render_callback' => array( __CLASS__, 'render_block_banner' ),
+                'supports'        => array(
+                    'align'   => array( 'left', 'center', 'right', 'wide', 'full' ),
+                    'html'    => false,
+                    'spacing' => array(
+                        'margin'  => true,
+                        'padding' => true,
+                    ),
+                    'color'   => array(
+                        'background' => true,
+                        'text'       => false,
+                    ),
+                    '__experimentalBorder' => array(
+                        'radius' => true,
+                        'color'  => true,
+                        'width'  => true,
+                        'style'  => true,
+                    ),
+                ),
                 'attributes'      => array(
                     'imageId' => array(
                         'type'    => 'number',
@@ -413,8 +431,25 @@ class WC_Config_Wholesale {
                 'editor_script'   => 'wooconfig-blocks-js',
                 'render_callback' => array( __CLASS__, 'render_block_content_visible' ),
                 'supports'        => array(
-                    'align' => array( 'wide', 'full' ),
-                    'html'  => false,
+                    'align'   => array( 'wide', 'full' ),
+                    'html'    => false,
+                    'spacing' => array(
+                        'margin'   => true,
+                        'padding'  => true,
+                        'blockGap' => true,
+                    ),
+                    'color'   => array(
+                        'background' => true,
+                        'text'       => true,
+                        'gradients'  => true,
+                    ),
+                    '__experimentalBorder' => array(
+                        'radius' => true,
+                        'color'  => true,
+                        'width'  => true,
+                        'style'  => true,
+                    ),
+                    'layout'  => true,
                 ),
             ) );
 
@@ -423,8 +458,25 @@ class WC_Config_Wholesale {
                 'editor_script'   => 'wooconfig-blocks-js',
                 'render_callback' => array( __CLASS__, 'render_block_content_hidden' ),
                 'supports'        => array(
-                    'align' => array( 'wide', 'full' ),
-                    'html'  => false,
+                    'align'   => array( 'wide', 'full' ),
+                    'html'    => false,
+                    'spacing' => array(
+                        'margin'   => true,
+                        'padding'  => true,
+                        'blockGap' => true,
+                    ),
+                    'color'   => array(
+                        'background' => true,
+                        'text'       => true,
+                        'gradients'  => true,
+                    ),
+                    '__experimentalBorder' => array(
+                        'radius' => true,
+                        'color'  => true,
+                        'width'  => true,
+                        'style'  => true,
+                    ),
+                    'layout'  => true,
                 ),
             ) );
         }
@@ -460,15 +512,27 @@ class WC_Config_Wholesale {
     public static function render_block_banner( $attributes, $content = '' ) {
         $image_id = ! empty( $attributes['imageId'] ) ? absint( $attributes['imageId'] ) : 2158;
         $link     = ! empty( $attributes['linkUrl'] ) ? esc_url( $attributes['linkUrl'] ) : '';
-        $align    = ! empty( $attributes['align'] ) ? 'align' . esc_attr( $attributes['align'] ) : '';
-        $class    = ! empty( $attributes['className'] ) ? esc_attr( $attributes['className'] ) : '';
-        $classes  = trim( $align . ' ' . $class );
+        $is_ws    = self::is_user_wholesale();
+        $dest_url = ! empty( $link ) ? $link : wc_get_page_permalink( 'myaccount' );
+        $img_src  = wp_get_attachment_image_url( $image_id, 'full' );
 
-        return self::render_wholesale_banner_shortcode( array(
-            'image_id' => $image_id,
-            'link'     => $link,
-            'class'    => $classes,
-        ) );
+        if ( ! $img_src ) {
+            $img_src = home_url( '/wp-content/uploads/2026/10/banner-cafu-mayorista.jpg' );
+        }
+
+        $wrapper_attributes = function_exists( 'get_block_wrapper_attributes' )
+            ? get_block_wrapper_attributes( array( 'class' => 'cafu-wholesale-home-banner-wrap' ) )
+            : 'class="cafu-wholesale-home-banner-wrap"';
+
+        ob_start();
+        ?>
+        <div <?php echo $wrapper_attributes; ?>>
+            <a href="<?php echo esc_url( $dest_url ); ?>" style="display: block; line-height: 0; text-decoration: none; position: relative;">
+                <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Zona Mayorista Cafú - Indumentaria Deportiva por Mayor', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: inherit; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.008)';" onmouseout="this.style.transform='none';" />
+            </a>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 
     /**
@@ -476,10 +540,15 @@ class WC_Config_Wholesale {
      * Renders inner blocks only if the user is a wholesale customer
      */
     public static function render_block_content_visible( $attributes, $content = '' ) {
-        if ( self::is_user_wholesale() ) {
-            return $content;
+        if ( ! self::is_user_wholesale() ) {
+            return '';
         }
-        return '';
+
+        $wrapper_attributes = function_exists( 'get_block_wrapper_attributes' )
+            ? get_block_wrapper_attributes( array( 'class' => 'wooconfig-conditional-wholesale-wrap' ) )
+            : 'class="wooconfig-conditional-wholesale-wrap"';
+
+        return '<div ' . $wrapper_attributes . '>' . $content . '</div>';
     }
 
     /**
@@ -487,10 +556,15 @@ class WC_Config_Wholesale {
      * Renders inner blocks only for visitors or non-wholesale customers
      */
     public static function render_block_content_hidden( $attributes, $content = '' ) {
-        if ( ! self::is_user_wholesale() ) {
-            return $content;
+        if ( self::is_user_wholesale() ) {
+            return '';
         }
-        return '';
+
+        $wrapper_attributes = function_exists( 'get_block_wrapper_attributes' )
+            ? get_block_wrapper_attributes( array( 'class' => 'wooconfig-conditional-not-wholesale-wrap' ) )
+            : 'class="wooconfig-conditional-not-wholesale-wrap"';
+
+        return '<div ' . $wrapper_attributes . '>' . $content . '</div>';
     }
 
     /**
