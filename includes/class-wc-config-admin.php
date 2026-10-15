@@ -96,6 +96,9 @@ class WC_Config_Admin {
             $wholesale_override = isset( $_POST['wooconfig_wholesale_override_product_rules'] ) ? 'yes' : 'no';
             update_option( 'wooconfig_wholesale_override_product_rules', $wholesale_override );
 
+            $wholesale_login_redirect = isset( $_POST['wooconfig_wholesale_login_redirect'] ) ? esc_url_raw( trim( $_POST['wooconfig_wholesale_login_redirect'] ) ) : '';
+            update_option( 'wooconfig_wholesale_login_redirect', $wholesale_login_redirect );
+
             $wholesale_modal_title = isset( $_POST['wooconfig_wholesale_modal_title'] ) ? sanitize_text_field( $_POST['wooconfig_wholesale_modal_title'] ) : '';
             update_option( 'wooconfig_wholesale_modal_title', $wholesale_modal_title );
 
@@ -145,6 +148,7 @@ class WC_Config_Admin {
         $wholesale_show_prices     = get_option( 'wooconfig_wholesale_show_prices', 'no' );
         $wholesale_cart_qty        = max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) );
         $wholesale_override        = get_option( 'wooconfig_wholesale_override_product_rules', 'yes' );
+        $wholesale_login_redirect  = get_option( 'wooconfig_wholesale_login_redirect', wc_get_page_permalink( 'myaccount' ) );
         $wholesale_modal_title     = get_option( 'wooconfig_wholesale_modal_title', __( 'Condiciones de Precios por Mayor', 'woo-config' ) );
         $wholesale_modal_content   = get_option( 'wooconfig_wholesale_modal_content', WC_Config_Wholesale::get_default_modal_content() );
 
@@ -342,16 +346,16 @@ class WC_Config_Admin {
                     </div>
                 </div>
 
-                <!-- Sección: Precios por Mayor y Reglas de Carrito -->
-                <div class="postbox" style="border-radius: 8px; border: 1px solid #c3c4c7; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px;">
+                <!-- Sección: Funcionalidad de mayoristas -->
+                <div class="postbox" id="wooconfig-wholesale-postbox" style="border-radius: 8px; border: 1px solid #c3c4c7; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px;">
                     <div class="postbox-header" style="padding: 14px 18px; border-bottom: 1px solid #dcdcde; background: #fafafa;">
                         <h2 style="font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-                            <span>🏷️</span> <?php esc_html_e( 'Precios Mayoristas y Reglas de Volumen (Nivel Carrito)', 'woo-config' ); ?>
+                            <span>🏷️</span> <?php esc_html_e( 'Funcionalidad de mayoristas', 'woo-config' ); ?>
                         </h2>
                     </div>
                     <div class="inside" style="padding: 20px 22px; margin: 0;">
                         <p style="font-size: 13px; color: #50575e; margin: 0 0 16px;">
-                            <?php esc_html_e( 'Define las condiciones globales de volumen para que cualquier cliente active tarifas mayoristas en su pedido al cruzar el umbral en el carrito.', 'woo-config' ); ?>
+                            <?php esc_html_e( 'Configuración de reglas de pedidos por mayor, visibilidad para usuarios, redirección de acceso y términos de servicio.', 'woo-config' ); ?>
                         </p>
                         <table class="form-table" role="presentation" style="margin: 0;">
                             <tbody>
@@ -361,29 +365,40 @@ class WC_Config_Admin {
                                     </th>
                                     <td style="padding: 12px 0;">
                                         <label for="wooconfig_wholesale_enabled" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
-                                             <input name="wooconfig_wholesale_enabled" type="checkbox" id="wooconfig_wholesale_enabled" value="yes" <?php checked( 'yes' === $wholesale_enabled ); ?> style="margin: 0;" />
-                                            <?php esc_html_e( 'Activar funcionalidad de precios y tarifas mayoristas en la tienda', 'woo-config' ); ?>
+                                            <input name="wooconfig_wholesale_enabled" type="checkbox" id="wooconfig_wholesale_enabled" value="yes" <?php checked( 'yes' === $wholesale_enabled ); ?> style="margin: 0;" />
+                                            <?php esc_html_e( 'Activar la funcionalidad de precios mayoristas', 'woo-config' ); ?>
                                         </label>
                                         <p class="description" style="margin-top: 6px;">
-                                            <?php esc_html_e( 'Si se desmarca, se desactivará por completo la funcionalidad de mayorista: se ocultarán los widgets y etiquetas de precio mayorista, modales informativos de condiciones, avisos en carrito y el recálculo dinámico de precios mayoristas.', 'woo-config' ); ?>
+                                            <?php esc_html_e( 'Si se desmarca, se desactivará por completo la funcionalidad de mayorista: se ocultarán los widgets, etiquetas de precio mayorista, modales informativos de condiciones, avisos en carrito y el recálculo dinámico de precios mayoristas.', 'woo-config' ); ?>
                                         </p>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="wooconfig-ws-dependent-row">
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
                                         <?php esc_html_e( 'Visibilidad de Precios', 'woo-config' ); ?>
                                     </th>
                                     <td style="padding: 12px 0;">
                                         <label for="wooconfig_wholesale_show_prices" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
                                             <input name="wooconfig_wholesale_show_prices" type="checkbox" id="wooconfig_wholesale_show_prices" value="yes" <?php checked( 'yes' === $wholesale_show_prices ); ?> style="margin: 0;" />
-                                            <?php esc_html_e( 'Mostrar etiquetas de precio por mayor en el catálogo y ficha de producto', 'woo-config' ); ?>
+                                            <?php esc_html_e( 'Mostrar precios mayoristas a todos', 'woo-config' ); ?>
                                         </label>
                                         <p class="description" style="margin-top: 6px;">
-                                            <?php esc_html_e( 'Si está desactivado, los precios mayoristas y botones informativos no serán visibles en la tienda ni fichas de producto (el cálculo mayorista en carrito seguirá operando si la funcionalidad está activa).', 'woo-config' ); ?>
+                                            <?php esc_html_e( 'Si está activado, muestra las etiquetas de precio por mayor a todos los visitantes (incluyendo usuarios sin login o usuarios con login que no son mayoristas). Si está desactivado (por defecto), solo los clientes con estado de mayorista verán activos los precios al iniciar sesión.', 'woo-config' ); ?>
                                         </p>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="wooconfig-ws-dependent-row">
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_login_redirect"><?php esc_html_e( 'Redirección para usuarios mayoristas tras iniciar sesión', 'woo-config' ); ?></label>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <input name="wooconfig_wholesale_login_redirect" type="url" id="wooconfig_wholesale_login_redirect" value="<?php echo esc_attr( $wholesale_login_redirect ); ?>" class="large-text" placeholder="<?php echo esc_attr( wc_get_page_permalink( 'myaccount' ) ); ?>" style="padding: 6px 10px; font-size: 14px;" />
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'URL a la cual se redirige automáticamente un cliente mayorista cuando inicia sesión. Por defecto: página de Mi Cuenta.', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr class="wooconfig-ws-dependent-row">
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
                                         <label for="wooconfig_wholesale_cart_qty"><?php esc_html_e( 'Umbral global de carrito (unidades)', 'woo-config' ); ?></label>
                                     </th>
@@ -394,7 +409,7 @@ class WC_Config_Admin {
                                         </p>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="wooconfig-ws-dependent-row">
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
                                         <?php esc_html_e( 'Anulación de mínimos individuales', 'woo-config' ); ?>
                                     </th>
@@ -408,7 +423,7 @@ class WC_Config_Admin {
                                         </p>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="wooconfig-ws-dependent-row">
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
                                         <label for="wooconfig_wholesale_modal_title"><?php esc_html_e( 'Título de la ventana de condiciones (i)', 'woo-config' ); ?></label>
                                     </th>
@@ -416,14 +431,29 @@ class WC_Config_Admin {
                                         <input name="wooconfig_wholesale_modal_title" type="text" id="wooconfig_wholesale_modal_title" value="<?php echo esc_attr( $wholesale_modal_title ); ?>" class="large-text" style="padding: 6px 10px; font-size: 14px;" />
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="wooconfig-ws-dependent-row">
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
                                         <label for="wooconfig_wholesale_modal_content"><?php esc_html_e( 'Contenido explicativo del Lightbox (i)', 'woo-config' ); ?></label>
                                     </th>
                                     <td style="padding: 12px 0;">
-                                        <textarea name="wooconfig_wholesale_modal_content" id="wooconfig_wholesale_modal_content" rows="6" class="large-text" style="padding: 8px; font-size: 13px; font-family: monospace;"><?php echo esc_textarea( $wholesale_modal_content ); ?></textarea>
-                                        <p class="description" style="margin-top: 6px;">
-                                            <?php esc_html_e( 'Texto y formato HTML que verá el cliente al hacer clic sobre el icono informativo (i) junto al precio mayorista en la ficha o catálogo.', 'woo-config' ); ?>
+                                        <?php
+                                        wp_editor(
+                                            $wholesale_modal_content,
+                                            'wooconfig_wholesale_modal_content',
+                                            array(
+                                                'textarea_name' => 'wooconfig_wholesale_modal_content',
+                                                'textarea_rows' => 8,
+                                                'media_buttons' => false,
+                                                'teeny'         => false,
+                                                'quicktags'     => true,
+                                                'tinymce'       => array(
+                                                    'toolbar1' => 'bold,italic,bullist,numlist,link,unlink,undo,redo',
+                                                ),
+                                            )
+                                        );
+                                        ?>
+                                        <p class="description" style="margin-top: 8px;">
+                                            <?php esc_html_e( 'Contenido visual y formato que verá el cliente al hacer clic sobre el icono informativo (i) junto al precio mayorista en la ficha o catálogo.', 'woo-config' ); ?>
                                         </p>
                                     </td>
                                 </tr>
@@ -431,6 +461,23 @@ class WC_Config_Admin {
                         </table>
                     </div>
                 </div>
+
+                <script>
+                jQuery(document).ready(function($) {
+                    function syncWholesaleFields() {
+                        var isEnabled = $('#wooconfig_wholesale_enabled').is(':checked');
+                        var $rows = $('.wooconfig-ws-dependent-row');
+                        if (isEnabled) {
+                            $rows.show().find('input, select, textarea').prop('disabled', false);
+                            $rows.css('opacity', '1');
+                        } else {
+                            $rows.css('opacity', '0.4').find('input, select, textarea').prop('disabled', true);
+                        }
+                    }
+                    $('#wooconfig_wholesale_enabled').on('change', syncWholesaleFields);
+                    syncWholesaleFields();
+                });
+                </script>
 
                 <!-- Sección 3: Pagos de Anticipo / Abonos -->
                 <div class="postbox" style="border-radius: 8px; border: 1px solid #c3c4c7; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px;">

@@ -111,6 +111,33 @@ class WC_Config_Wholesale {
 
         // My Account dashboard wholesale banner / greeting
         add_action( 'woocommerce_account_dashboard', array( __CLASS__, 'render_my_account_wholesale_box' ), 5 );
+
+        // Login redirect for wholesale customers
+        add_filter( 'woocommerce_login_redirect', array( __CLASS__, 'wholesale_login_redirect' ), 10, 2 );
+        add_filter( 'login_redirect', array( __CLASS__, 'wholesale_login_redirect' ), 10, 3 );
+    }
+
+    /**
+     * Redirect wholesale customers to designated page upon login
+     */
+    public static function wholesale_login_redirect( $redirect_to, $user = null, $user_param = null ) {
+        if ( ! $user || is_wp_error( $user ) ) {
+            if ( $user_param && is_a( $user_param, 'WP_User' ) ) {
+                $user = $user_param;
+            } elseif ( is_user_logged_in() ) {
+                $user = wp_get_current_user();
+            }
+        }
+
+        if ( $user && is_a( $user, 'WP_User' ) && self::is_user_wholesale( $user ) ) {
+            $configured_url = trim( get_option( 'wooconfig_wholesale_login_redirect', '' ) );
+            if ( ! empty( $configured_url ) ) {
+                return esc_url_raw( $configured_url );
+            }
+            return wc_get_page_permalink( 'myaccount' );
+        }
+
+        return $redirect_to;
     }
 
     /**

@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: WooConfig - Configurador de Ropa Deportiva y Corporativa
- * Plugin URI:  http://www.uxcribe.cl
+ * Plugin Name: vk7k-woo-config - Configurador de Ropa Deportiva y Corporativa
+ * Plugin URI:  https://uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.5.2
- * Author:      uxcribe.cl
- * Text Domain: woo-config
+ * Version:     1.6.0
+ * Author:      uxcribe.cl / vk7k
+ * Text Domain: vk7k-woo-config
  * Domain Path: /languages
  * Requires at least: 5.8
  * Requires PHP: 7.4
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.5.2' );
+define( 'WOOCONFIG_VERSION', '1.6.0' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
