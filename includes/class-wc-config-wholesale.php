@@ -15,6 +15,39 @@ class WC_Config_Wholesale {
     }
 
     /**
+     * Check if a specific user (or current logged in user) is a wholesale customer
+     *
+     * @param int|WP_User|null $user
+     * @return bool
+     */
+    public static function is_user_wholesale( $user = null ) {
+        if ( null === $user ) {
+            if ( ! function_exists( 'is_user_logged_in' ) || ! is_user_logged_in() ) {
+                return false;
+            }
+            $user = wp_get_current_user();
+        } elseif ( is_numeric( $user ) ) {
+            $user = get_user_by( 'id', absint( $user ) );
+        }
+
+        if ( ! $user || ! is_a( $user, 'WP_User' ) ) {
+            return false;
+        }
+
+        // Check user role
+        if ( in_array( 'wholesale_customer', (array) $user->roles, true ) ) {
+            return true;
+        }
+
+        // Check user meta flag
+        if ( 'yes' === get_user_meta( $user->ID, '_wooconfig_is_wholesale', true ) ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Check if wholesale price tags and badges should be displayed in catalog / product pages
      *
      * @return bool
@@ -23,6 +56,12 @@ class WC_Config_Wholesale {
         if ( ! self::is_enabled() ) {
             return false;
         }
+
+        // If current user is a registered wholesale customer, always show wholesale prices
+        if ( self::is_user_wholesale() ) {
+            return true;
+        }
+
         return 'yes' === get_option( 'wooconfig_wholesale_show_prices', 'no' );
     }
 
@@ -31,17 +70,21 @@ class WC_Config_Wholesale {
             return;
         }
 
+        // Register custom wholesale role
+        add_action( 'init', array( __CLASS__, 'register_wholesale_role' ) );
+
         // Enqueue frontend wholesale assets (CSS & JS for wholesale notice and info modal)
         add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 
         // Render wholesale terms modal in footer
         add_action( 'wp_footer', array( __CLASS__, 'render_wholesale_modal' ) );
 
-        // Filter WooCommerce price html across catalog, single product, and loops (only if show_prices is active)
-        if ( self::are_prices_visible() ) {
-            add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'append_wholesale_price_html' ), 25, 2 );
-            add_filter( 'render_block', array( __CLASS__, 'filter_block_price_html' ), 10, 2 );
-        }
+        // Filter WooCommerce price html across catalog, single product, and loops (evaluated inside the callback via are_prices_visible)
+        add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'append_wholesale_price_html' ), 25, 2 );
+        add_filter( 'render_block', array( __CLASS__, 'filter_block_price_html' ), 10, 2 );
+
+        // Wholesale customer body class
+        add_filter( 'body_class', array( __CLASS__, 'add_body_class' ) );
 
         // Cart totals calculations & dynamic pricing
         add_action( 'woocommerce_before_calculate_totals', array( __CLASS__, 'apply_wholesale_cart_pricing' ), 25, 1 );
@@ -55,6 +98,40 @@ class WC_Config_Wholesale {
 
         // AJAX fragments for dynamic cart refresh if needed
         add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'add_cart_fragments' ) );
+
+        // User profile wholesale fields in backend
+        add_action( 'show_user_profile', array( __CLASS__, 'render_user_profile_fields' ) );
+        add_action( 'edit_user_profile', array( __CLASS__, 'render_user_profile_fields' ) );
+        add_action( 'personal_options_update', array( __CLASS__, 'save_user_profile_fields' ) );
+        add_action( 'edit_user_profile_update', array( __CLASS__, 'save_user_profile_fields' ) );
+
+        // User admin list columns
+        add_filter( 'manage_users_columns', array( __CLASS__, 'add_user_column' ) );
+        add_filter( 'manage_users_custom_column', array( __CLASS__, 'render_user_column_content' ), 10, 3 );
+
+        // My Account dashboard wholesale banner / greeting
+        add_action( 'woocommerce_account_dashboard', array( __CLASS__, 'render_my_account_wholesale_box' ), 5 );
+    }
+
+    /**
+     * Register 'wholesale_customer' role if not present
+     */
+    public static function register_wholesale_role() {
+        if ( ! get_role( 'wholesale_customer' ) ) {
+            $customer_role = get_role( 'customer' );
+            $caps = $customer_role ? $customer_role->capabilities : array( 'read' => true );
+            add_role( 'wholesale_customer', __( 'Cliente Mayorista', 'woo-config' ), $caps );
+        }
+    }
+
+    /**
+     * Add body class for wholesale customers
+     */
+    public static function add_body_class( $classes ) {
+        if ( self::is_user_wholesale() ) {
+            $classes[] = 'cafu-wholesale-customer';
+        }
+        return $classes;
     }
 
     /**
@@ -250,6 +327,13 @@ class WC_Config_Wholesale {
         add_shortcode( 'wooconfig_wholesale_price', array( __CLASS__, 'render_shortcode' ) );
         add_shortcode( 'wooconfig_precio_mayorista', array( __CLASS__, 'render_shortcode' ) );
 
+        // Conditional visibility shortcodes for FSE / Gutenberg
+        add_shortcode( 'wooconfig_is_wholesale', array( __CLASS__, 'render_conditional_wholesale_shortcode' ) );
+        add_shortcode( 'wooconfig_not_wholesale', array( __CLASS__, 'render_conditional_not_wholesale_shortcode' ) );
+
+        // Wholesale Home & Portal Banner Shortcode
+        add_shortcode( 'wooconfig_wholesale_banner', array( __CLASS__, 'render_wholesale_banner_shortcode' ) );
+
         // Gutenberg Block: wooconfig/wholesale-price
         if ( function_exists( 'register_block_type' ) ) {
             register_block_type( 'wooconfig/wholesale-price', array(
@@ -295,10 +379,64 @@ class WC_Config_Wholesale {
     }
 
     /**
+     * Shortcode: [wooconfig_is_wholesale] ... [/wooconfig_is_wholesale]
+     * Displays content ONLY to logged in wholesale customers
+     */
+    public static function render_conditional_wholesale_shortcode( $atts, $content = null ) {
+        if ( self::is_user_wholesale() ) {
+            return do_shortcode( $content );
+        }
+        return '';
+    }
+
+    /**
+     * Shortcode: [wooconfig_not_wholesale] ... [/wooconfig_not_wholesale]
+     * Displays content to visitors or non-wholesale customers
+     */
+    public static function render_conditional_not_wholesale_shortcode( $atts, $content = null ) {
+        if ( ! self::is_user_wholesale() ) {
+            return do_shortcode( $content );
+        }
+        return '';
+    }
+
+    /**
+     * Shortcode: [wooconfig_wholesale_banner]
+     * Renders responsive wholesale portal teaser banner for Home and pages
+     */
+    public static function render_wholesale_banner_shortcode( $atts ) {
+        $a = shortcode_atts( array(
+            'image_id' => 2158,
+            'link'     => '',
+            'class'    => '',
+        ), $atts, 'wooconfig_wholesale_banner' );
+
+        $is_ws    = self::is_user_wholesale();
+        $dest_url = ! empty( $a['link'] ) ? $a['link'] : ( $is_ws ? wc_get_page_permalink( 'myaccount' ) : wc_get_page_permalink( 'myaccount' ) );
+        $img_src  = wp_get_attachment_image_url( absint( $a['image_id'] ), 'full' );
+
+        if ( ! $img_src ) {
+            $img_src = home_url( '/wp-content/uploads/2026/10/banner-cafu-mayorista.jpg' );
+        }
+
+        $extra_class = ! empty( $a['class'] ) ? ' ' . esc_attr( $a['class'] ) : '';
+
+        ob_start();
+        ?>
+        <div class="cafu-wholesale-home-banner-wrap<?php echo $extra_class; ?>" style="margin: 20px 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+            <a href="<?php echo esc_url( $dest_url ); ?>" style="display: block; line-height: 0; text-decoration: none; position: relative;">
+                <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Zona Mayorista Cafú - Indumentaria Deportiva por Mayor', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: 12px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.008)';" onmouseout="this.style.transform='none';" />
+            </a>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
      * Filter Block Theme product-price block if needed
      */
     public static function filter_block_price_html( $block_content, $block ) {
-        if ( ! self::is_enabled() ) {
+        if ( ! self::is_enabled() || ! self::are_prices_visible() ) {
             return $block_content;
         }
 
@@ -553,13 +691,133 @@ class WC_Config_Wholesale {
     }
 
     /**
-     * Fragment to refresh notice on cart updates
+     * Render wholesale checkbox in WordPress user profile
      */
-    public static function add_cart_fragments( $fragments ) {
-        ob_start();
-        self::render_cart_wholesale_notice();
-        $fragments['div#wooconfig-wholesale-cart-box'] = ob_get_clean();
-        return $fragments;
+    public static function render_user_profile_fields( $user ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'edit_users' ) ) {
+            return;
+        }
+
+        $is_wholesale = self::is_user_wholesale( $user );
+        ?>
+        <h2><?php esc_html_e( 'Condición Mayorista (WooConfig)', 'woo-config' ); ?></h2>
+        <table class="form-table" role="presentation">
+            <tr>
+                <th scope="row">
+                    <label for="wooconfig_is_wholesale"><?php esc_html_e( 'Cliente Mayorista', 'woo-config' ); ?></label>
+                </th>
+                <td>
+                    <label for="wooconfig_is_wholesale" style="font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" name="wooconfig_is_wholesale" id="wooconfig_is_wholesale" value="yes" <?php checked( $is_wholesale ); ?> />
+                        <?php esc_html_e( 'Marcar este usuario como Cliente Mayorista', 'woo-config' ); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e( 'Al estar marcado (o tener el rol "Cliente Mayorista"), el cliente verá siempre activos los precios mayoristas en el catálogo y productos al iniciar sesión.', 'woo-config' ); ?>
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <?php
+    }
+
+    /**
+     * Save user wholesale status
+     */
+    public static function save_user_profile_fields( $user_id ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'edit_users' ) ) {
+            return;
+        }
+
+        $is_ws = ( isset( $_POST['wooconfig_is_wholesale'] ) && 'yes' === $_POST['wooconfig_is_wholesale'] ) ? 'yes' : 'no';
+        update_user_meta( $user_id, '_wooconfig_is_wholesale', $is_ws );
+
+        $user = get_user_by( 'id', $user_id );
+        if ( $user ) {
+            if ( 'yes' === $is_ws ) {
+                if ( ! in_array( 'wholesale_customer', (array) $user->roles, true ) && in_array( 'customer', (array) $user->roles, true ) ) {
+                    $user->set_role( 'wholesale_customer' );
+                }
+            } else {
+                if ( in_array( 'wholesale_customer', (array) $user->roles, true ) ) {
+                    $user->set_role( 'customer' );
+                }
+            }
+        }
+    }
+
+    /**
+     * Add column to users admin table
+     */
+    public static function add_user_column( $columns ) {
+        $columns['wooconfig_wholesale'] = __( 'Mayorista', 'woo-config' );
+        return $columns;
+    }
+
+    /**
+     * Render user column content
+     */
+    public static function render_user_column_content( $val, $column_name, $user_id ) {
+        if ( 'wooconfig_wholesale' === $column_name ) {
+            if ( self::is_user_wholesale( $user_id ) ) {
+                return '<span style="display:inline-block; padding: 2px 8px; border-radius: 4px; background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 11px;">🏷️ MAYORISTA</span>';
+            }
+            return '<span style="color: #94a3b8; font-size: 11px;">Regular</span>';
+        }
+        return $val;
+    }
+
+    /**
+     * Render customized wholesale welcome and action banner in WooCommerce My Account dashboard
+     */
+    public static function render_my_account_wholesale_box() {
+        $is_ws = self::is_user_wholesale();
+        $opts  = self::get_options();
+        $threshold = $opts['cart_threshold'];
+
+        if ( $is_ws ) :
+        ?>
+        <div class="cafu-myaccount-wholesale-card cafu-myaccount-wholesale-card--active" style="margin-bottom: 25px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border-radius: 12px; padding: 24px 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.12); position: relative; overflow: hidden; border: 1.5px solid #334155;">
+            <div style="position: absolute; right: -20px; top: -20px; width: 140px; height: 140px; background: radial-gradient(circle, rgba(148,236,0,0.18) 0%, transparent 70%); pointer-events: none;"></div>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: rgba(148,236,0,0.15); color: #94ec00; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+                        ✨ Cuenta Mayorista Oficial
+                    </span>
+                    <h3 style="margin: 0 0 6px 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.3px;">
+                        Bienvenido a tu Espacio Mayorista Cafú
+                    </h3>
+                    <p style="margin: 0; color: #94a3b8; font-size: 14px; max-width: 580px; line-height: 1.5;">
+                        Tienes acceso preferente y tarifas por mayor activadas en todo nuestro catálogo deportivo. Recuerda que para activar la tarifa mayorista tu pedido debe sumar un mínimo de <strong><?php echo esc_html( $threshold ); ?> prendas en total</strong> (puedes combinar distintos modelos y tallas).
+                    </p>
+                </div>
+
+                <div>
+                    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" style="display: inline-flex; align-items: center; gap: 8px; background: #94ec00; color: #000000; padding: 12px 24px; border-radius: 8px; font-weight: 800; font-size: 14px; text-decoration: none; transition: transform 0.15s ease, background 0.15s ease;" onmouseover="this.style.background='#a6ff00'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#94ec00'; this.style.transform='none';">
+                        <span>Ir al Catálogo</span>
+                        <span style="font-size: 16px;">➔</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <?php else : ?>
+        <div class="cafu-myaccount-wholesale-card cafu-myaccount-wholesale-card--regular" style="margin-bottom: 25px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 20px 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                <div>
+                    <strong style="display: block; font-size: 15px; color: #0f172a; margin-bottom: 4px;">
+                        🏷️ ¿Comprando para tu club, colegio o empresa?
+                    </strong>
+                    <span style="font-size: 13px; color: #64748b; line-height: 1.4;">
+                        Fabricamos uniformes completos desde 10 y 50 unidades con precios por mayor y boceto digital gratuito.
+                    </span>
+                </div>
+                <button type="button" class="button" data-action="open-wholesale-modal" style="font-weight: 700; font-size: 13px;">
+                    Ver Condiciones Mayoristas
+                </button>
+            </div>
+        </div>
+        <?php
+        endif;
     }
 }
 
