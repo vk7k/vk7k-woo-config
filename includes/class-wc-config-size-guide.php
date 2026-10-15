@@ -45,7 +45,7 @@ class WC_Config_Size_Guide {
         wp_enqueue_script(
             'wooconfig-blocks-js',
             WOOCONFIG_URL . 'assets/js/blocks.js',
-            array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-i18n' ),
+            array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-i18n', 'wp-block-editor' ),
             WOOCONFIG_VERSION,
             true
         );

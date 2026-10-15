@@ -378,6 +378,55 @@ class WC_Config_Wholesale {
                     ),
                 ),
             ) );
+
+            // Gutenberg Block: wooconfig/wholesale-banner
+            register_block_type( 'wooconfig/wholesale-banner', array(
+                'editor_script'   => 'wooconfig-blocks-js',
+                'editor_style'    => 'wooconfig-modal-css',
+                'render_callback' => array( __CLASS__, 'render_block_banner' ),
+                'attributes'      => array(
+                    'imageId' => array(
+                        'type'    => 'number',
+                        'default' => 2158,
+                    ),
+                    'imageUrl' => array(
+                        'type'    => 'string',
+                        'default' => '',
+                    ),
+                    'linkUrl' => array(
+                        'type'    => 'string',
+                        'default' => '',
+                    ),
+                    'align' => array(
+                        'type'    => 'string',
+                        'default' => 'center',
+                    ),
+                    'className' => array(
+                        'type'    => 'string',
+                        'default' => '',
+                    ),
+                ),
+            ) );
+
+            // Gutenberg Block: wooconfig/wholesale-content-visible (Exclusive Wholesale Container)
+            register_block_type( 'wooconfig/wholesale-content-visible', array(
+                'editor_script'   => 'wooconfig-blocks-js',
+                'render_callback' => array( __CLASS__, 'render_block_content_visible' ),
+                'supports'        => array(
+                    'align' => array( 'wide', 'full' ),
+                    'html'  => false,
+                ),
+            ) );
+
+            // Gutenberg Block: wooconfig/wholesale-content-hidden (Visitors / Non-Wholesale Container)
+            register_block_type( 'wooconfig/wholesale-content-hidden', array(
+                'editor_script'   => 'wooconfig-blocks-js',
+                'render_callback' => array( __CLASS__, 'render_block_content_hidden' ),
+                'supports'        => array(
+                    'align' => array( 'wide', 'full' ),
+                    'html'  => false,
+                ),
+            ) );
         }
     }
 
@@ -403,6 +452,45 @@ class WC_Config_Wholesale {
         $classes = trim( $align . ' ' . $custom_class );
 
         return self::render_price_badge( null, array( 'class' => $classes ) );
+    }
+
+    /**
+     * Block callback for wooconfig/wholesale-banner
+     */
+    public static function render_block_banner( $attributes, $content = '' ) {
+        $image_id = ! empty( $attributes['imageId'] ) ? absint( $attributes['imageId'] ) : 2158;
+        $link     = ! empty( $attributes['linkUrl'] ) ? esc_url( $attributes['linkUrl'] ) : '';
+        $align    = ! empty( $attributes['align'] ) ? 'align' . esc_attr( $attributes['align'] ) : '';
+        $class    = ! empty( $attributes['className'] ) ? esc_attr( $attributes['className'] ) : '';
+        $classes  = trim( $align . ' ' . $class );
+
+        return self::render_wholesale_banner_shortcode( array(
+            'image_id' => $image_id,
+            'link'     => $link,
+            'class'    => $classes,
+        ) );
+    }
+
+    /**
+     * Block callback for wooconfig/wholesale-content-visible
+     * Renders inner blocks only if the user is a wholesale customer
+     */
+    public static function render_block_content_visible( $attributes, $content = '' ) {
+        if ( self::is_user_wholesale() ) {
+            return $content;
+        }
+        return '';
+    }
+
+    /**
+     * Block callback for wooconfig/wholesale-content-hidden
+     * Renders inner blocks only for visitors or non-wholesale customers
+     */
+    public static function render_block_content_hidden( $attributes, $content = '' ) {
+        if ( ! self::is_user_wholesale() ) {
+            return $content;
+        }
+        return '';
     }
 
     /**
