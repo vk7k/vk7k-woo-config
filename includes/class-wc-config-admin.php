@@ -87,6 +87,12 @@ class WC_Config_Admin {
             $wholesale_enabled = isset( $_POST['wooconfig_wholesale_enabled'] ) ? 'yes' : 'no';
             update_option( 'wooconfig_wholesale_enabled', $wholesale_enabled );
 
+            $wholesale_discount_percent = isset( $_POST['wooconfig_wholesale_discount_percent'] ) ? max( 1, floatval( $_POST['wooconfig_wholesale_discount_percent'] ) ) : 5;
+            update_option( 'wooconfig_wholesale_discount_percent', $wholesale_discount_percent );
+
+            $wholesale_show_myaccount_box = isset( $_POST['wooconfig_wholesale_show_myaccount_box'] ) ? 'yes' : 'no';
+            update_option( 'wooconfig_wholesale_show_myaccount_box', $wholesale_show_myaccount_box );
+
             $wholesale_show_prices = isset( $_POST['wooconfig_wholesale_show_prices'] ) ? 'yes' : 'no';
             update_option( 'wooconfig_wholesale_show_prices', $wholesale_show_prices );
 
@@ -144,8 +150,10 @@ class WC_Config_Admin {
         $preferred_contact_label   = get_option( 'wooconfig_preferred_contact_label', __( 'Medio de contacto preferido para recepción de boceto', 'woo-config' ) );
         $preferred_contact_options = get_option( 'wooconfig_preferred_contact_options', 'WhatsApp, Correo electrónico, Llamada telefónica' );
         
-        $wholesale_enabled         = get_option( 'wooconfig_wholesale_enabled', 'yes' );
-        $wholesale_show_prices     = get_option( 'wooconfig_wholesale_show_prices', 'no' );
+        $wholesale_enabled              = get_option( 'wooconfig_wholesale_enabled', 'yes' );
+        $wholesale_discount_percent    = (float) get_option( 'wooconfig_wholesale_discount_percent', 5 );
+        $wholesale_show_myaccount_box  = get_option( 'wooconfig_wholesale_show_myaccount_box', 'no' );
+        $wholesale_show_prices          = get_option( 'wooconfig_wholesale_show_prices', 'no' );
         $wholesale_cart_qty        = max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) );
         $wholesale_override        = get_option( 'wooconfig_wholesale_override_product_rules', 'yes' );
         $wholesale_login_redirect  = get_option( 'wooconfig_wholesale_login_redirect', wc_get_page_permalink( 'myaccount' ) );
@@ -400,12 +408,37 @@ class WC_Config_Admin {
                                 </tr>
                                 <tr class="wooconfig-ws-dependent-row">
                                     <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
-                                        <label for="wooconfig_wholesale_cart_qty"><?php esc_html_e( 'Umbral global de carrito (unidades)', 'woo-config' ); ?></label>
+                                        <label for="wooconfig_wholesale_cart_qty"><?php esc_html_e( 'Umbral global de carrito para descuento (unidades)', 'woo-config' ); ?></label>
                                     </th>
                                     <td style="padding: 12px 0;">
                                         <input name="wooconfig_wholesale_cart_qty" type="number" id="wooconfig_wholesale_cart_qty" value="<?php echo esc_attr( $wholesale_cart_qty ); ?>" min="1" step="1" class="small-text" style="width: 100px; padding: 6px 10px; font-size: 14px; font-weight: 700;" />
                                         <p class="description" style="margin-top: 6px;">
-                                            <?php esc_html_e( 'Cantidad total de prendas en el carrito requeridas para activar la tarifa mayorista global (por defecto: 50).', 'woo-config' ); ?>
+                                            <?php esc_html_e( 'Cantidad total de productos en el carrito requeridos para activar el descuento por volumen (por defecto: 50 unidades, sin mínimo por producto).', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr class="wooconfig-ws-dependent-row">
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_discount_percent"><?php esc_html_e( 'Porcentaje de descuento global (%)', 'woo-config' ); ?></label>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <input name="wooconfig_wholesale_discount_percent" type="number" id="wooconfig_wholesale_discount_percent" value="<?php echo esc_attr( $wholesale_discount_percent ); ?>" min="1" max="100" step="0.5" class="small-text" style="width: 100px; padding: 6px 10px; font-size: 14px; font-weight: 700;" />
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Porcentaje de descuento aplicado sobre todos los productos del carrito al alcanzar el umbral (por defecto: 5%).', 'woo-config' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr class="wooconfig-ws-dependent-row">
+                                    <th scope="row" style="width: 260px; font-weight: 600; padding: 12px 0;">
+                                        <?php esc_html_e( 'Información en "Mi Cuenta"', 'woo-config' ); ?>
+                                    </th>
+                                    <td style="padding: 12px 0;">
+                                        <label for="wooconfig_wholesale_show_myaccount_box" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                                            <input name="wooconfig_wholesale_show_myaccount_box" type="checkbox" id="wooconfig_wholesale_show_myaccount_box" value="yes" <?php checked( 'yes' === $wholesale_show_myaccount_box ); ?> style="margin: 0;" />
+                                            <?php esc_html_e( 'Mostrar información sobre zona mayorista en el área de cliente ("Mi cuenta")', 'woo-config' ); ?>
+                                        </label>
+                                        <p class="description" style="margin-top: 6px;">
+                                            <?php esc_html_e( 'Si está desactivado (por defecto), se oculta la tarjeta y banners informativos de zona mayorista dentro del panel de Mi Cuenta del cliente.', 'woo-config' ); ?>
                                         </p>
                                     </td>
                                 </tr>

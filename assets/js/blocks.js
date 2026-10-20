@@ -264,7 +264,7 @@
         attributes: {
             imageId: {
                 type: 'number',
-                default: 2158
+                default: 2171
             },
             imageUrl: {
                 type: 'string',
@@ -283,7 +283,7 @@
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
 
-            var defaultImg = attributes.imageUrl || '/wp-content/uploads/2026/10/banner-cafu-mayorista.jpg';
+            var defaultImg = attributes.imageUrl || '/wp-content/uploads/2026/10/banner-compras-sobre-50-unidades.jpg';
             var blockProps = useBlockProps({
                 className: 'cafu-wholesale-home-banner-wrap'
             });
@@ -307,7 +307,7 @@
                         }),
                         el(TextControl, {
                             label: __('ID de Imagen (Adjunto de Medios)', 'woo-config'),
-                            value: attributes.imageId ? String(attributes.imageId) : '2158',
+                            value: attributes.imageId ? String(attributes.imageId) : '2171',
                             onChange: function(newVal) {
                                 setAttributes({ imageId: parseInt(newVal, 10) || 0 });
                             }

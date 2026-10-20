@@ -3,7 +3,7 @@
  * Plugin Name: vk7k-woo-config - Configurador de Ropa Deportiva y Corporativa
  * Plugin URI:  https://uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.6.2
+ * Version:     1.7.0
  * Author:      uxcribe.cl / vk7k
  * Text Domain: vk7k-woo-config
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.6.2' );
+define( 'WOOCONFIG_VERSION', '1.7.0' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -138,6 +138,15 @@ final class WooConfig {
         }
         if ( false === get_option( 'wooconfig_wholesale_enabled' ) ) {
             update_option( 'wooconfig_wholesale_enabled', 'yes' );
+        }
+        if ( false === get_option( 'wooconfig_wholesale_cart_qty' ) ) {
+            update_option( 'wooconfig_wholesale_cart_qty', 50 );
+        }
+        if ( false === get_option( 'wooconfig_wholesale_discount_percent' ) ) {
+            update_option( 'wooconfig_wholesale_discount_percent', 5 );
+        }
+        if ( false === get_option( 'wooconfig_wholesale_show_myaccount_box' ) ) {
+            update_option( 'wooconfig_wholesale_show_myaccount_box', 'no' );
         }
     }
 

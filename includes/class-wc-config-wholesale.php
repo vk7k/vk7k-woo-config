@@ -110,7 +110,9 @@ class WC_Config_Wholesale {
         add_filter( 'manage_users_custom_column', array( __CLASS__, 'render_user_column_content' ), 10, 3 );
 
         // My Account dashboard wholesale banner / greeting
-        add_action( 'woocommerce_account_dashboard', array( __CLASS__, 'render_my_account_wholesale_box' ), 5 );
+        if ( 'yes' === get_option( 'wooconfig_wholesale_show_myaccount_box', 'no' ) ) {
+            add_action( 'woocommerce_account_dashboard', array( __CLASS__, 'render_my_account_wholesale_box' ), 5 );
+        }
 
         // Login redirect for wholesale customers
         add_filter( 'woocommerce_login_redirect', array( __CLASS__, 'wholesale_login_redirect' ), 10, 2 );
@@ -510,14 +512,12 @@ class WC_Config_Wholesale {
      * Block callback for wooconfig/wholesale-banner
      */
     public static function render_block_banner( $attributes, $content = '' ) {
-        $image_id = ! empty( $attributes['imageId'] ) ? absint( $attributes['imageId'] ) : 2158;
+        $image_id = ! empty( $attributes['imageId'] ) ? absint( $attributes['imageId'] ) : 2171;
         $link     = ! empty( $attributes['linkUrl'] ) ? esc_url( $attributes['linkUrl'] ) : '';
-        $is_ws    = self::is_user_wholesale();
-        $dest_url = ! empty( $link ) ? $link : wc_get_page_permalink( 'myaccount' );
         $img_src  = wp_get_attachment_image_url( $image_id, 'full' );
 
         if ( ! $img_src ) {
-            $img_src = home_url( '/wp-content/uploads/2026/10/banner-cafu-mayorista.jpg' );
+            $img_src = home_url( '/wp-content/uploads/2026/10/banner-compras-sobre-50-unidades.jpg' );
         }
 
         $wrapper_attributes = function_exists( 'get_block_wrapper_attributes' )
@@ -527,9 +527,13 @@ class WC_Config_Wholesale {
         ob_start();
         ?>
         <div <?php echo $wrapper_attributes; ?>>
-            <a href="<?php echo esc_url( $dest_url ); ?>" style="display: block; line-height: 0; text-decoration: none; position: relative;">
-                <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Zona Mayorista Cafú - Indumentaria Deportiva por Mayor', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: inherit; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.008)';" onmouseout="this.style.transform='none';" />
-            </a>
+            <?php if ( ! empty( $link ) && 'none' !== $link ) : ?>
+                <a href="<?php echo esc_url( $link ); ?>" style="display: block; line-height: 0; text-decoration: none; position: relative;">
+                    <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Compras sobre 50 unidades - 5% de descuento', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: inherit; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.008)';" onmouseout="this.style.transform='none';" />
+                </a>
+            <?php else : ?>
+                <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Compras sobre 50 unidades - 5% de descuento', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: inherit;" />
+            <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();
@@ -595,17 +599,16 @@ class WC_Config_Wholesale {
      */
     public static function render_wholesale_banner_shortcode( $atts ) {
         $a = shortcode_atts( array(
-            'image_id' => 2158,
+            'image_id' => 2171,
             'link'     => '',
             'class'    => '',
         ), $atts, 'wooconfig_wholesale_banner' );
 
-        $is_ws    = self::is_user_wholesale();
-        $dest_url = ! empty( $a['link'] ) ? $a['link'] : ( $is_ws ? wc_get_page_permalink( 'myaccount' ) : wc_get_page_permalink( 'myaccount' ) );
+        $dest_url = ! empty( $a['link'] ) && 'none' !== $a['link'] ? esc_url( $a['link'] ) : '';
         $img_src  = wp_get_attachment_image_url( absint( $a['image_id'] ), 'full' );
 
         if ( ! $img_src ) {
-            $img_src = home_url( '/wp-content/uploads/2026/10/banner-cafu-mayorista.jpg' );
+            $img_src = home_url( '/wp-content/uploads/2026/10/banner-compras-sobre-50-unidades.jpg' );
         }
 
         $extra_class = ! empty( $a['class'] ) ? ' ' . esc_attr( $a['class'] ) : '';
@@ -613,9 +616,13 @@ class WC_Config_Wholesale {
         ob_start();
         ?>
         <div class="cafu-wholesale-home-banner-wrap<?php echo $extra_class; ?>" style="margin: 20px 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-            <a href="<?php echo esc_url( $dest_url ); ?>" style="display: block; line-height: 0; text-decoration: none; position: relative;">
-                <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Zona Mayorista Cafú - Indumentaria Deportiva por Mayor', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: 12px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.008)';" onmouseout="this.style.transform='none';" />
-            </a>
+            <?php if ( ! empty( $dest_url ) ) : ?>
+                <a href="<?php echo esc_url( $dest_url ); ?>" style="display: block; line-height: 0; text-decoration: none; position: relative;">
+                    <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Compras sobre 50 unidades - 5% de descuento', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: 12px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.008)';" onmouseout="this.style.transform='none';" />
+                </a>
+            <?php else : ?>
+                <img src="<?php echo esc_url( $img_src ); ?>" alt="<?php esc_attr_e( 'Compras sobre 50 unidades - 5% de descuento', 'woo-config' ); ?>" style="width: 100%; height: auto; display: block; border-radius: 12px;" />
+            <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();
@@ -721,6 +728,8 @@ class WC_Config_Wholesale {
         }
 
         $status = self::evaluate_cart_wholesale_status( $cart );
+        $discount_pct = (float) get_option( 'wooconfig_wholesale_discount_percent', 5 );
+        $discount_factor = max( 0, ( 100 - $discount_pct ) / 100 );
 
         foreach ( $cart->get_cart() as $cart_item_key => &$cart_item ) {
             $product_id = isset( $cart_item['product_id'] ) ? absint( $cart_item['product_id'] ) : 0;
@@ -728,28 +737,16 @@ class WC_Config_Wholesale {
                 continue;
             }
 
-            $wholesale_price_meta = get_post_meta( $product_id, '_wooconfig_wholesale_price', true );
-            $has_wholesale_price  = ( '' !== $wholesale_price_meta && null !== $wholesale_price_meta && (float) $wholesale_price_meta > 0 );
-
-            if ( ! $has_wholesale_price ) {
-                $cart_item['_wooconfig_wholesale_applied'] = false;
-                continue;
-            }
-
-            $wholesale_price = (float) $wholesale_price_meta;
-            $min_qty         = max( 1, (int) get_post_meta( $product_id, '_wooconfig_wholesale_min_qty', true ) );
-            $product_qty     = isset( $status['product_quantities'][$product_id] ) ? $status['product_quantities'][$product_id] : 0;
-
-            // Determine if wholesale applies
+            // Determine if discount applies (50+ units storewide or authenticated wholesale user)
             $applies = false;
             $reason  = '';
 
-            if ( $status['global_qualified'] && $status['global_override'] ) {
+            if ( $status['global_qualified'] ) {
                 $applies = true;
                 $reason  = 'global_cart';
-            } elseif ( $product_qty >= $min_qty ) {
+            } elseif ( self::is_user_wholesale() ) {
                 $applies = true;
-                $reason  = 'product_min';
+                $reason  = 'wholesale_customer';
             }
 
             $cart_item['_wooconfig_wholesale_applied'] = $applies;
@@ -764,7 +761,7 @@ class WC_Config_Wholesale {
                 $regular_base_price = (float) $cart_item['data']->get_price();
             }
 
-            $effective_base_price = $applies ? $wholesale_price : $regular_base_price;
+            $effective_base_price = $applies ? round( $regular_base_price * $discount_factor ) : $regular_base_price;
 
             // If this is a WooConfig custom product (with extra add-ons/players/deposits)
             if ( isset( $cart_item['_wooconfig_group_id'] ) ) {
@@ -822,7 +819,7 @@ class WC_Config_Wholesale {
             } else {
                 // Standard WooCommerce product
                 $cart_item['data']->set_price( $effective_base_price );
-                $cart_item['data']->set_sale_price( $applies ? $wholesale_price : '' );
+                $cart_item['data']->set_sale_price( $applies ? $effective_base_price : '' );
             }
 
             $cart->cart_contents[$cart_item_key] = $cart_item;
@@ -841,39 +838,24 @@ class WC_Config_Wholesale {
         }
 
         $status = self::evaluate_cart_wholesale_status( WC()->cart );
-        $has_wholesale_items = false;
-
-        foreach ( WC()->cart->get_cart() as $cart_item ) {
-            $pid = isset( $cart_item['product_id'] ) ? $cart_item['product_id'] : 0;
-            $ws_meta = get_post_meta( $pid, '_wooconfig_wholesale_price', true );
-            if ( '' !== $ws_meta && (float) $ws_meta > 0 ) {
-                $has_wholesale_items = true;
-                break;
-            }
-        }
-
-        if ( ! $has_wholesale_items ) {
-            return;
-        }
+        $threshold = $status['global_threshold'];
+        $discount_pct = (float) get_option( 'wooconfig_wholesale_discount_percent', 5 );
 
         ?>
-        <div class="wooconfig-wholesale-cart-notice <?php echo $status['global_qualified'] ? 'is-qualified' : 'is-pending'; ?>" id="wooconfig-wholesale-cart-box">
+        <div class="wooconfig-wholesale-cart-notice <?php echo $status['global_qualified'] ? 'is-qualified' : 'is-pending'; ?>" id="wooconfig-wholesale-cart-box" style="margin-bottom: 20px;">
             <div class="wooconfig-wholesale-notice-inner">
                 <span class="wooconfig-wholesale-notice-icon">
                     <?php echo $status['global_qualified'] ? '🎉' : '🏷️'; ?>
                 </span>
                 <div class="wooconfig-wholesale-notice-text">
                     <?php if ( $status['global_qualified'] ) : ?>
-                        <strong><?php esc_html_e( '¡Tarifa Mayorista Activada!', 'woo-config' ); ?></strong>
-                        <p><?php echo sprintf( esc_html__( 'Tu pedido acumula %d prendas (superando la meta de %d unidades). Se ha aplicado el precio mayorista a todos los productos elegibles.', 'woo-config' ), $status['total_units'], $status['global_threshold'] ); ?></p>
+                        <strong><?php echo sprintf( esc_html__( '¡Descuento del %g%% Activado!', 'woo-config' ), $discount_pct ); ?></strong>
+                        <p><?php echo sprintf( esc_html__( 'Tu pedido acumula %1$d productos (alcanzando la meta de %2$d unidades). Se ha aplicado un %3$g%% de descuento a todos los productos de tu compra.', 'woo-config' ), $status['total_units'], $threshold, $discount_pct ); ?></p>
                     <?php else : ?>
-                        <strong><?php esc_html_e( 'Beneficio Mayorista Disponible', 'woo-config' ); ?></strong>
-                        <p><?php echo sprintf( esc_html__( 'Llevas %1$d prendas en tu pedido. ¡Agrega %2$d prenda(s) más para activar automáticamente la tarifa mayorista global en todo tu carrito!', 'woo-config' ), $status['total_units'], $status['units_remaining'] ); ?></p>
+                        <strong><?php echo sprintf( esc_html__( '¡%g%% de Descuento por %d o más unidades!', 'woo-config' ), $discount_pct, $threshold ); ?></strong>
+                        <p><?php echo sprintf( esc_html__( 'Llevas %1$d productos en tu pedido. ¡Agrega %2$d producto(s) más para activar automáticamente el %3$g%% de descuento en todo tu carrito!', 'woo-config' ), $status['total_units'], $status['units_remaining'], $discount_pct ); ?></p>
                     <?php endif; ?>
                 </div>
-                <button type="button" class="wooconfig-ws-info-btn-text" data-action="open-wholesale-modal">
-                    <?php esc_html_e( 'Ver condiciones', 'woo-config' ); ?>
-                </button>
             </div>
         </div>
         <?php
