@@ -864,6 +864,17 @@ class WC_Config_Wholesale {
     /**
      * Render wholesale checkbox in WordPress user profile
      */
+    
+    /**
+     * Refresh cart notice via AJAX fragments
+     */
+    public static function add_cart_fragments( $fragments ) {
+        ob_start();
+        self::render_cart_wholesale_notice();
+        $fragments['div.wooconfig-wholesale-cart-notice'] = ob_get_clean();
+        return $fragments;
+    }
+
     public static function render_user_profile_fields( $user ) {
         if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'edit_users' ) ) {
             return;
