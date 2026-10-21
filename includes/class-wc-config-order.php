@@ -62,6 +62,7 @@ class WC_Config_Order {
     public static function save_order_line_item_meta( $item, $cart_item_key, $values, $order ) {
         $keys = array(
             '_wooconfig_flow'                => '_wooconfig_flow',
+            '_wooconfig_upload_token'        => '_wooconfig_upload_token',
             '_wooconfig_group_id'            => '_wooconfig_group_id',
             '_wooconfig_group_title'         => '_wooconfig_group_title',
             '_wooconfig_item_index'          => '_wooconfig_item_index',
@@ -94,7 +95,8 @@ class WC_Config_Order {
     }
 
     public static function process_order_files_and_groups( $order_id, $posted_data, $order ) {
-        $groups              = array();
+        $existing_groups     = $order->get_meta( '_wooconfig_order_groups' );
+        $groups              = is_array( $existing_groups ) ? $existing_groups : array();
         $has_deposit         = false;
         $order_full_total    = 0;
         $order_deposit_total = 0;
@@ -118,11 +120,22 @@ class WC_Config_Order {
             }
 
             if ( ! isset( $groups[$group_id] ) ) {
-                $raw_files   = $item->get_meta( '_wooconfig_files' );
-                $design_desc = $item->get_meta( '_wooconfig_design_desc' );
-                $flow        = $item->get_meta( '_wooconfig_flow' );
+                $raw_files    = $item->get_meta( '_wooconfig_files' );
+                $design_desc  = $item->get_meta( '_wooconfig_design_desc' );
+                $flow         = $item->get_meta( '_wooconfig_flow' );
+                $upload_token = $item->get_meta( '_wooconfig_upload_token' );
 
-                $permanent_files = WC_Config_Uploader::move_temp_files_to_order( $raw_files, $order_id );
+                $permanent_files = WC_Config_Uploader::move_temp_files_to_order( $raw_files, $order_id, $upload_token );
+                $expected_files  = is_array( $raw_files ) ? count( $raw_files ) : 0;
+
+                if ( $expected_files > count( $permanent_files ) ) {
+                    $order->add_order_note( sprintf(
+                        __( 'Atención: no se pudieron adjuntar %d de %d archivo(s) del grupo %s. Revisa la ficha de producción antes de confeccionar.', 'woo-config' ),
+                        $expected_files - count( $permanent_files ),
+                        $expected_files,
+                        $item->get_meta( '_wooconfig_group_title' )
+                    ) );
+                }
 
                 $groups[$group_id] = array(
                     'group_id'    => $group_id,

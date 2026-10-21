@@ -26,9 +26,13 @@
         useTable: false,
         currentStep: 1,
         isSubmitting: false,
+        uploadToken: '',
+        uploadTokenIsNew: false,
 
         init: function() {
             if (!this.data.product_id) return;
+
+            this.uploadToken = this.getUploadToken();
 
             var minU = parseInt(this.data.min_units, 10) || 1;
             this.quantity = Math.max(1, minU);
@@ -45,6 +49,40 @@
 
         getDraftKey: function() {
             return 'wooconfig_unified_draft_' + this.data.product_id;
+        },
+
+        getUploadToken: function() {
+            var match = document.cookie.match(/(?:^|;\s*)wooconfig_upload_token=([a-f0-9]{32,64})/i);
+            if (match) {
+                this.uploadTokenIsNew = false;
+                return match[1].toLowerCase();
+            }
+
+            this.uploadTokenIsNew = true;
+            var token = this.generateUploadToken();
+            var secure = location.protocol === 'https:' ? '; Secure' : '';
+            document.cookie = 'wooconfig_upload_token=' + token + '; path=/; max-age=' + (48 * 60 * 60) + '; SameSite=Lax' + secure;
+            return token;
+        },
+
+        generateUploadToken: function() {
+            try {
+                if (window.crypto && window.crypto.getRandomValues) {
+                    var bytes = new Uint8Array(16);
+                    window.crypto.getRandomValues(bytes);
+                    var out = '';
+                    for (var i = 0; i < bytes.length; i++) {
+                        out += ('0' + bytes[i].toString(16)).slice(-2);
+                    }
+                    return out;
+                }
+            } catch (e) {}
+
+            var fallback = '';
+            while (fallback.length < 32) {
+                fallback += Math.floor(Math.random() * 0xffffffff).toString(16);
+            }
+            return fallback.slice(0, 32);
         },
 
         initAdicionalesCounts: function() {
@@ -86,9 +124,11 @@
                         if (draft.quantity) this.quantity = Math.max(1, parseInt(draft.quantity, 10));
                         if (draft.paymentMode) this.paymentMode = draft.paymentMode;
                         if (draft.adicionalesCounts) this.adicionalesCounts = $.extend({}, this.adicionalesCounts, draft.adicionalesCounts);
-                        if (Array.isArray(draft.filesDesign)) this.filesDesign = draft.filesDesign;
-                        if (Array.isArray(draft.filesSponsors)) this.filesSponsors = draft.filesSponsors;
-                        if (Array.isArray(draft.filesPlayers)) this.filesPlayers = draft.filesPlayers;
+                        if (!this.uploadTokenIsNew) {
+                            if (Array.isArray(draft.filesDesign)) this.filesDesign = draft.filesDesign;
+                            if (Array.isArray(draft.filesSponsors)) this.filesSponsors = draft.filesSponsors;
+                            if (Array.isArray(draft.filesPlayers)) this.filesPlayers = draft.filesPlayers;
+                        }
                         if (Array.isArray(draft.players)) this.players = draft.players;
                         if (typeof draft.useTable === 'boolean') this.useTable = draft.useTable;
 
@@ -267,6 +307,7 @@
             var formData = new FormData();
             formData.append('action', 'wooconfig_upload_file');
             formData.append('nonce', this.data.nonce);
+            formData.append('upload_token', this.uploadToken);
 
             var maxMb = parseInt(this.data.max_file_size_mb, 10) || 20;
             var validFilesCount = 0;
@@ -349,6 +390,7 @@
             $.post(self.data.ajax_url, {
                 action: 'wooconfig_delete_file',
                 nonce: self.data.nonce,
+                upload_token: self.uploadToken,
                 stored_name: storedName
             });
         },
@@ -689,6 +731,7 @@
             var payload = {
                 action: 'wooconfig_add_team_to_cart',
                 nonce: this.data.nonce,
+                upload_token: this.uploadToken,
                 flow: 'unified',
                 product_id: this.data.product_id,
                 quantity: this.quantity,

@@ -3,7 +3,7 @@
  * Plugin Name: vk7k-woo-config - Configurador de Ropa Deportiva y Corporativa
  * Plugin URI:  https://uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.7.0
+ * Version:     1.7.1
  * Author:      uxcribe.cl / vk7k
  * Text Domain: vk7k-woo-config
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.7.0' );
+define( 'WOOCONFIG_VERSION', '1.7.1' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -106,7 +106,9 @@ final class WooConfig {
                 file_put_contents( $dir . '/index.php', '<?php // Silence is golden' );
             }
             if ( ! file_exists( $dir . '/.htaccess' ) ) {
-                $htaccess_content = "# Disable script execution\n<FilesMatch \"\.(php|phtml|php3|php4|php5|php7|phps|pl|py|cgi|sh)$\">\nOrder Deny,Allow\nDeny from all\n</FilesMatch>\nOptions -Indexes\n";
+                $htaccess_content = class_exists( 'WC_Config_Uploader' )
+                    ? WC_Config_Uploader::get_htaccess_content()
+                    : "# Disable script execution\n<FilesMatch \"\\.(php|phtml|php3|php4|php5|php7|phps|pl|py|cgi|sh)$\">\n\t<IfModule mod_authz_core.c>\n\t\tRequire all denied\n\t</IfModule>\n\t<IfModule !mod_authz_core.c>\n\t\tOrder Deny,Allow\n\t\tDeny from all\n\t</IfModule>\n</FilesMatch>\n";
                 file_put_contents( $dir . '/.htaccess', $htaccess_content );
             }
         }

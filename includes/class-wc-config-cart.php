@@ -20,6 +20,30 @@ class WC_Config_Cart {
         add_filter( 'woocommerce_check_cart_items', array( __CLASS__, 'validate_cart_items' ) );
     }
 
+    /**
+     * Ensure every referenced file was uploaded with the current browser token.
+     *
+     * @return array
+     */
+    private static function decode_json_array( $value ) {
+        if ( ! is_string( $value ) ) {
+            return array();
+        }
+
+        $decoded = json_decode( wp_unslash( $value ), true );
+        return is_array( $decoded ) ? $decoded : array();
+    }
+
+    private static function validate_upload_files( $files, $upload_token ) {
+        $valid = WC_Config_Uploader::validate_owned_files( $files, $upload_token );
+
+        if ( is_wp_error( $valid ) ) {
+            wp_send_json_error( array( 'message' => $valid->get_error_message() ) );
+        }
+
+        return $valid;
+    }
+
     public static function handle_add_team_to_cart() {
         check_ajax_referer( 'wooconfig_nonce', 'nonce' );
 
@@ -35,12 +59,9 @@ class WC_Config_Cart {
         $min_units = (int) get_option( 'wooconfig_min_units', get_option( 'wooconfig_default_min_units', 1 ) );
         $min_units = max( 1, $min_units );
 
-        $design_desc = isset( $_POST['design_desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_desc'] ) ) : '';
-        $files_json  = isset( $_POST['files'] ) ? wp_unslash( $_POST['files'] ) : '[]';
-        $files       = json_decode( $files_json, true );
-        if ( ! is_array( $files ) ) {
-            $files = array();
-        }
+        $design_desc  = isset( $_POST['design_desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_desc'] ) ) : '';
+        $files        = self::decode_json_array( isset( $_POST['files'] ) ? $_POST['files'] : '[]' );
+        $upload_token = isset( $_POST['upload_token'] ) ? WC_Config_Uploader::sanitize_upload_token( wp_unslash( $_POST['upload_token'] ) ) : '';
 
         // Product configured adicionales
         $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
@@ -78,25 +99,19 @@ class WC_Config_Cart {
             }
 
             // Decode design, sponsor and player files
-            $files_design_json   = isset( $_POST['files_design'] ) ? wp_unslash( $_POST['files_design'] ) : '[]';
-            $files_design        = json_decode( $files_design_json, true );
-            if ( ! is_array( $files_design ) ) $files_design = array();
+            $files_design   = self::decode_json_array( isset( $_POST['files_design'] ) ? $_POST['files_design'] : '[]' );
+            $files_sponsors = self::decode_json_array( isset( $_POST['files_sponsors'] ) ? $_POST['files_sponsors'] : '[]' );
+            $files_players  = self::decode_json_array( isset( $_POST['files_players'] ) ? $_POST['files_players'] : '[]' );
 
-            $files_sponsors_json = isset( $_POST['files_sponsors'] ) ? wp_unslash( $_POST['files_sponsors'] ) : '[]';
-            $files_sponsors      = json_decode( $files_sponsors_json, true );
-            if ( ! is_array( $files_sponsors ) ) $files_sponsors = array();
-
-            $files_players_json  = isset( $_POST['files_players'] ) ? wp_unslash( $_POST['files_players'] ) : '[]';
-            $files_players       = json_decode( $files_players_json, true );
-            if ( ! is_array( $files_players ) ) $files_players = array();
+            $files_design   = self::validate_upload_files( $files_design, $upload_token );
+            $files_sponsors = self::validate_upload_files( $files_sponsors, $upload_token );
+            $files_players  = self::validate_upload_files( $files_players, $upload_token );
 
             $design_notes  = isset( $_POST['design_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_notes'] ) ) : '';
             $sponsor_notes = isset( $_POST['sponsor_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sponsor_notes'] ) ) : '';
 
-            $use_table    = ( isset( $_POST['use_table'] ) && ( '1' === $_POST['use_table'] || 'true' === $_POST['use_table'] ) );
-            $players_json = isset( $_POST['players'] ) ? wp_unslash( $_POST['players'] ) : '[]';
-            $players      = json_decode( $players_json, true );
-            if ( ! is_array( $players ) ) $players = array();
+            $use_table = ( isset( $_POST['use_table'] ) && ( '1' === $_POST['use_table'] || 'true' === $_POST['use_table'] ) );
+            $players   = self::decode_json_array( isset( $_POST['players'] ) ? $_POST['players'] : '[]' );
 
             // Validation server side:
             if ( empty( $files_design ) ) {
@@ -132,11 +147,7 @@ class WC_Config_Cart {
             }
             $combined_desc = implode( "\n\n", $notes_parts );
 
-            $adicionales_counts_json = isset( $_POST['adicionales_counts'] ) ? wp_unslash( $_POST['adicionales_counts'] ) : '{}';
-            $adicionales_counts      = json_decode( $adicionales_counts_json, true );
-            if ( ! is_array( $adicionales_counts ) ) {
-                $adicionales_counts = array();
-            }
+            $adicionales_counts = self::decode_json_array( isset( $_POST['adicionales_counts'] ) ? $_POST['adicionales_counts'] : '{}' );
 
             $extra_total = 0;
             $adicionales_summary_list = array();
@@ -231,6 +242,7 @@ class WC_Config_Cart {
 
                     $cart_item_data = array(
                         '_wooconfig_flow'                => 'unified',
+                        '_wooconfig_upload_token'        => $upload_token,
                         '_wooconfig_group_id'            => $group_id,
                         '_wooconfig_group_title'         => $group_title,
                         '_wooconfig_item_index'          => $index,
@@ -283,6 +295,7 @@ class WC_Config_Cart {
 
                 $cart_item_data = array(
                     '_wooconfig_flow'                => 'unified',
+                    '_wooconfig_upload_token'        => $upload_token,
                     '_wooconfig_group_id'            => $group_id,
                     '_wooconfig_group_title'         => sprintf( __( 'Equipo / Set: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
                     '_wooconfig_total_items'         => $qty,
@@ -330,6 +343,8 @@ class WC_Config_Cart {
 
         // ================= FLOW 1: QUICK CONFIGURATION =================
         if ( 'quick' === $flow ) {
+            $files = self::validate_upload_files( $files, $upload_token );
+
             if ( empty( $files ) ) {
                 wp_send_json_error( array(
                     'message' => __( 'No es posible confeccionar tu pedido sin el detalle de las tallas, dorsales y apellidos. Por favor sube una foto o archivo con los datos de tu equipo (o utiliza el Personalizador paso a paso).', 'woo-config' )
@@ -341,11 +356,7 @@ class WC_Config_Cart {
                 wp_send_json_error( array( 'message' => __( 'Debes ingresar al menos 1 prenda.', 'woo-config' ) ) );
             }
 
-            $adicionales_counts_json = isset( $_POST['adicionales_counts'] ) ? wp_unslash( $_POST['adicionales_counts'] ) : '{}';
-            $adicionales_counts      = json_decode( $adicionales_counts_json, true );
-            if ( ! is_array( $adicionales_counts ) ) {
-                $adicionales_counts = array();
-            }
+            $adicionales_counts = self::decode_json_array( isset( $_POST['adicionales_counts'] ) ? $_POST['adicionales_counts'] : '{}' );
 
             $extra_total = 0;
             $adicionales_summary_list = array();
@@ -379,6 +390,7 @@ class WC_Config_Cart {
 
             $cart_item_data = array(
                 '_wooconfig_flow'                => 'quick',
+                '_wooconfig_upload_token'        => $upload_token,
                 '_wooconfig_group_id'            => $group_id,
                 '_wooconfig_group_title'         => sprintf( __( 'Pedido Rápido: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
                 '_wooconfig_total_items'         => $qty,
@@ -435,12 +447,13 @@ class WC_Config_Cart {
         }
 
         // ================= FLOW 2: WIZARD STEP BY STEP =================
-        $players_json = isset( $_POST['players'] ) ? wp_unslash( $_POST['players'] ) : '[]';
-        $players      = json_decode( $players_json, true );
+        $players = self::decode_json_array( isset( $_POST['players'] ) ? $_POST['players'] : '[]' );
 
-        if ( empty( $players ) || ! is_array( $players ) || count( $players ) < 1 ) {
+        if ( empty( $players ) || count( $players ) < 1 ) {
             wp_send_json_error( array( 'message' => __( 'Debes ingresar al menos un jugador/prenda.', 'woo-config' ) ) );
         }
+
+        $files = self::validate_upload_files( $files, $upload_token );
 
         $group_id    = 'team_' . wp_generate_uuid4();
         $group_title = sprintf( __( 'Equipo / Set: %s (%d prendas)', 'woo-config' ), $product->get_name(), count( $players ) );
@@ -547,6 +560,7 @@ class WC_Config_Cart {
 
             $cart_item_data = array(
                 '_wooconfig_flow'                => 'wizard',
+                '_wooconfig_upload_token'        => $upload_token,
                 '_wooconfig_group_id'            => $group_id,
                 '_wooconfig_group_title'         => $group_title,
                 '_wooconfig_item_index'          => $index,
