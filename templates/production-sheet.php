@@ -198,8 +198,12 @@ if ( $is_draft && isset( $draft_data ) ) {
                 <div class="files-box">
                     <strong>📁 ARCHIVOS DE DISEÑO / FOTOS / PLANILLAS ADJUNTAS:</strong>
                     <div class="file-links">
-                        <?php foreach ( $files as $f ) : ?>
-                            <a href="<?php echo esc_url( $f['file_url'] ); ?>" target="_blank" class="file-badge">
+                        <?php foreach ( $files as $f ) :
+                            $file_url = $is_draft
+                                ? ( isset( $f['file_url'] ) ? $f['file_url'] : '' )
+                                : WC_Config_Uploader::get_order_file_url( $order->get_id(), $f );
+                            ?>
+                            <a href="<?php echo esc_url( $file_url ); ?>" target="_blank" class="file-badge">
                                 🔗 <?php echo esc_html( $f['original_name'] ); ?> (Ver / Descargar)
                             </a>
                         <?php endforeach; ?>

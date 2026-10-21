@@ -12,6 +12,8 @@ class WC_Config_Uploader {
     const MAX_FILES_IP_HOUR     = 60;
     const MAX_BYTES_IP_HOUR     = 314572800; // 300 MB.
     const MAX_BYTES_GLOBAL_DAY  = 2147483648; // 2 GB.
+    const SIGNED_URL_TTL        = 7776000; // 90 days.
+    const TEMP_URL_TTL          = 172800; // 48 hours.
 
     public static function init() {
         add_action( 'wp_ajax_wooconfig_upload_files', array( __CLASS__, 'handle_ajax_upload' ) );
@@ -22,6 +24,9 @@ class WC_Config_Uploader {
 
         add_action( 'wp_ajax_wooconfig_delete_file', array( __CLASS__, 'handle_ajax_delete' ) );
         add_action( 'wp_ajax_nopriv_wooconfig_delete_file', array( __CLASS__, 'handle_ajax_delete' ) );
+
+        add_action( 'wp_ajax_wooconfig_download', array( __CLASS__, 'handle_download' ) );
+        add_action( 'wp_ajax_nopriv_wooconfig_download', array( __CLASS__, 'handle_download' ) );
     }
 
     public static function get_upload_dirs() {
@@ -68,7 +73,11 @@ class WC_Config_Uploader {
                 $errors[] = sprintf( __( 'La carpeta [%s] no tiene permisos de escritura: <code>%s</code>. Por favor establece permisos 755 o 775.', 'woo-config' ), $label, esc_html( $path ) );
             }
 
-            self::protect_directory( $path );
+            if ( $path === $dirs['temp_dir'] ) {
+                self::protect_private_directory( $path );
+            } else {
+                self::protect_directory( $path );
+            }
         }
 
         return $errors;
@@ -87,8 +96,36 @@ class WC_Config_Uploader {
             @file_put_contents( $path . '/index.php', '<?php // Silence is golden' );
         }
 
-        if ( ! file_exists( $path . '/.htaccess' ) ) {
-            @file_put_contents( $path . '/.htaccess', self::get_htaccess_content() );
+        $htaccess = $path . '/.htaccess';
+        $current  = file_exists( $htaccess ) ? (string) file_get_contents( $htaccess ) : '';
+        $desired  = self::get_htaccess_content();
+
+        // Replace our previous Apache 2.2 syntax with the portable version.
+        if ( $current !== $desired && ( empty( $current ) || false !== strpos( $current, '# Disable script execution' ) ) ) {
+            @file_put_contents( $htaccess, $desired );
+        }
+    }
+
+    public static function get_private_htaccess_content() {
+        return "# WooConfig private files\n<IfModule mod_authz_core.c>\n\tRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n\tOrder Deny,Allow\n\tDeny from all\n</IfModule>\n";
+    }
+
+    private static function protect_private_directory( $path ) {
+        if ( ! is_dir( $path ) || ! is_writable( $path ) ) {
+            return;
+        }
+
+        if ( ! file_exists( $path . '/index.php' ) ) {
+            @file_put_contents( $path . '/index.php', '<?php // Silence is golden' );
+        }
+
+        $htaccess = $path . '/.htaccess';
+        $current  = file_exists( $htaccess ) ? (string) file_get_contents( $htaccess ) : '';
+        $desired  = self::get_private_htaccess_content();
+
+        // Replace our previous script-only protection with deny-all.
+        if ( $current !== $desired && ( empty( $current ) || false !== strpos( $current, '# Disable script execution' ) || false !== strpos( $current, '# WooConfig private files' ) ) ) {
+            @file_put_contents( $htaccess, $desired );
         }
     }
 
@@ -135,22 +172,246 @@ class WC_Config_Uploader {
     /**
      * Build the safe file payload returned to the frontend.
      */
-    private static function format_file_data( $entry, $location = 'temp' ) {
-        $dirs        = self::get_upload_dirs();
-        $base_url    = 'order' === $location ? $dirs['orders_url'] : $dirs['temp_url'];
+    private static function format_file_data( $entry, $location = 'temp', $context_id = 0 ) {
         $size        = isset( $entry['file_size'] ) ? (int) $entry['file_size'] : 0;
         $stored_name = isset( $entry['stored_name'] ) ? $entry['stored_name'] : '';
+        $file_url    = '';
+
+        if ( ! empty( $stored_name ) ) {
+            $file_url = 'order' === $location
+                ? self::get_signed_file_url( 'order', $context_id, $stored_name )
+                : self::get_signed_file_url( 'temp', $context_id, $stored_name );
+        }
 
         return array(
             'file_id'        => isset( $entry['file_id'] ) ? $entry['file_id'] : '',
             'original_name'  => isset( $entry['original_name'] ) ? $entry['original_name'] : '',
             'stored_name'    => $stored_name,
-            'file_url'       => $stored_name ? $base_url . '/' . $stored_name : '',
+            'file_url'       => $file_url,
             'file_size'      => $size,
             'size_formatted' => size_format( $size, 2 ),
             'extension'      => isset( $entry['extension'] ) ? $entry['extension'] : '',
             'is_image'       => ! empty( $entry['is_image'] ),
         );
+    }
+
+    /**
+     * Build a capability URL valid without login (for emails, workshop sheets and previews).
+     */
+    public static function get_signed_file_url( $type, $id, $stored_name, $ttl = null ) {
+        $type        = in_array( $type, array( 'temp', 'order' ), true ) ? $type : 'order';
+        $stored_name = sanitize_file_name( $stored_name );
+
+        if ( empty( $stored_name ) ) {
+            return '';
+        }
+
+        if ( 'temp' === $type ) {
+            $id = self::sanitize_upload_token( $id );
+            if ( null === $ttl ) {
+                $ttl = self::TEMP_URL_TTL;
+            }
+        } else {
+            $id = absint( $id );
+            if ( null === $ttl ) {
+                $ttl = (int) apply_filters( 'wooconfig_signed_url_ttl', self::SIGNED_URL_TTL );
+            }
+        }
+
+        if ( empty( $id ) ) {
+            return '';
+        }
+
+        $ttl = max( 60, (int) $ttl );
+        $exp = time() + $ttl;
+        $sig = hash_hmac( 'sha256', $type . '|' . $id . '|' . $stored_name . '|' . $exp, wp_salt( 'auth' ) );
+
+        return add_query_arg(
+            array(
+                'action' => 'wooconfig_download',
+                'type'   => $type,
+                'id'     => $id,
+                'file'   => $stored_name,
+                'exp'    => $exp,
+                'sig'    => $sig,
+            ),
+            admin_url( 'admin-ajax.php' )
+        );
+    }
+
+    public static function get_order_file_url( $order_id, $file ) {
+        $stored_name = isset( $file['stored_name'] ) ? sanitize_file_name( $file['stored_name'] ) : '';
+
+        if ( empty( $stored_name ) && ! empty( $file['file_url'] ) ) {
+            $query = array();
+            wp_parse_str( (string) wp_parse_url( $file['file_url'], PHP_URL_QUERY ), $query );
+
+            if ( ! empty( $query['file'] ) ) {
+                $stored_name = sanitize_file_name( $query['file'] );
+            } else {
+                $path        = wp_parse_url( $file['file_url'], PHP_URL_PATH );
+                $stored_name = sanitize_file_name( basename( $path ) );
+            }
+        }
+
+        if ( empty( $stored_name ) || empty( $order_id ) ) {
+            return '';
+        }
+
+        return self::get_signed_file_url( 'order', $order_id, $stored_name );
+    }
+
+    /**
+     * Check that a stored filename really belongs to the order before serving it.
+     */
+    private static function order_has_file( $order, $stored_name ) {
+        $stored_name = sanitize_file_name( $stored_name );
+        if ( empty( $stored_name ) || ! $order ) {
+            return false;
+        }
+
+        $groups = $order->get_meta( '_wooconfig_order_groups' );
+        if ( is_array( $groups ) ) {
+            foreach ( $groups as $group ) {
+                if ( empty( $group['files'] ) || ! is_array( $group['files'] ) ) {
+                    continue;
+                }
+                foreach ( $group['files'] as $file ) {
+                    $file_name = isset( $file['stored_name'] ) ? sanitize_file_name( $file['stored_name'] ) : '';
+                    if ( empty( $file_name ) && ! empty( $file['file_url'] ) ) {
+                        $query = array();
+                        wp_parse_str( (string) wp_parse_url( $file['file_url'], PHP_URL_QUERY ), $query );
+                        $file_name = ! empty( $query['file'] )
+                            ? sanitize_file_name( $query['file'] )
+                            : sanitize_file_name( basename( (string) wp_parse_url( $file['file_url'], PHP_URL_PATH ) ) );
+                    }
+                    if ( $file_name === $stored_name ) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        foreach ( $order->get_items() as $item ) {
+            $files = $item->get_meta( '_wooconfig_files' );
+            if ( empty( $files ) || ! is_array( $files ) ) {
+                continue;
+            }
+            foreach ( $files as $file ) {
+                $file_name = isset( $file['stored_name'] ) ? sanitize_file_name( $file['stored_name'] ) : '';
+                if ( $file_name === $stored_name ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static function handle_download() {
+        $type = isset( $_GET['type'] ) ? sanitize_key( wp_unslash( $_GET['type'] ) ) : '';
+        $id   = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+        $file = isset( $_GET['file'] ) ? sanitize_file_name( wp_unslash( $_GET['file'] ) ) : '';
+        $exp  = isset( $_GET['exp'] ) ? absint( $_GET['exp'] ) : 0;
+        $sig  = isset( $_GET['sig'] ) ? sanitize_text_field( wp_unslash( $_GET['sig'] ) ) : '';
+
+        if ( ! in_array( $type, array( 'temp', 'order' ), true ) || empty( $file ) || empty( $exp ) || empty( $sig ) ) {
+            self::deny_download();
+        }
+
+        if ( $exp < time() || ! preg_match( '/^[a-f0-9]{64}$/', $sig ) ) {
+            self::deny_download();
+        }
+
+        if ( 'temp' === $type ) {
+            $id = self::sanitize_upload_token( $id );
+        } else {
+            $id = absint( $id );
+        }
+
+        if ( empty( $id ) ) {
+            self::deny_download();
+        }
+
+        $expected = hash_hmac( 'sha256', $type . '|' . $id . '|' . $file . '|' . $exp, wp_salt( 'auth' ) );
+
+        if ( ! hash_equals( $expected, $sig ) ) {
+            self::deny_download();
+        }
+
+        $dirs = self::get_upload_dirs();
+
+        if ( 'temp' === $type ) {
+            $registry = self::get_token_registry( $id );
+            if ( ! isset( $registry[ $file ] ) ) {
+                self::deny_download();
+            }
+            $path         = $dirs['temp_dir'] . '/' . $file;
+            $allowed_base = realpath( $dirs['temp_dir'] );
+        } else {
+            $order = function_exists( 'wc_get_order' ) ? wc_get_order( $id ) : false;
+
+            if ( ! $order || ! self::order_has_file( $order, $file ) ) {
+                self::deny_download();
+            }
+
+            $path         = $dirs['orders_dir'] . '/' . $id . '/' . $file;
+            $allowed_base = realpath( $dirs['orders_dir'] . '/' . $id );
+        }
+
+        $real_path = realpath( $path );
+
+        if ( ! $real_path || ! $allowed_base || 0 !== strpos( $real_path, $allowed_base . DIRECTORY_SEPARATOR ) || ! is_file( $real_path ) ) {
+            self::deny_download();
+        }
+
+        $ext      = strtolower( pathinfo( $real_path, PATHINFO_EXTENSION ) );
+        $is_image = in_array( $ext, array( 'jpg', 'jpeg', 'png', 'webp' ), true );
+        $mime     = self::get_mime_for_extension( $ext );
+        $filename = sanitize_file_name( basename( $real_path ) );
+
+        while ( ob_get_level() ) {
+            ob_end_clean();
+        }
+
+        header( 'Content-Type: ' . $mime );
+        header( 'Content-Length: ' . (string) filesize( $real_path ) );
+        header( 'Content-Disposition: ' . ( $is_image ? 'inline' : 'attachment' ) . '; filename="' . str_replace( '"', '', $filename ) . '"' );
+        header( 'X-Content-Type-Options: nosniff' );
+        header( 'X-Robots-Tag: noindex, nofollow, noarchive' );
+        header( 'Referrer-Policy: no-referrer' );
+        header( 'Cache-Control: private, no-store, max-age=0' );
+        header( 'Pragma: no-cache' );
+
+        readfile( $real_path );
+        exit;
+    }
+
+    private static function deny_download() {
+        wp_die(
+            esc_html__( 'Enlace no válido o expirado.', 'woo-config' ),
+            esc_html__( 'Acceso denegado', 'woo-config' ),
+            array( 'response' => 403 )
+        );
+    }
+
+    private static function get_mime_for_extension( $ext ) {
+        $mimes = array(
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png'  => 'image/png',
+            'webp' => 'image/webp',
+            'pdf'  => 'application/pdf',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xls'  => 'application/vnd.ms-excel',
+            'doc'  => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'ai'   => 'application/postscript',
+            'eps'  => 'application/postscript',
+            'zip'  => 'application/zip',
+        );
+
+        return isset( $mimes[ $ext ] ) ? $mimes[ $ext ] : 'application/octet-stream';
     }
 
     /**
@@ -193,7 +454,7 @@ class WC_Config_Uploader {
             }
 
             $seen[ $stored_name ] = true;
-            $valid[]              = self::format_file_data( $registry[ $stored_name ], 'temp' );
+            $valid[]              = self::format_file_data( $registry[ $stored_name ], 'temp', $upload_token );
         }
 
         return $valid;
@@ -508,7 +769,7 @@ class WC_Config_Uploader {
             );
 
             $registry[ $item['stored_name'] ] = $entry;
-            $uploaded_results[]               = self::format_file_data( $entry, 'temp' );
+            $uploaded_results[]               = self::format_file_data( $entry, 'temp', $upload_token );
             $moved_bytes                     += $item['file_size'];
         }
 
@@ -565,7 +826,6 @@ class WC_Config_Uploader {
         $dirs         = self::get_upload_dirs();
         $order_id     = absint( $order_id );
         $order_dir    = $dirs['orders_dir'] . '/' . $order_id;
-        $order_url    = $dirs['orders_url'] . '/' . $order_id;
         $upload_token = self::sanitize_upload_token( $upload_token );
         $registry     = $upload_token ? self::get_token_registry( $upload_token ) : array();
 
@@ -573,7 +833,7 @@ class WC_Config_Uploader {
             wp_mkdir_p( $order_dir );
         }
 
-        self::protect_directory( $order_dir );
+        self::protect_private_directory( $order_dir );
 
         $real_temp = realpath( $dirs['temp_dir'] );
         $moved     = array();
@@ -613,7 +873,7 @@ class WC_Config_Uploader {
                 'file_id'        => isset( $entry['file_id'] ) ? $entry['file_id'] : '',
                 'original_name'  => ! empty( $entry['original_name'] ) ? $entry['original_name'] : $stored_name,
                 'stored_name'    => $stored_name,
-                'file_url'       => $order_url . '/' . $stored_name,
+                'file_url'       => self::get_signed_file_url( 'order', $order_id, $stored_name ),
                 'file_size'      => $size ? (int) $size : 0,
                 'size_formatted' => size_format( $size ? (int) $size : 0, 2 ),
                 'extension'      => $ext,

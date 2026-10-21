@@ -630,7 +630,7 @@ class WC_Config_Order {
                             <strong style="display: block; margin-bottom: 8px; color: #1e293b; font-size: 13px;">📁 Archivos y Logos Adjuntos:</strong>
                             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                                 <?php foreach ( $files as $f ) :
-                                    $file_url  = isset( $f['file_url'] ) ? $f['file_url'] : '';
+                                    $file_url  = WC_Config_Uploader::get_order_file_url( $order->get_id(), $f );
                                     $orig_name = isset( $f['original_name'] ) ? $f['original_name'] : 'Archivo adjunto';
                                     $is_img    = isset( $f['is_image'] ) ? $f['is_image'] : false;
                                     ?>
@@ -991,7 +991,7 @@ class WC_Config_Order {
                 if ( ! empty( $g['files'] ) ) {
                     echo "Archivos:\n";
                     foreach ( $g['files'] as $f ) {
-                        echo "- " . $f['original_name'] . ": " . $f['file_url'] . "\n";
+                        echo "- " . $f['original_name'] . ": " . WC_Config_Uploader::get_order_file_url( $order->get_id(), $f ) . "\n";
                     }
                 }
                 echo "\n";
@@ -1010,7 +1010,7 @@ class WC_Config_Order {
                             <ul style="margin: 0; padding-left: 20px;">
                                 <?php foreach ( $g['files'] as $f ) : ?>
                                     <li>
-                                        <a href="<?php echo esc_url( $f['file_url'] ); ?>" target="_blank" style="color: #0073aa; text-decoration: underline;">
+                                        <a href="<?php echo esc_url( WC_Config_Uploader::get_order_file_url( $order->get_id(), $f ) ); ?>" target="_blank" style="color: #0073aa; text-decoration: underline;">
                                             <?php echo esc_html( $f['original_name'] ); ?> (Descargar)
                                         </a>
                                     </li>
