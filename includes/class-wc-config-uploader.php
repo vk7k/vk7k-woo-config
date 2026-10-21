@@ -30,18 +30,76 @@ class WC_Config_Uploader {
     }
 
     public static function get_upload_dirs() {
-        $upload_dir = wp_upload_dir();
-        $base_dir   = $upload_dir['basedir'] . '/woo-config-uploads';
-        $base_url   = $upload_dir['baseurl'] . '/woo-config-uploads';
+        $upload_dir  = wp_upload_dir();
+        $legacy_base = $upload_dir['basedir'] . '/woo-config-uploads';
+        $legacy_url  = $upload_dir['baseurl'] . '/woo-config-uploads';
+        $base_dir    = self::get_private_base_dir();
 
         return array(
-            'base_dir'   => $base_dir,
-            'base_url'   => $base_url,
-            'temp_dir'   => $base_dir . '/temp',
-            'temp_url'   => $base_url . '/temp',
-            'orders_dir' => $base_dir . '/orders',
-            'orders_url' => $base_url . '/orders',
+            'base_dir'          => $base_dir,
+            'base_url'          => '',
+            'temp_dir'          => $base_dir . '/temp',
+            'temp_url'          => '',
+            'orders_dir'        => $base_dir . '/orders',
+            'orders_url'        => '',
+            'legacy_base_dir'   => $legacy_base,
+            'legacy_base_url'   => $legacy_url,
+            'legacy_temp_dir'   => $legacy_base . '/temp',
+            'legacy_temp_url'   => $legacy_url . '/temp',
+            'legacy_orders_dir' => $legacy_base . '/orders',
+            'legacy_orders_url' => $legacy_url . '/orders',
         );
+    }
+
+    /**
+     * Store new files outside the document root whenever the host allows it.
+     * This keeps them unreachable even when the web server ignores .htaccess.
+     */
+    private static function get_private_base_dir() {
+        static $base_dir = null;
+
+        if ( null !== $base_dir ) {
+            return $base_dir;
+        }
+
+        if ( defined( 'WOOCONFIG_PRIVATE_DIR' ) && WOOCONFIG_PRIVATE_DIR ) {
+            $base_dir = rtrim( (string) WOOCONFIG_PRIVATE_DIR, '/\\' );
+            if ( ! is_dir( $base_dir ) ) {
+                @wp_mkdir_p( $base_dir );
+            }
+            if ( is_dir( $base_dir ) && is_writable( $base_dir ) ) {
+                return $base_dir;
+            }
+        }
+
+        $upload_dir = wp_upload_dir();
+        $dir_key    = get_option( 'wooconfig_private_dir_key' );
+
+        if ( empty( $dir_key ) ) {
+            $dir_key = wp_generate_password( 16, false, false );
+            update_option( 'wooconfig_private_dir_key', $dir_key, false );
+        }
+
+        $candidates = array(
+            dirname( ABSPATH ) . '/woo-config-private',
+            WP_CONTENT_DIR . '/woo-config-private-' . $dir_key,
+        );
+
+        foreach ( $candidates as $candidate ) {
+            if ( ! is_dir( $candidate ) ) {
+                @wp_mkdir_p( $candidate );
+            }
+            if ( is_dir( $candidate ) && is_writable( $candidate ) ) {
+                $base_dir = rtrim( $candidate, '/\\' );
+                return $base_dir;
+            }
+        }
+
+        // Last resort: inside uploads, protected with .htaccess where available.
+        $base_dir = $upload_dir['basedir'] . '/woo-config-uploads/private';
+        @wp_mkdir_p( $base_dir );
+
+        return $base_dir;
     }
 
     public static function check_upload_directory_permissions() {
@@ -50,7 +108,6 @@ class WC_Config_Uploader {
 
         if ( ! empty( $upload_dir['error'] ) ) {
             $errors[] = sprintf( __( 'Directorio principal de subidas de WordPress no accesible: %s', 'woo-config' ), $upload_dir['error'] );
-            return $errors;
         }
 
         $dirs = self::get_upload_dirs();
@@ -71,13 +128,10 @@ class WC_Config_Uploader {
 
             if ( ! is_writable( $path ) ) {
                 $errors[] = sprintf( __( 'La carpeta [%s] no tiene permisos de escritura: <code>%s</code>. Por favor establece permisos 755 o 775.', 'woo-config' ), $label, esc_html( $path ) );
+                continue;
             }
 
-            if ( $path === $dirs['temp_dir'] ) {
-                self::protect_private_directory( $path );
-            } else {
-                self::protect_directory( $path );
-            }
+            self::protect_private_directory( $path );
         }
 
         return $errors;
@@ -339,29 +393,22 @@ class WC_Config_Uploader {
             self::deny_download();
         }
 
-        $dirs = self::get_upload_dirs();
-
         if ( 'temp' === $type ) {
             $registry = self::get_token_registry( $id );
             if ( ! isset( $registry[ $file ] ) ) {
                 self::deny_download();
             }
-            $path         = $dirs['temp_dir'] . '/' . $file;
-            $allowed_base = realpath( $dirs['temp_dir'] );
         } else {
             $order = function_exists( 'wc_get_order' ) ? wc_get_order( $id ) : false;
 
             if ( ! $order || ! self::order_has_file( $order, $file ) ) {
                 self::deny_download();
             }
-
-            $path         = $dirs['orders_dir'] . '/' . $id . '/' . $file;
-            $allowed_base = realpath( $dirs['orders_dir'] . '/' . $id );
         }
 
-        $real_path = realpath( $path );
+        $real_path = self::resolve_stored_file( $type, $id, $file );
 
-        if ( ! $real_path || ! $allowed_base || 0 !== strpos( $real_path, $allowed_base . DIRECTORY_SEPARATOR ) || ! is_file( $real_path ) ) {
+        if ( ! $real_path ) {
             self::deny_download();
         }
 
@@ -393,6 +440,37 @@ class WC_Config_Uploader {
             esc_html__( 'Acceso denegado', 'woo-config' ),
             array( 'response' => 403 )
         );
+    }
+
+    /**
+     * Resolve a stored file in private storage first, then in legacy public storage.
+     */
+    private static function resolve_stored_file( $type, $id, $file ) {
+        $dirs = self::get_upload_dirs();
+
+        if ( 'temp' === $type ) {
+            $bases = array( $dirs['temp_dir'], $dirs['legacy_temp_dir'] );
+        } else {
+            $bases = array(
+                $dirs['orders_dir'] . '/' . $id,
+                $dirs['legacy_orders_dir'] . '/' . $id,
+            );
+        }
+
+        foreach ( $bases as $base ) {
+            if ( empty( $base ) ) {
+                continue;
+            }
+
+            $real_base = realpath( $base );
+            $real_path = realpath( $base . '/' . $file );
+
+            if ( $real_base && $real_path && 0 === strpos( $real_path, $real_base . DIRECTORY_SEPARATOR ) && is_file( $real_path ) ) {
+                return $real_path;
+            }
+        }
+
+        return false;
     }
 
     private static function get_mime_for_extension( $ext ) {
@@ -438,14 +516,25 @@ class WC_Config_Uploader {
             return new WP_Error( 'wooconfig_upload_token', __( 'La sesión de subida expiró. Recarga la página y vuelve a subir tus archivos.', 'woo-config' ) );
         }
 
-        $valid    = array();
-        $seen     = array();
-        $temp_dir = self::get_upload_dirs()['temp_dir'];
+        $valid     = array();
+        $seen      = array();
+        $dirs      = self::get_upload_dirs();
+        $temp_dirs = array( $dirs['temp_dir'], $dirs['legacy_temp_dir'] );
 
         foreach ( $files as $file ) {
             $stored_name = isset( $file['stored_name'] ) ? sanitize_file_name( $file['stored_name'] ) : '';
+            $exists      = false;
 
-            if ( empty( $stored_name ) || ! isset( $registry[ $stored_name ] ) || ! is_file( $temp_dir . '/' . $stored_name ) ) {
+            if ( ! empty( $stored_name ) && isset( $registry[ $stored_name ] ) ) {
+                foreach ( $temp_dirs as $temp_dir ) {
+                    if ( is_file( $temp_dir . '/' . $stored_name ) ) {
+                        $exists = true;
+                        break;
+                    }
+                }
+            }
+
+            if ( empty( $stored_name ) || ! $exists ) {
                 return new WP_Error( 'wooconfig_invalid_file', __( 'Uno de los archivos ya no está disponible. Vuelve a subirlo e inténtalo de nuevo.', 'woo-config' ) );
             }
 
@@ -829,14 +918,9 @@ class WC_Config_Uploader {
         $upload_token = self::sanitize_upload_token( $upload_token );
         $registry     = $upload_token ? self::get_token_registry( $upload_token ) : array();
 
-        if ( ! file_exists( $order_dir ) ) {
-            wp_mkdir_p( $order_dir );
-        }
-
-        self::protect_private_directory( $order_dir );
-
-        $real_temp = realpath( $dirs['temp_dir'] );
-        $moved     = array();
+        $real_temp         = realpath( $dirs['temp_dir'] );
+        $moved             = array();
+        $created_order_dir = false;
 
         $permanent_files = array();
 
@@ -853,10 +937,24 @@ class WC_Config_Uploader {
 
             $temp_file_path = $dirs['temp_dir'] . '/' . $stored_name;
             $real_temp_file = realpath( $temp_file_path );
+            $temp_base      = $real_temp;
 
-            if ( ! $real_temp_file || ! $real_temp || 0 !== strpos( $real_temp_file, $real_temp . DIRECTORY_SEPARATOR ) || ! is_file( $real_temp_file ) ) {
+            // Fall back to the legacy public temp directory for in-flight uploads.
+            if ( ! $real_temp_file || ! $temp_base || 0 !== strpos( $real_temp_file, $temp_base . DIRECTORY_SEPARATOR ) || ! is_file( $real_temp_file ) ) {
+                $temp_base      = realpath( $dirs['legacy_temp_dir'] );
+                $real_temp_file = realpath( $dirs['legacy_temp_dir'] . '/' . $stored_name );
+            }
+
+            if ( ! $real_temp_file || ! $temp_base || 0 !== strpos( $real_temp_file, $temp_base . DIRECTORY_SEPARATOR ) || ! is_file( $real_temp_file ) ) {
                 continue;
             }
+
+            if ( ! is_dir( $order_dir ) ) {
+                wp_mkdir_p( $order_dir );
+                $created_order_dir = true;
+            }
+
+            self::protect_private_directory( $order_dir );
 
             $order_file_path = $order_dir . '/' . $stored_name;
             if ( ! @rename( $real_temp_file, $order_file_path ) ) {
@@ -884,6 +982,10 @@ class WC_Config_Uploader {
             $moved[] = $stored_name;
         }
 
+        if ( empty( $permanent_files ) && $created_order_dir && is_dir( $order_dir ) ) {
+            @rmdir( $order_dir );
+        }
+
         if ( ! empty( $moved ) && ! empty( $registry ) ) {
             foreach ( $moved as $stored_name ) {
                 unset( $registry[ $stored_name ] );
@@ -895,21 +997,30 @@ class WC_Config_Uploader {
     }
 
     public static function clean_temp_files() {
-        $dirs = self::get_upload_dirs();
-        $temp_dir = $dirs['temp_dir'];
+        $dirs     = self::get_upload_dirs();
+        $temp_dirs = array( $dirs['temp_dir'], $dirs['legacy_temp_dir'] );
+        $now      = time();
+        $max_age  = 48 * 3600;
 
-        if ( ! is_dir( $temp_dir ) ) return;
+        foreach ( $temp_dirs as $temp_dir ) {
+            if ( ! is_dir( $temp_dir ) ) {
+                continue;
+            }
 
-        $files = scandir( $temp_dir );
-        $now = time();
-        $max_age = 48 * 3600;
+            $files = scandir( $temp_dir );
+            if ( ! is_array( $files ) ) {
+                continue;
+            }
 
-        foreach ( $files as $file ) {
-            if ( in_array( $file, array( '.', '..', 'index.php', '.htaccess' ) ) ) continue;
+            foreach ( $files as $file ) {
+                if ( in_array( $file, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+                    continue;
+                }
 
-            $path = $temp_dir . '/' . $file;
-            if ( is_file( $path ) && ( $now - filemtime( $path ) ) > $max_age ) {
-                unlink( $path );
+                $path = $temp_dir . '/' . $file;
+                if ( is_file( $path ) && ( $now - filemtime( $path ) ) > $max_age ) {
+                    @unlink( $path );
+                }
             }
         }
     }
@@ -923,14 +1034,18 @@ class WC_Config_Uploader {
             return false;
         }
 
-        $dirs = self::get_upload_dirs();
-        $order_dir = $dirs['orders_dir'] . '/' . $order_id;
+        $dirs     = self::get_upload_dirs();
+        $deleted  = false;
+        $bases    = array( $dirs['orders_dir'], $dirs['legacy_orders_dir'] );
 
-        if ( ! is_dir( $order_dir ) ) {
-            return false;
+        foreach ( $bases as $base ) {
+            $order_dir = $base . '/' . $order_id;
+            if ( is_dir( $order_dir ) && self::delete_directory_recursive( $order_dir, $base ) ) {
+                $deleted = true;
+            }
         }
 
-        return self::delete_directory_recursive( $order_dir, $dirs['orders_dir'] );
+        return $deleted;
     }
 
     /**
@@ -1005,65 +1120,82 @@ class WC_Config_Uploader {
      * Get global storage stats for WooConfig uploads.
      */
     public static function get_storage_stats() {
-        $dirs = self::get_upload_dirs();
+        $dirs       = self::get_upload_dirs();
+        $temp_dirs  = array( $dirs['temp_dir'], $dirs['legacy_temp_dir'] );
+        $order_dirs = array( $dirs['orders_dir'], $dirs['legacy_orders_dir'] );
 
-        // Check temp
-        $temp_stats = self::get_dir_size_and_count( $dirs['temp_dir'] );
+        $temp_size  = 0;
+        $temp_files = 0;
+        foreach ( $temp_dirs as $temp_dir ) {
+            $sub         = self::get_dir_size_and_count( $temp_dir );
+            $temp_size  += $sub['size'];
+            $temp_files += $sub['count'];
+        }
 
-        // Check orders
-        $orders_size        = 0;
-        $orders_files_count = 0;
-        $orders_count       = 0;
-        $orphan_count       = 0;
-        $orphan_size        = 0;
-        $orphan_files       = 0;
-
-        if ( is_dir( $dirs['orders_dir'] ) ) {
-            $order_folders = scandir( $dirs['orders_dir'] );
-            if ( is_array( $order_folders ) ) {
-                foreach ( $order_folders as $folder ) {
-                    if ( in_array( $folder, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
-                        continue;
-                    }
-
-                    $folder_path = $dirs['orders_dir'] . '/' . $folder;
-                    if ( is_dir( $folder_path ) && is_numeric( $folder ) ) {
-                        $orders_count++;
-                        $sub = self::get_dir_size_and_count( $folder_path );
-                        $orders_size        += $sub['size'];
-                        $orders_files_count += $sub['count'];
-
-                        // Check if order exists in DB
-                        $order_id = absint( $folder );
-                        $order_exists = false;
-                        if ( function_exists( 'wc_get_order' ) ) {
-                            $wc_order = wc_get_order( $order_id );
-                            if ( $wc_order && ! in_array( $wc_order->get_status(), array( 'trash', 'auto-draft' ), true ) ) {
-                                $order_exists = true;
-                            }
-                        }
-
-                        if ( ! $order_exists ) {
-                            $orphan_count++;
-                            $orphan_size  += $sub['size'];
-                            $orphan_files += $sub['count'];
-                        }
-                    }
+        $order_ids = array();
+        foreach ( $order_dirs as $orders_dir ) {
+            if ( ! is_dir( $orders_dir ) ) {
+                continue;
+            }
+            $folders = scandir( $orders_dir );
+            if ( ! is_array( $folders ) ) {
+                continue;
+            }
+            foreach ( $folders as $folder ) {
+                if ( in_array( $folder, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+                    continue;
+                }
+                if ( is_numeric( $folder ) && is_dir( $orders_dir . '/' . $folder ) ) {
+                    $order_ids[ absint( $folder ) ] = true;
                 }
             }
         }
 
-        $total_bytes = $temp_stats['size'] + $orders_size;
-        $total_files = $temp_stats['count'] + $orders_files_count;
+        $orders_size        = 0;
+        $orders_files_count = 0;
+        $orphan_count       = 0;
+        $orphan_size        = 0;
+        $orphan_files       = 0;
+
+        foreach ( array_keys( $order_ids ) as $order_id ) {
+            $order_size  = 0;
+            $order_files = 0;
+
+            foreach ( $order_dirs as $orders_dir ) {
+                $sub          = self::get_dir_size_and_count( $orders_dir . '/' . $order_id );
+                $order_size  += $sub['size'];
+                $order_files += $sub['count'];
+            }
+
+            $orders_size        += $order_size;
+            $orders_files_count += $order_files;
+
+            $order_exists = false;
+            if ( function_exists( 'wc_get_order' ) ) {
+                $wc_order = wc_get_order( $order_id );
+                if ( $wc_order && ! in_array( $wc_order->get_status(), array( 'trash', 'auto-draft' ), true ) ) {
+                    $order_exists = true;
+                }
+            }
+
+            if ( ! $order_exists ) {
+                $orphan_count++;
+                $orphan_size  += $order_size;
+                $orphan_files += $order_files;
+            }
+        }
+
+        $total_bytes = $temp_size + $orders_size;
+        $total_files = $temp_files + $orders_files_count;
 
         return array(
-            'temp_bytes'           => $temp_stats['size'],
-            'temp_formatted'       => size_format( $temp_stats['size'], 2 ),
-            'temp_files_count'     => $temp_stats['count'],
+            'temp_bytes'           => $temp_size,
+            'temp_formatted'       => size_format( $temp_size, 2 ),
+            'temp_files_count'     => $temp_files,
             'orders_bytes'         => $orders_size,
             'orders_formatted'     => size_format( $orders_size, 2 ),
             'orders_files_count'   => $orders_files_count,
-            'orders_count'         => $orders_count,
+            'orders_count'         => count( $order_ids ),
             'orphan_count'         => $orphan_count,
             'orphan_size'          => $orphan_size,
             'orphan_formatted'     => size_format( $orphan_size, 2 ),
@@ -1078,45 +1210,57 @@ class WC_Config_Uploader {
      * Clean all orphan order files (folders whose order ID does not exist in WooCommerce).
      */
     public static function clean_orphan_order_files() {
-        $dirs = self::get_upload_dirs();
+        $dirs   = self::get_upload_dirs();
+        $bases  = array( $dirs['orders_dir'], $dirs['legacy_orders_dir'] );
         $cleaned = array(
             'folders'     => 0,
             'files'       => 0,
             'freed_bytes' => 0,
         );
 
-        if ( ! is_dir( $dirs['orders_dir'] ) ) {
-            return $cleaned;
+        $order_ids = array();
+        foreach ( $bases as $orders_dir ) {
+            if ( ! is_dir( $orders_dir ) ) {
+                continue;
+            }
+            $folders = scandir( $orders_dir );
+            if ( ! is_array( $folders ) ) {
+                continue;
+            }
+            foreach ( $folders as $folder ) {
+                if ( in_array( $folder, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+                    continue;
+                }
+                if ( is_numeric( $folder ) && is_dir( $orders_dir . '/' . $folder ) ) {
+                    $order_ids[ absint( $folder ) ] = true;
+                }
+            }
         }
 
-        $order_folders = scandir( $dirs['orders_dir'] );
-        if ( ! is_array( $order_folders ) ) {
-            return $cleaned;
-        }
+        foreach ( array_keys( $order_ids ) as $order_id ) {
+            $order_exists = false;
+            if ( function_exists( 'wc_get_order' ) ) {
+                $wc_order = wc_get_order( $order_id );
+                if ( $wc_order && ! in_array( $wc_order->get_status(), array( 'trash', 'auto-draft' ), true ) ) {
+                    $order_exists = true;
+                }
+            }
 
-        foreach ( $order_folders as $folder ) {
-            if ( in_array( $folder, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+            if ( $order_exists ) {
                 continue;
             }
 
-            $folder_path = $dirs['orders_dir'] . '/' . $folder;
-            if ( is_dir( $folder_path ) && is_numeric( $folder ) ) {
-                $order_id = absint( $folder );
-                $order_exists = false;
-                if ( function_exists( 'wc_get_order' ) ) {
-                    $wc_order = wc_get_order( $order_id );
-                    if ( $wc_order && ! in_array( $wc_order->get_status(), array( 'trash', 'auto-draft' ), true ) ) {
-                        $order_exists = true;
-                    }
+            foreach ( $bases as $base ) {
+                $folder_path = $base . '/' . $order_id;
+                if ( ! is_dir( $folder_path ) ) {
+                    continue;
                 }
 
-                if ( ! $order_exists ) {
-                    $stats = self::get_dir_size_and_count( $folder_path );
-                    if ( self::delete_directory_recursive( $folder_path, $dirs['orders_dir'] ) ) {
-                        $cleaned['folders']++;
-                        $cleaned['files']       += $stats['count'];
-                        $cleaned['freed_bytes'] += $stats['size'];
-                    }
+                $stats = self::get_dir_size_and_count( $folder_path );
+                if ( self::delete_directory_recursive( $folder_path, $base ) ) {
+                    $cleaned['folders']++;
+                    $cleaned['files']       += $stats['count'];
+                    $cleaned['freed_bytes'] += $stats['size'];
                 }
             }
         }
@@ -1128,32 +1272,35 @@ class WC_Config_Uploader {
      * Clean all temporary upload files immediately.
      */
     public static function clean_all_temp_files() {
-        $dirs = self::get_upload_dirs();
+        $dirs    = self::get_upload_dirs();
+        $temp_dirs = array( $dirs['temp_dir'], $dirs['legacy_temp_dir'] );
         $cleaned = array(
             'files'       => 0,
             'freed_bytes' => 0,
         );
 
-        if ( ! is_dir( $dirs['temp_dir'] ) ) {
-            return $cleaned;
-        }
-
-        $files = scandir( $dirs['temp_dir'] );
-        if ( ! is_array( $files ) ) {
-            return $cleaned;
-        }
-
-        foreach ( $files as $file ) {
-            if ( in_array( $file, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+        foreach ( $temp_dirs as $temp_dir ) {
+            if ( ! is_dir( $temp_dir ) ) {
                 continue;
             }
 
-            $path = $dirs['temp_dir'] . '/' . $file;
-            if ( is_file( $path ) ) {
-                $size = filesize( $path );
-                if ( @unlink( $path ) ) {
-                    $cleaned['files']++;
-                    $cleaned['freed_bytes'] += $size;
+            $files = scandir( $temp_dir );
+            if ( ! is_array( $files ) ) {
+                continue;
+            }
+
+            foreach ( $files as $file ) {
+                if ( in_array( $file, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+                    continue;
+                }
+
+                $path = $temp_dir . '/' . $file;
+                if ( is_file( $path ) ) {
+                    $size = filesize( $path );
+                    if ( @unlink( $path ) ) {
+                        $cleaned['files']++;
+                        $cleaned['freed_bytes'] += $size;
+                    }
                 }
             }
         }
@@ -1170,49 +1317,79 @@ class WC_Config_Uploader {
             return array( 'orders' => 0, 'files' => 0, 'freed_bytes' => 0 );
         }
 
-        $dirs = self::get_upload_dirs();
+        $dirs    = self::get_upload_dirs();
+        $bases   = array( $dirs['orders_dir'], $dirs['legacy_orders_dir'] );
         $cleaned = array(
             'orders'      => 0,
             'files'       => 0,
             'freed_bytes' => 0,
         );
 
-        if ( ! is_dir( $dirs['orders_dir'] ) ) {
-            return $cleaned;
-        }
-
         $threshold_timestamp = time() - ( $days * DAY_IN_SECONDS );
-        $order_folders = scandir( $dirs['orders_dir'] );
+        $order_ids           = array();
 
-        if ( ! is_array( $order_folders ) ) {
-            return $cleaned;
+        foreach ( $bases as $orders_dir ) {
+            if ( ! is_dir( $orders_dir ) ) {
+                continue;
+            }
+            $folders = scandir( $orders_dir );
+            if ( ! is_array( $folders ) ) {
+                continue;
+            }
+            foreach ( $folders as $folder ) {
+                if ( in_array( $folder, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+                    continue;
+                }
+                if ( is_numeric( $folder ) && is_dir( $orders_dir . '/' . $folder ) ) {
+                    $order_ids[ absint( $folder ) ] = true;
+                }
+            }
         }
 
-        foreach ( $order_folders as $folder ) {
-            if ( in_array( $folder, array( '.', '..', 'index.php', '.htaccess' ), true ) ) {
+        foreach ( array_keys( $order_ids ) as $order_id ) {
+            if ( ! function_exists( 'wc_get_order' ) ) {
                 continue;
             }
 
-            $folder_path = $dirs['orders_dir'] . '/' . $folder;
-            if ( is_dir( $folder_path ) && is_numeric( $folder ) ) {
-                $order_id = absint( $folder );
-                if ( function_exists( 'wc_get_order' ) ) {
-                    $wc_order = wc_get_order( $order_id );
-                    if ( $wc_order && in_array( $wc_order->get_status(), array( 'completed', 'cancelled', 'refunded' ), true ) ) {
-                        $order_date = $wc_order->get_date_created();
-                        $timestamp  = $order_date ? $order_date->getTimestamp() : filemtime( $folder_path );
+            $wc_order = wc_get_order( $order_id );
+            if ( ! $wc_order || ! in_array( $wc_order->get_status(), array( 'completed', 'cancelled', 'refunded' ), true ) ) {
+                continue;
+            }
 
-                        if ( $timestamp < $threshold_timestamp ) {
-                            $stats = self::get_dir_size_and_count( $folder_path );
-                            if ( self::delete_directory_recursive( $folder_path, $dirs['orders_dir'] ) ) {
-                                $cleaned['orders']++;
-                                $cleaned['files']       += $stats['count'];
-                                $cleaned['freed_bytes'] += $stats['size'];
-                                $wc_order->add_order_note( sprintf( __( '🧹 Archivos de personalización purgados automáticamente por política de almacenamiento (más de %d días).', 'woo-config' ), $days ) );
-                            }
-                        }
+            $order_date = $wc_order->get_date_created();
+            $timestamp  = $order_date ? $order_date->getTimestamp() : 0;
+            if ( ! $timestamp ) {
+                foreach ( $bases as $base ) {
+                    if ( is_dir( $base . '/' . $order_id ) ) {
+                        $timestamp = filemtime( $base . '/' . $order_id );
+                        break;
                     }
                 }
+            }
+
+            if ( ! $timestamp || $timestamp >= $threshold_timestamp ) {
+                continue;
+            }
+
+            $deleted_any = false;
+
+            foreach ( $bases as $base ) {
+                $folder_path = $base . '/' . $order_id;
+                if ( ! is_dir( $folder_path ) ) {
+                    continue;
+                }
+
+                $stats = self::get_dir_size_and_count( $folder_path );
+                if ( self::delete_directory_recursive( $folder_path, $base ) ) {
+                    $deleted_any = true;
+                    $cleaned['files']       += $stats['count'];
+                    $cleaned['freed_bytes'] += $stats['size'];
+                }
+            }
+
+            if ( $deleted_any ) {
+                $cleaned['orders']++;
+                $wc_order->add_order_note( sprintf( __( '🧹 Archivos de personalización purgados automáticamente por política de almacenamiento (más de %d días).', 'woo-config' ), $days ) );
             }
         }
 
