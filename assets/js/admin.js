@@ -244,15 +244,6 @@
             openModalForDesglosar(orderId, itemId, productId, productName, quantity);
         });
 
-        // "Create from scratch" button
-        $(document).on('click', '#wooconfig-btn-create-from-scratch', function(e) {
-            e.preventDefault();
-            var $backdrop = $('#wooconfig-admin-modal-backdrop');
-            resetModal();
-            updateDraftNotice();
-            $backdrop.css('display', 'flex');
-            loadConfigurableProducts();
-        });
     }
 
     function openModalForDesglosar(orderId, itemId, productId, productName, quantity) {
@@ -473,7 +464,7 @@
         // Preview Draft Sheet from Modal
         $('#wooconfig-modal-preview-btn').on('click', function(e) {
             e.preventDefault();
-            var orderId    = $('#wooconfig-btn-open-add-group').data('order-id') || $('#wooconfig-btn-create-from-scratch').data('order-id');
+            var orderId    = currentOrderId();
             var prodId     = parseInt($('#wooconfig-modal-product-select').val(), 10);
             var groupTitle = $('#wooconfig-modal-group-title').val() || 'Vista Previa';
             var designDesc = $('#wooconfig-modal-design-notes').val();
@@ -518,7 +509,7 @@
         // Save Group and Uniforms to Order
         $('#wooconfig-modal-save-btn').on('click', function(e) {
             e.preventDefault();
-            var orderId      = $('#wooconfig-btn-open-add-group').data('order-id') || $('#wooconfig-btn-create-from-scratch').data('order-id');
+            var orderId      = currentOrderId();
             var prodId       = parseInt($('#wooconfig-modal-product-select').val(), 10);
             var groupTitle   = $('#wooconfig-modal-group-title').val();
             var designNotes  = $('#wooconfig-modal-design-notes').val();
@@ -646,6 +637,14 @@
             // Todo limpio: se cierra el lightbox para dejar la tabla a la vista.
             closeImportLightbox();
         }
+    }
+
+    /** Id del pedido que se está editando (input oculto del modal). */
+    function currentOrderId() {
+        var id = parseInt($('#wooconfig-modal-order-id').val(), 10);
+        if (id > 0) { return id; }
+        var fallback = parseInt($('#wooconfig-btn-open-add-group').data('order-id'), 10);
+        return fallback > 0 ? fallback : 0;
     }
 
     function openImportLightbox() {

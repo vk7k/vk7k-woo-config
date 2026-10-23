@@ -401,21 +401,6 @@ class WC_Config_Order {
                 </div>
             <?php endif; ?>
 
-            <?php if ( ! $has_wooconfig_items && empty( $standard_configurable ) ) : ?>
-                <div class="wooconfig-empty-state">
-                    <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.6;">🎽</div>
-                    <p style="margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1e293b;">
-                        <?php esc_html_e( 'Este pedido no contiene productos personalizados todavía.', 'woo-config' ); ?>
-                    </p>
-                    <p style="margin: 0 0 18px; font-size: 13px; color: #64748b;">
-                        <?php esc_html_e( 'Puedes crear un equipo completo desde cero con dorsales, nombres y tallas para cada prenda.', 'woo-config' ); ?>
-                    </p>
-                    <button type="button" class="button button-primary button-hero" id="wooconfig-btn-create-from-scratch" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
-                        ➕ <?php esc_html_e( 'Crear y Configurar Equipo desde Cero', 'woo-config' ); ?>
-                    </button>
-                </div>
-            <?php endif; ?>
-
             <?php if ( ! empty( $preferred_contact ) ) : ?>
                 <div style="background: #e0f2fe; border: 1.5px solid #7dd3fc; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; color: #0369a1; display: flex; align-items: center; justify-content: space-between;">
                     <span style="font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
@@ -496,14 +481,14 @@ class WC_Config_Order {
                 </div>
             <?php endif; ?>
 
-            <div class="wooconfig-admin-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #c3c4c7; border-radius: 4px; padding: 12px 16px; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <strong style="font-size: 15px; color: #1e293b;">🎽 Personalización de Prendas y Equipos</strong>
-                    <span class="badge" style="background: #2271b1; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700;">
+            <div class="wooconfig-admin-toolbar" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #c3c4c7; border-radius: 4px; padding: 12px 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                    <strong style="font-size: 15px; color: #1e293b; white-space: nowrap;">🎽 Personalización de Prendas y Equipos</strong>
+                    <span class="badge" style="background: #2271b1; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; white-space: nowrap;">
                         <?php echo count( $items ); ?> prendas
                     </span>
                 </div>
-                <div class="wooconfig-admin-toolbar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <div class="wooconfig-admin-toolbar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-left: auto;">
                     <button type="button" class="button button-primary" id="wooconfig-btn-open-add-group" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
                         ➕ Añadir Prendas / Equipo al Pedido
                     </button>
@@ -512,6 +497,20 @@ class WC_Config_Order {
                     </a>
                 </div>
             </div>
+
+            <?php if ( ! $has_wooconfig_items && empty( $standard_configurable ) ) : ?>
+                <div class="wooconfig-empty-state" style="display: flex; align-items: center; gap: 14px; background: #f8fafc; border: 1px dashed #c3c4c7; border-radius: 6px; padding: 16px 18px; margin-bottom: 20px;">
+                    <div style="font-size: 30px; opacity: 0.55; line-height: 1;">🎽</div>
+                    <div>
+                        <p style="margin: 0 0 2px; font-size: 13.5px; font-weight: 700; color: #1e293b;">
+                            <?php esc_html_e( 'Este pedido todavía no tiene prendas personalizadas.', 'woo-config' ); ?>
+                        </p>
+                        <p style="margin: 0; font-size: 12.5px; color: #64748b;">
+                            <?php esc_html_e( 'Usa «Añadir prendas / equipo» para cargar dorsales, nombres y tallas de cada prenda.', 'woo-config' ); ?>
+                        </p>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <?php
             $grouped_items = array();
@@ -679,6 +678,7 @@ class WC_Config_Order {
                             <strong id="wooconfig-modal-draft-status"><?php esc_html_e( 'Cotización', 'woo-config' ); ?></strong>.
                         </div>
                         <input type="hidden" id="wooconfig-modal-convert-item-id" value="0" />
+                        <input type="hidden" id="wooconfig-modal-order-id" value="<?php echo esc_attr( $order->get_id() ); ?>" />
 
                         <!-- Step 1: Producto base y Título del Grupo -->
                         <div class="wooconfig-modal-step-section">
