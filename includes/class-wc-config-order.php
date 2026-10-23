@@ -720,143 +720,55 @@ class WC_Config_Order {
                             </div>
                         </div>
 
-                        <!-- Step 3: Método de Ingreso con Tabs -->
+                        <!-- Step 3: prendas (tabla manual primero; la importación va en un lightbox aparte) -->
                         <div class="wooconfig-modal-step-section">
-                            <h3 class="wooconfig-modal-step-heading">3. <?php esc_html_e( '¿Cómo deseas ingresar los uniformes?', 'woo-config' ); ?></h3>
+                            <h3 class="wooconfig-modal-step-heading">3. <?php esc_html_e( 'Prendas, Dorsales y Tallas', 'woo-config' ); ?></h3>
 
-                            <!-- Tab Navigation -->
-                            <div class="wooconfig-input-tabs">
-                                <button type="button" class="wooconfig-input-tab is-active" data-tab="paste">
-                                    📋 <?php esc_html_e( 'Pegar desde Excel / WhatsApp', 'woo-config' ); ?>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-row-btn">
+                                    ➕ <?php esc_html_e( 'Añadir fila', 'woo-config' ); ?>
                                 </button>
-                                <button type="button" class="wooconfig-input-tab" data-tab="manual">
-                                    ✍ <?php esc_html_e( 'Tabla Manual', 'woo-config' ); ?>
+                                <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-5rows-btn">
+                                    ➕ <?php esc_html_e( '5 filas', 'woo-config' ); ?>
                                 </button>
-                                <button type="button" class="wooconfig-input-tab" data-tab="quick">
-                                    📁 <?php esc_html_e( 'Modo Rápido (Planilla / Foto)', 'woo-config' ); ?>
+
+                                <span style="width: 1px; height: 24px; background: #dcdcde; margin: 0 4px;"></span>
+
+                                <label style="font-size: 12.5px; font-weight: 600; color: #1e293b;">
+                                    <?php esc_html_e( 'Cantidad', 'woo-config' ); ?>
+                                    <input type="number" id="wooconfig-batch-qty" min="1" max="100" value="10" style="width: 64px; margin-left: 4px;">
+                                </label>
+                                <label style="font-size: 12.5px; font-weight: 600; color: #1e293b;">
+                                    <?php esc_html_e( 'Talla', 'woo-config' ); ?>
+                                    <select id="wooconfig-quick-default-size" style="width: 78px; margin-left: 4px;">
+                                        <option value="S">S</option>
+                                        <option value="M" selected>M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                    </select>
+                                </label>
+                                <button type="button" class="button button-secondary button-small" id="wooconfig-batch-generate-btn">
+                                    ⚡ <?php esc_html_e( 'Generar filas', 'woo-config' ); ?>
                                 </button>
+
+                                <span style="margin-left: auto; display: flex; gap: 6px;">
+                                    <button type="button" class="button button-primary button-small" id="wooconfig-open-import-btn">
+                                        📋 <?php esc_html_e( 'Pegar / subir planilla', 'woo-config' ); ?>
+                                    </button>
+                                    <button type="button" class="button button-link-delete button-small" id="wooconfig-modal-clear-table-btn">
+                                        🗑 <?php esc_html_e( 'Limpiar', 'woo-config' ); ?>
+                                    </button>
+                                </span>
                             </div>
 
-                            <!-- Tab A: Pegar desde Excel / WhatsApp -->
-                            <div class="wooconfig-input-panel is-active" data-panel="paste">
-                                <p style="margin: 0 0 8px; font-size: 13px; color: #475569;">
-                                    <?php esc_html_e( 'Copia las filas desde Excel, Google Sheets o WhatsApp y pégalas aquí. Formato:', 'woo-config' ); ?>
-                                    <code style="font-size: 12px;">Dorsal | Nombre | Talla | Adicionales</code>
-                                </p>
-                                <textarea id="wooconfig-paste-area" rows="7" style="width: 100%; font-family: monospace; font-size: 13px; border: 2px dashed #94a3b8; border-radius: 4px; padding: 12px; background: #f8fafc; resize: vertical;" placeholder="10&#9;JUAN PÉREZ&#9;L&#10;7&#9;CARLOS SOTO&#9;M&#9;manga larga&#10;1&#9;DIEGO BRAVO&#9;XL&#10;&#10;También acepta: comas, punto y coma, guiones, o múltiples espacios como separador."></textarea>
-                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-                                    <button type="button" class="button button-primary" id="wooconfig-paste-parse-btn">
-                                        📋 <?php esc_html_e( 'Cargar a la Tabla', 'woo-config' ); ?>
-                                    </button>
-                                    <label class="button button-secondary" style="cursor: pointer; margin: 0;">
-                                        📄 <?php esc_html_e( 'Subir Excel / CSV', 'woo-config' ); ?>
-                                        <input type="file" id="wooconfig-paste-file" accept=".xlsx,.xlsm,.csv,.tsv,.txt" style="display: none;">
-                                    </label>
-                                    <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #475569;">
-                                        <input type="checkbox" id="wooconfig-paste-append">
-                                        <?php esc_html_e( 'Añadir a la tabla (no reemplazar)', 'woo-config' ); ?>
-                                    </label>
-                                    <span id="wooconfig-paste-result" style="font-size: 12px; color: #059669; font-weight: 600; display: none;"></span>
-                                </div>
+                            <div id="wooconfig-main-summary" style="display: none; margin-top: 10px; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; line-height: 1.5;"></div>
 
-                                <div id="wooconfig-paste-warnings" style="display: none; margin-top: 10px; padding: 10px 12px; border-radius: 4px; font-size: 12.5px; line-height: 1.55;"></div>
-
-                                <!-- Mapeo de columnas: se abre solo cuando la detección es dudosa -->
-                                <details id="wooconfig-map-panel" style="margin-top: 10px; border: 1px solid #dcdcde; border-radius: 4px; padding: 8px 12px; background: #fff;">
-                                    <summary style="cursor: pointer; font-weight: 600; font-size: 12.5px; color: #1d2327;">
-                                        🔧 <?php esc_html_e( 'Mapear columnas manualmente', 'woo-config' ); ?>
-                                    </summary>
-                                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
-                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Dorsal', 'woo-config' ); ?>
-                                            <select id="wooconfig-map-dorsal" style="width: 100%; margin-top: 3px;"></select>
-                                        </label>
-                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Nombre', 'woo-config' ); ?>
-                                            <select id="wooconfig-map-name" style="width: 100%; margin-top: 3px;"></select>
-                                        </label>
-                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Talla', 'woo-config' ); ?>
-                                            <select id="wooconfig-map-size" style="width: 100%; margin-top: 3px;"></select>
-                                        </label>
-                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Adicionales', 'woo-config' ); ?>
-                                            <select id="wooconfig-map-ads" style="width: 100%; margin-top: 3px;"></select>
-                                        </label>
-                                    </div>
-                                    <p class="description" style="margin: 8px 0 0; font-size: 11.5px;">
-                                        <?php esc_html_e( 'Elige qué columna corresponde a cada dato y pulsa Reaplicar. Útil cuando la planilla trae columnas en otro orden (Ej: Nombre, Talla, Dorsal).', 'woo-config' ); ?>
-                                    </p>
-                                    <button type="button" class="button button-secondary button-small" id="wooconfig-map-apply-btn" style="margin-top: 8px;">
-                                        ↻ <?php esc_html_e( 'Reaplicar mapeo', 'woo-config' ); ?>
-                                    </button>
-                                </details>
-                                <p class="description" style="margin-top: 8px;">
-                                    <?php esc_html_e( 'Detecta automáticamente tallas (S, M, L, XL, 4-16), dorsales numéricos, nombres y adicionales (manga larga, piqué).', 'woo-config' ); ?>
-                                </p>
-                            </div>
-
-                            <!-- Tab B: Tabla Manual -->
-                            <div class="wooconfig-input-panel" data-panel="manual">
-                                <div class="wooconfig-batch-controls">
-                                    <label style="font-weight: 600; font-size: 13px;"><?php esc_html_e( 'Cantidad de prendas:', 'woo-config' ); ?></label>
-                                    <input type="number" id="wooconfig-batch-qty" min="1" max="100" value="10" style="width: 70px;">
-                                    <button type="button" class="button button-primary" id="wooconfig-batch-generate-btn">
-                                        ⚡ <?php esc_html_e( 'Generar Filas', 'woo-config' ); ?>
-                                    </button>
-                                    <span class="description" style="margin-left: 6px;">
-                                        <?php esc_html_e( 'Genera filas con talla M y dorsales correlativos.', 'woo-config' ); ?>
-                                    </span>
-                                </div>
-                                <div style="display: flex; gap: 6px; margin-top: 10px;">
-                                    <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-row-btn">
-                                        ➕ <?php esc_html_e( 'Añadir 1 Fila', 'woo-config' ); ?>
-                                    </button>
-                                    <button type="button" class="button button-secondary button-small" id="wooconfig-modal-add-5rows-btn">
-                                        ➕ <?php esc_html_e( 'Añadir 5 Filas', 'woo-config' ); ?>
-                                    </button>
-                                    <button type="button" class="button button-link-delete button-small" id="wooconfig-modal-clear-table-btn" style="margin-left: auto;">
-                                        🗑 <?php esc_html_e( 'Limpiar Tabla', 'woo-config' ); ?>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Tab C: Modo Rápido (Planilla / Foto) -->
-                            <div class="wooconfig-input-panel" data-panel="quick">
-                                <div class="wooconfig-quick-mode-box">
-                                    <div class="wooconfig-quick-mode-icon">📋</div>
-                                    <div>
-                                        <strong style="font-size: 14px; color: #1e293b;"><?php esc_html_e( 'Modo Rápido: El cliente envió una planilla o foto', 'woo-config' ); ?></strong>
-                                        <p style="margin: 4px 0 12px; font-size: 12.5px; color: #64748b;">
-                                            <?php esc_html_e( 'Ingresa la cantidad de prendas y sube el archivo adjunto en la sección de Archivos (paso 2). Se generarán las prendas con talla predeterminada; los datos exactos quedan en el archivo.', 'woo-config' ); ?>
-                                        </p>
-                                        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                                            <div>
-                                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Cantidad de prendas:', 'woo-config' ); ?></label>
-                                                <input type="number" id="wooconfig-quick-qty" min="1" max="100" value="10" style="width: 70px;">
-                                            </div>
-                                            <div>
-                                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Talla predeterminada:', 'woo-config' ); ?></label>
-                                                <select id="wooconfig-quick-default-size" style="width: 80px;">
-                                                    <option value="S">S</option>
-                                                    <option value="M" selected>M</option>
-                                                    <option value="L">L</option>
-                                                    <option value="XL">XL</option>
-                                                </select>
-                                            </div>
-                                            <div style="margin-top: 18px;">
-                                                <button type="button" class="button button-primary" id="wooconfig-quick-generate-btn">
-                                                    ⚡ <?php esc_html_e( 'Preparar Prendas', 'woo-config' ); ?>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <p class="description" style="margin-top: 10px;">
-                                            ⚠ <?php esc_html_e( 'Recuerda adjuntar la planilla o foto en la sección de Archivos (paso 2) antes de guardar.', 'woo-config' ); ?>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tabla Compartida de Uniformes (visible en Tab A y B) -->
-                            <div id="wooconfig-modal-table-wrapper">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 6px;">
+                            <div id="wooconfig-modal-table-wrapper" style="margin-top: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px;">
                                     <span style="font-size: 13px; font-weight: 600; color: #1e293b;" id="wooconfig-table-count-label"></span>
+                                    <span style="font-size: 12px; color: #64748b;">
+                                        <?php esc_html_e( 'Las filas sin dorsal ni nombre no se guardan.', 'woo-config' ); ?>
+                                    </span>
                                 </div>
                                 <table class="widefat fixed striped" id="wooconfig-modal-players-table">
                                     <thead>
@@ -873,6 +785,76 @@ class WC_Config_Order {
                                         <!-- Rows added via JS -->
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+
+                        <!-- Lightbox secundario: importar planilla (pegar o subir archivo) -->
+                        <div id="wooconfig-import-backdrop" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.55); z-index: 100001; align-items: center; justify-content: center; padding: 20px;">
+                            <div style="background: #fff; width: 100%; max-width: 780px; max-height: 88vh; display: flex; flex-direction: column; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); overflow: hidden;">
+                                <div style="padding: 14px 18px; border-bottom: 1px solid #dcdcde; background: #f6f7f7; display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="font-size: 15px; color: #1d2327;">📋 <?php esc_html_e( 'Importar planilla de prendas', 'woo-config' ); ?></strong>
+                                    <button type="button" class="button-link" id="wooconfig-import-close-btn" style="font-size: 20px; line-height: 1; color: #646970; cursor: pointer;">✕</button>
+                                </div>
+
+                                <div style="padding: 16px 18px; overflow-y: auto; flex: 1;">
+                                    <p style="margin: 0 0 8px; font-size: 13px; color: #475569;">
+                                        <?php esc_html_e( 'Pega las filas desde Excel, Google Sheets o WhatsApp, o sube el archivo (Excel .xlsx / CSV). Formato:', 'woo-config' ); ?>
+                                        <code style="font-size: 12px;">Dorsal | Nombre | Talla | Adicionales</code>
+                                    </p>
+
+                                    <textarea id="wooconfig-paste-area" rows="8" style="width: 100%; font-family: monospace; font-size: 13px; border: 2px dashed #94a3b8; border-radius: 4px; padding: 12px; background: #f8fafc; resize: vertical;" placeholder="10&#9;JUAN PÉREZ&#9;L&#10;7&#9;CARLOS SOTO&#9;M&#9;manga larga&#10;1&#9;DIEGO BRAVO&#9;XL&#10;&#10;También acepta: comas, punto y coma, guiones, o múltiples espacios como separador."></textarea>
+
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                                        <label class="button button-secondary" style="cursor: pointer; margin: 0;">
+                                            📄 <?php esc_html_e( 'Subir Excel / CSV', 'woo-config' ); ?>
+                                            <input type="file" id="wooconfig-paste-file" accept=".xlsx,.xlsm,.csv,.tsv,.txt" style="display: none;">
+                                        </label>
+                                        <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #475569;">
+                                            <input type="checkbox" id="wooconfig-paste-append">
+                                            <?php esc_html_e( 'Añadir a la tabla (no reemplazar)', 'woo-config' ); ?>
+                                        </label>
+                                        <span id="wooconfig-paste-result" style="font-size: 12px; color: #059669; font-weight: 600; display: none;"></span>
+                                    </div>
+
+                                    <div id="wooconfig-paste-warnings" style="display: none; margin-top: 10px; padding: 10px 12px; border-radius: 4px; font-size: 12.5px; line-height: 1.55;"></div>
+
+                                    <details id="wooconfig-map-panel" style="margin-top: 10px; border: 1px solid #dcdcde; border-radius: 4px; padding: 8px 12px; background: #fff;">
+                                        <summary style="cursor: pointer; font-weight: 600; font-size: 12.5px; color: #1d2327;">
+                                            🔧 <?php esc_html_e( 'Mapear columnas manualmente', 'woo-config' ); ?>
+                                        </summary>
+                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
+                                            <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Dorsal', 'woo-config' ); ?>
+                                                <select id="wooconfig-map-dorsal" style="width: 100%; margin-top: 3px;"></select>
+                                            </label>
+                                            <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Nombre', 'woo-config' ); ?>
+                                                <select id="wooconfig-map-name" style="width: 100%; margin-top: 3px;"></select>
+                                            </label>
+                                            <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Talla', 'woo-config' ); ?>
+                                                <select id="wooconfig-map-size" style="width: 100%; margin-top: 3px;"></select>
+                                            </label>
+                                            <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Adicionales', 'woo-config' ); ?>
+                                                <select id="wooconfig-map-ads" style="width: 100%; margin-top: 3px;"></select>
+                                            </label>
+                                        </div>
+                                        <p class="description" style="margin: 8px 0 0; font-size: 11.5px;">
+                                            <?php esc_html_e( 'Elige qué columna corresponde a cada dato y pulsa Reaplicar. Útil cuando la planilla trae columnas en otro orden (Ej: Nombre, Talla, Dorsal).', 'woo-config' ); ?>
+                                        </p>
+                                        <button type="button" class="button button-secondary button-small" id="wooconfig-map-apply-btn" style="margin-top: 8px;">
+                                            ↻ <?php esc_html_e( 'Reaplicar mapeo', 'woo-config' ); ?>
+                                        </button>
+                                    </details>
+
+                                    <p class="description" style="margin-top: 8px;">
+                                        <?php esc_html_e( 'Detecta automáticamente tallas (S, M, L, XL, 4-16), dorsales numéricos, nombres y adicionales (manga larga, piqué). Revisa el resumen antes de cargar: las filas con problemas se marcan en amarillo.', 'woo-config' ); ?>
+                                    </p>
+                                </div>
+
+                                <div style="padding: 12px 18px; border-top: 1px solid #dcdcde; background: #f6f7f7; display: flex; justify-content: flex-end; gap: 8px;">
+                                    <button type="button" class="button" id="wooconfig-import-cancel-btn"><?php esc_html_e( 'Cancelar', 'woo-config' ); ?></button>
+                                    <button type="button" class="button button-primary" id="wooconfig-paste-parse-btn">
+                                        📋 <?php esc_html_e( 'Cargar a la tabla', 'woo-config' ); ?>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

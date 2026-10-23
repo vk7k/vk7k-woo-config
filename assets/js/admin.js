@@ -311,14 +311,28 @@
             $backdrop.hide();
         });
 
-        // ─── Tab Switching ───
-        $(document).on('click', '.wooconfig-input-tab', function(e) {
+        // ─── Lightbox de importación (pegar / subir planilla) ───
+        $('#wooconfig-open-import-btn').on('click', function(e) {
             e.preventDefault();
-            var tab = $(this).data('tab');
-            switchTab(tab);
+            openImportLightbox();
         });
 
-        // ─── Tab A: Paste Parse ───
+        $('#wooconfig-import-close-btn, #wooconfig-import-cancel-btn').on('click', function(e) {
+            e.preventDefault();
+            closeImportLightbox();
+        });
+
+        // Cerrar con clic en el fondo o Escape
+        $('#wooconfig-import-backdrop').on('click', function(e) {
+            if (e.target === this) { closeImportLightbox(); }
+        });
+        $(document).on('keydown.wooconfigImport', function(e) {
+            if (e.key === 'Escape' && $('#wooconfig-import-backdrop').is(':visible')) {
+                closeImportLightbox();
+            }
+        });
+
+        // ─── Importar: parsear texto pegado ───
         $('#wooconfig-paste-parse-btn').on('click', function(e) {
             e.preventDefault();
             var rawText = $('#wooconfig-paste-area').val().trim();
@@ -364,7 +378,7 @@
             runImport(rawText, readMappingUI());
         });
 
-        // ─── Tab B: Batch Generator ───
+        // ─── Generar filas correlativas ───
         $('#wooconfig-batch-generate-btn').on('click', function(e) {
             e.preventDefault();
             var qty = parseInt($('#wooconfig-batch-qty').val(), 10) || 10;
@@ -372,7 +386,7 @@
                 alert('Ingresa una cantidad entre 1 y 100.');
                 return;
             }
-            generateBatchRows(qty);
+            generateBatchRows(qty, $('#wooconfig-quick-default-size').val() || 'M');
         });
 
         // Add 1 row
@@ -400,24 +414,8 @@
             }
         });
 
-        // ─── Tab C: Quick Mode ───
-        $('#wooconfig-quick-generate-btn').on('click', function(e) {
-            e.preventDefault();
-            var qty = parseInt($('#wooconfig-quick-qty').val(), 10) || 10;
-            var defaultSize = $('#wooconfig-quick-default-size').val() || 'M';
-            if (qty < 1 || qty > 100) {
-                alert('Ingresa una cantidad entre 1 y 100.');
-                return;
-            }
-            clearModalTable();
-            for (var i = 1; i <= qty; i++) {
-                addModalPlayerRow(String(i), '', defaultSize);
-            }
-            updateTableCount();
-
-            // Show feedback
-            alert('✓ ' + qty + ' prendas preparadas con talla ' + defaultSize + '. Recuerda adjuntar la planilla/foto en la sección de Archivos (paso 2).');
-        });
+        // ─── Lightbox de importación ───
+        // (los botones se enlazan arriba, junto al parseo)
 
         // Delete row in modal
         $(document).on('click', '.wooconfig-modal-remove-row-btn', function(e) {
@@ -592,21 +590,12 @@
        TAB SWITCHING
        ═══════════════════════════════════════════════════ */
 
-    function switchTab(tab) {
-        // Update tab buttons
-        $('.wooconfig-input-tab').removeClass('is-active');
-        $('.wooconfig-input-tab[data-tab="' + tab + '"]').addClass('is-active');
-
-        // Update panels
-        $('.wooconfig-input-panel').removeClass('is-active');
-        $('.wooconfig-input-panel[data-panel="' + tab + '"]').addClass('is-active');
-
-        // Show/hide table wrapper based on tab
-        if (tab === 'quick') {
-            $('#wooconfig-modal-table-wrapper').hide();
-        } else {
-            $('#wooconfig-modal-table-wrapper').show();
-        }
+    /**
+     * La tabla es la vista principal: ya no hay pestañas. Se mantiene la función
+     * por compatibilidad con llamadas existentes.
+     */
+    function switchTab() {
+        $('#wooconfig-modal-table-wrapper').show();
     }
 
     /* ═══════════════════════════════════════════════════
@@ -652,6 +641,22 @@
         updateTableCount();
         fillMappingUI(res.cols, mapping || res.mapping || null);
         renderImportSummary(res, issues);
+
+        if (!issues.length) {
+            // Todo limpio: se cierra el lightbox para dejar la tabla a la vista.
+            closeImportLightbox();
+        }
+    }
+
+    function openImportLightbox() {
+        $('#wooconfig-import-backdrop').css('display', 'flex');
+        $('#wooconfig-paste-warnings').hide();
+        $('#wooconfig-paste-result').hide();
+        setTimeout(function() { $('#wooconfig-paste-area').trigger('focus'); }, 50);
+    }
+
+    function closeImportLightbox() {
+        $('#wooconfig-import-backdrop').hide();
     }
 
     function fillMappingUI(cols, mapping) {
@@ -689,7 +694,18 @@
 
     function renderImportSummary(res, issues) {
         var $w = $('#wooconfig-paste-warnings');
+        var $main = $('#wooconfig-main-summary');
         $('#wooconfig-paste-result').hide();
+
+        if (!issues.length) {
+            $main.css({ background: '#ecfdf5', border: '1px solid #10b981', color: '#065f46' })
+                 .html('✓ <strong>' + res.rows.length + ' prenda(s)</strong> importadas desde la planilla. Revisa la tabla antes de guardar.')
+                 .show();
+        } else {
+            $main.css({ background: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e' })
+                 .html('⚠ <strong>' + issues.length + ' de ' + res.rows.length + ' fila(s)</strong> requieren revisión (marcadas en amarillo).')
+                 .show();
+        }
 
         if (!issues.length) {
             $w.css({ background: '#ecfdf5', border: '1px solid #10b981', color: '#065f46' })
@@ -721,10 +737,10 @@
        BATCH ROW GENERATOR
        ═══════════════════════════════════════════════════ */
 
-    function generateBatchRows(qty) {
+    function generateBatchRows(qty, size) {
         clearModalTable();
         for (var i = 1; i <= qty; i++) {
-            addModalPlayerRow(String(i), '', 'M');
+            addModalPlayerRow(String(i), '', size || 'M');
         }
         updateTableCount();
     }
@@ -767,9 +783,11 @@
         currentFiles = [];
         renderModalFiles();
         clearModalTable();
+        closeImportLightbox();
         $('#wooconfig-paste-append').prop('checked', false);
         $('#wooconfig-paste-warnings').hide();
-        switchTab('paste');
+        $('#wooconfig-main-summary').hide();
+        $('#wooconfig-paste-file').val('');
     }
 
     function clearModalTable() {
@@ -931,7 +949,9 @@
                 ads.push($(this).val());
             });
 
-            if (size || dorsal || name) {
+            // La talla SIEMPRE tiene valor (por defecto M): una fila cuenta solo si trae
+            // dorsal o nombre. Antes las filas vacías se guardaban como prendas sin datos.
+            if (dorsal || name) {
                 items.push({
                     product_id: prodId,
                     product_name: prodName,
