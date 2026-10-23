@@ -249,6 +249,7 @@
             e.preventDefault();
             var $backdrop = $('#wooconfig-admin-modal-backdrop');
             resetModal();
+            updateDraftNotice();
             $backdrop.css('display', 'flex');
             loadConfigurableProducts();
         });
@@ -288,10 +289,13 @@
         var $backdrop = $('#wooconfig-admin-modal-backdrop');
         if (!$backdrop.length) return;
 
+        $('#order_status').on('change', updateDraftNotice);
+
         // Open modal (from toolbar button)
         $('#wooconfig-btn-open-add-group').on('click', function(e) {
             e.preventDefault();
             resetModal();
+            updateDraftNotice();
             $backdrop.css('display', 'flex');
             loadConfigurableProducts();
             if ($('#wooconfig-modal-players-table tbody tr').length === 0) {
@@ -319,28 +323,45 @@
             e.preventDefault();
             var rawText = $('#wooconfig-paste-area').val().trim();
             if (!rawText) {
-                alert('Pega al menos una fila con datos.');
+                alert('Pega al menos una fila con datos o sube un archivo.');
                 return;
             }
-            var parsed = parsePastedText(rawText);
-            if (parsed.length === 0) {
-                alert('No se pudo interpretar ninguna fila. Revisa el formato.');
-                return;
-            }
+            runImport(rawText, null);
+        });
 
-            // Clear existing rows and populate
-            clearModalTable();
-            var prodId = parseInt($('#wooconfig-modal-product-select').val(), 10);
-            var prod   = getSelectedProduct(prodId);
-
-            for (var i = 0; i < parsed.length; i++) {
-                addModalPlayerRow(parsed[i].dorsal, parsed[i].name, parsed[i].size, parsed[i].adicionales);
-            }
+        // ─── Subir archivo (Excel .xlsx / CSV / TSV) ───
+        $('#wooconfig-paste-file').on('change', function() {
+            var input = this;
+            var file  = input.files && input.files[0];
+            if (!file) { return; }
 
             var $result = $('#wooconfig-paste-result');
-            $result.text('✓ ' + parsed.length + ' filas cargadas correctamente').show();
-            setTimeout(function() { $result.fadeOut(); }, 4000);
-            updateTableCount();
+            $result.css('color', '#64748b').text('Leyendo ' + file.name + '…').show();
+
+            WooConfigImport.fileToText(file).then(function(text) {
+                if (!text || !text.trim()) {
+                    throw new Error('el archivo no tiene filas legibles');
+                }
+                $('#wooconfig-paste-area').val(text);
+                runImport(text, null);
+            }).catch(function(err) {
+                $result.hide();
+                alert('No se pudo leer el archivo: ' + (err && err.message ? err.message : 'error desconocido') +
+                      '\n\nSi es un Excel antiguo (.xls) o protegido, guárdalo como .xlsx o .csv y vuelve a intentar.');
+            }).then(function() {
+                input.value = '';
+            });
+        });
+
+        // ─── Reaplicar mapeo de columnas elegido a mano ───
+        $('#wooconfig-map-apply-btn').on('click', function(e) {
+            e.preventDefault();
+            var rawText = $('#wooconfig-paste-area').val().trim();
+            if (!rawText) {
+                alert('Primero pega las filas o sube el archivo.');
+                return;
+            }
+            runImport(rawText, readMappingUI());
         });
 
         // ─── Tab B: Batch Generator ───
@@ -535,16 +556,29 @@
                     files: JSON.stringify(currentFiles),
                     items: JSON.stringify(items),
                     convert_item_id: convertItemId,
-                    payment_mode: paymentMode
+                    payment_mode: paymentMode,
+                    order_status: $('#order_status').val() || ''
                 },
                 success: function(res) {
                     $btn.prop('disabled', false).text('Guardar y Añadir al Pedido');
-                    if (res.success) {
-                        alert(res.data && res.data.message ? res.data.message : wooconfig_admin.i18n.saved);
-                        window.location.reload();
-                    } else {
+                    if (!res.success) {
                         alert(res.data && res.data.message ? res.data.message : wooconfig_admin.i18n.error);
+                        return;
                     }
+
+                    var msg = res.data && res.data.message ? res.data.message : wooconfig_admin.i18n.saved;
+
+                    // El pedido venía de la pantalla "Añadir pedido" (auto-draft). Recargar esa
+                    // pantalla crea OTRO borrador y las prendas quedan huérfanas: se navega al
+                    // pedido real que acaba de guardarse.
+                    if (res.data && res.data.order_was_draft && res.data.order_edit_url) {
+                        alert(msg);
+                        window.location.href = res.data.order_edit_url;
+                        return;
+                    }
+
+                    alert(msg);
+                    window.location.reload();
                 },
                 error: function() {
                     $btn.prop('disabled', false).text('Guardar y Añadir al Pedido');
@@ -579,121 +613,108 @@
        PASTE PARSER (Excel / WhatsApp / CSV / TSV)
        ═══════════════════════════════════════════════════ */
 
-    function parsePastedText(text) {
-        var lines = text.split(/\n/);
-        var results = [];
+    /* ═══════════════════════════════════════════════════
+       IMPORTACIÓN DE PLANILLAS (parseo + mapeo + avisos)
+       El parser vive en admin-import.js (WooConfigImport).
+       ═══════════════════════════════════════════════════ */
 
-        // Known sizes for detection
-        var knownSizes = ['XXXL', 'XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS',
-                          '2', '4', '6', '8', '10', '12', '14', '16', '18', '20',
-                          '2XL', '3XL', '4XL', '5XL'];
-        var knownSizesLower = knownSizes.map(function(s) { return s.toLowerCase(); });
+    function runImport(text, mapping) {
+        if (!window.WooConfigImport) {
+            alert('No se cargó el importador de planillas (admin-import.js). Recarga la página.');
+            return;
+        }
 
-        // Known adicionales keywords
-        var adicionalKeywords = {
-            'manga larga': 'manga_larga',
-            'manga_larga': 'manga_larga',
-            'ml': 'manga_larga',
-            'cuello polo': 'cuello_polo',
-            'cuello piqué': 'cuello_polo',
-            'cuello pique': 'cuello_polo',
-            'piqué': 'cuello_polo',
-            'pique': 'cuello_polo',
-            'cuello_polo': 'cuello_polo'
+        var res = WooConfigImport.parseText(text, mapping);
+        if (!res.rows.length) {
+            alert('No se pudo interpretar ninguna fila. Revisa el formato o ajusta el mapeo de columnas.');
+            return;
+        }
+
+        var append = $('#wooconfig-paste-append').is(':checked');
+        if (!append) {
+            clearModalTable();
+        }
+
+        var issues = [];
+        for (var i = 0; i < res.rows.length; i++) {
+            var row = res.rows[i];
+            addModalPlayerRow(row.dorsal, row.name, row.size, row.adicionales);
+
+            var $tr = $('#wooconfig-modal-players-table tbody tr').last();
+            if (row.issues && row.issues.length) {
+                issues.push({ n: i + 1, text: row.issues.join(', ') });
+                $tr.css('background', '#fef3c7').attr('title', 'Revisar: ' + row.issues.join(', '));
+            } else {
+                $tr.removeAttr('title');
+            }
+        }
+
+        updateTableCount();
+        fillMappingUI(res.cols, mapping || res.mapping || null);
+        renderImportSummary(res, issues);
+    }
+
+    function fillMappingUI(cols, mapping) {
+        cols = Math.max(cols || 0, 1);
+        mapping = mapping || {};
+
+        var labels = ['Columna 1', 'Columna 2', 'Columna 3', 'Columna 4', 'Columna 5', 'Columna 6'];
+        function opts(selected) {
+            var html = '<option value="">(ninguna)</option>';
+            for (var i = 0; i < cols; i++) {
+                html += '<option value="' + i + '"' + (selected === i ? ' selected' : '') + '>' +
+                        (labels[i] || ('Columna ' + (i + 1))) + '</option>';
+            }
+            return html;
+        }
+
+        $('#wooconfig-map-dorsal').html(opts(mapping.dorsal));
+        $('#wooconfig-map-name').html(opts(mapping.name));
+        $('#wooconfig-map-size').html(opts(mapping.size));
+        $('#wooconfig-map-ads').html(opts(mapping.ads));
+    }
+
+    function readMappingUI() {
+        function val(sel) {
+            var v = $(sel).val();
+            return (v === '' || v === null || typeof v === 'undefined') ? null : parseInt(v, 10);
+        }
+        return {
+            dorsal: val('#wooconfig-map-dorsal'),
+            name:   val('#wooconfig-map-name'),
+            size:   val('#wooconfig-map-size'),
+            ads:    val('#wooconfig-map-ads')
         };
-
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
-            if (!line) continue;
-
-            // Skip header-like lines
-            if (/^(#|dorsal|número|nombre|talla|size|jugador)/i.test(line)) continue;
-
-            var columns = splitLine(line);
-            if (columns.length === 0) continue;
-
-            var parsed = classifyColumns(columns, knownSizesLower, adicionalKeywords);
-            results.push(parsed);
-        }
-
-        return results;
     }
 
-    function splitLine(line) {
-        // Try tab first (Excel/Sheets copy)
-        if (line.indexOf('\t') !== -1) {
-            return line.split('\t').map(function(s) { return s.trim(); }).filter(Boolean);
-        }
-        // Try semicolon
-        if (line.indexOf(';') !== -1) {
-            return line.split(';').map(function(s) { return s.trim(); }).filter(Boolean);
-        }
-        // Try comma (but careful with names like "PÉREZ, JUAN")
-        if (line.indexOf(',') !== -1 && (line.match(/,/g) || []).length >= 2) {
-            return line.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-        }
-        // Try pipe
-        if (line.indexOf('|') !== -1) {
-            return line.split('|').map(function(s) { return s.trim(); }).filter(Boolean);
-        }
-        // Try dash with spaces
-        if (line.indexOf(' - ') !== -1) {
-            return line.split(' - ').map(function(s) { return s.trim(); }).filter(Boolean);
-        }
-        // Fallback: multiple spaces (2+)
-        return line.split(/\s{2,}/).map(function(s) { return s.trim(); }).filter(Boolean);
-    }
+    function renderImportSummary(res, issues) {
+        var $w = $('#wooconfig-paste-warnings');
+        $('#wooconfig-paste-result').hide();
 
-    function classifyColumns(columns, knownSizesLower, adicionalKeywords) {
-        var result = { dorsal: '', name: '', size: 'M', adicionales: [] };
-        var usedIndices = {};
-
-        // Pass 1: Find size
-        for (var i = 0; i < columns.length; i++) {
-            var val = columns[i].trim();
-            if (knownSizesLower.indexOf(val.toLowerCase()) !== -1) {
-                result.size = val.toUpperCase();
-                usedIndices[i] = true;
-                break;
-            }
+        if (!issues.length) {
+            $w.css({ background: '#ecfdf5', border: '1px solid #10b981', color: '#065f46' })
+              .html('✓ <strong>' + res.rows.length + ' fila' + (res.rows.length !== 1 ? 's' : '') + '</strong> cargadas y listas para guardar.')
+              .show();
+            return;
         }
 
-        // Pass 2: Find adicionales
-        for (var j = 0; j < columns.length; j++) {
-            if (usedIndices[j]) continue;
-            var lower = columns[j].toLowerCase().trim();
-            for (var keyword in adicionalKeywords) {
-                if (lower.indexOf(keyword) !== -1) {
-                    result.adicionales.push(adicionalKeywords[keyword]);
-                    usedIndices[j] = true;
-                    break;
-                }
-            }
+        var list = '';
+        var max = Math.min(issues.length, 8);
+        for (var i = 0; i < max; i++) {
+            list += '<li>fila ' + issues[i].n + ': ' + issues[i].text + '</li>';
+        }
+        if (issues.length > max) {
+            list += '<li>… y ' + (issues.length - max) + ' fila(s) más</li>';
         }
 
-        // Pass 3: Find dorsal (first purely numeric value, typically 1-99)
-        for (var k = 0; k < columns.length; k++) {
-            if (usedIndices[k]) continue;
-            var val2 = columns[k].trim();
-            if (/^\d{1,3}$/.test(val2) && parseInt(val2, 10) <= 999) {
-                result.dorsal = val2;
-                usedIndices[k] = true;
-                break;
-            }
-        }
+        $w.css({ background: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e' })
+          .html('<strong>⚠ ' + issues.length + ' de ' + res.rows.length + ' fila(s) necesitan revisión</strong>' +
+                '<ul style="margin: 6px 0 0 18px;">' + list + '</ul>' +
+                '<div style="margin-top: 6px; color: #475569;">Las filas en amarillo quedaron en la tabla: corrígelas ahí mismo, ' +
+                'o ajusta el <strong>mapeo de columnas</strong> y pulsa «Reaplicar mapeo».</div>')
+          .show();
 
-        // Pass 4: Remaining text = name (first remaining non-empty)
-        for (var m = 0; m < columns.length; m++) {
-            if (usedIndices[m]) continue;
-            var val3 = columns[m].trim();
-            if (val3) {
-                result.name = val3.toUpperCase();
-                usedIndices[m] = true;
-                break;
-            }
-        }
-
-        return result;
+        $('#wooconfig-map-panel').attr('open', 'open');
     }
 
     /* ═══════════════════════════════════════════════════
@@ -712,6 +733,28 @@
        MODAL HELPERS
        ═══════════════════════════════════════════════════ */
 
+    /**
+     * Muestra el aviso "este pedido todavía no está guardado" cuando se está creando
+     * un pedido nuevo (auto-draft), para que el usuario sepa que se guardará solo.
+     */
+    function updateDraftNotice() {
+        var $notice = $('#wooconfig-modal-draft-notice');
+        if (!$notice.length) { return; }
+
+        var ctx    = (window.wooconfig_admin && wooconfig_admin.current_order) || {};
+        var isNew  = /[?&]action=new\b/.test(window.location.search) || ctx.is_draft === true;
+
+        if (!isNew) {
+            $notice.hide();
+            return;
+        }
+
+        var $status = $('#order_status');
+        var label   = $status.length ? $status.find('option:selected').text() : (ctx.status_label || '');
+        $('#wooconfig-modal-draft-status').text(jQuery.trim(label) || 'Cotización');
+        $notice.show();
+    }
+
     function resetModal() {
         $('#wooconfig-modal-convert-item-id').val('0');
         $('#wooconfig-modal-title').html('➕ Añadir Prendas / Uniformes al Pedido');
@@ -724,6 +767,8 @@
         currentFiles = [];
         renderModalFiles();
         clearModalTable();
+        $('#wooconfig-paste-append').prop('checked', false);
+        $('#wooconfig-paste-warnings').hide();
         switchTab('paste');
     }
 

@@ -673,6 +673,11 @@ class WC_Config_Order {
                     </div>
 
                     <div class="wooconfig-modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                        <div id="wooconfig-modal-draft-notice" style="display: none; margin: 0 0 16px; padding: 10px 12px; border-radius: 4px; background: #fffbeb; border: 1px solid #f59e0b; color: #92400e; font-size: 12.5px; line-height: 1.5;">
+                            ⚠️ <strong><?php esc_html_e( 'Este pedido todavía no está guardado.', 'woo-config' ); ?></strong>
+                            <?php esc_html_e( 'Al añadir las prendas se guardará automáticamente con el estado seleccionado en la página:', 'woo-config' ); ?>
+                            <strong id="wooconfig-modal-draft-status"><?php esc_html_e( 'Cotización', 'woo-config' ); ?></strong>.
+                        </div>
                         <input type="hidden" id="wooconfig-modal-convert-item-id" value="0" />
 
                         <!-- Step 1: Producto base y Título del Grupo -->
@@ -739,12 +744,49 @@ class WC_Config_Order {
                                     <code style="font-size: 12px;">Dorsal | Nombre | Talla | Adicionales</code>
                                 </p>
                                 <textarea id="wooconfig-paste-area" rows="7" style="width: 100%; font-family: monospace; font-size: 13px; border: 2px dashed #94a3b8; border-radius: 4px; padding: 12px; background: #f8fafc; resize: vertical;" placeholder="10&#9;JUAN PÉREZ&#9;L&#10;7&#9;CARLOS SOTO&#9;M&#9;manga larga&#10;1&#9;DIEGO BRAVO&#9;XL&#10;&#10;También acepta: comas, punto y coma, guiones, o múltiples espacios como separador."></textarea>
-                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
                                     <button type="button" class="button button-primary" id="wooconfig-paste-parse-btn">
                                         📋 <?php esc_html_e( 'Cargar a la Tabla', 'woo-config' ); ?>
                                     </button>
+                                    <label class="button button-secondary" style="cursor: pointer; margin: 0;">
+                                        📄 <?php esc_html_e( 'Subir Excel / CSV', 'woo-config' ); ?>
+                                        <input type="file" id="wooconfig-paste-file" accept=".xlsx,.xlsm,.csv,.tsv,.txt" style="display: none;">
+                                    </label>
+                                    <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #475569;">
+                                        <input type="checkbox" id="wooconfig-paste-append">
+                                        <?php esc_html_e( 'Añadir a la tabla (no reemplazar)', 'woo-config' ); ?>
+                                    </label>
                                     <span id="wooconfig-paste-result" style="font-size: 12px; color: #059669; font-weight: 600; display: none;"></span>
                                 </div>
+
+                                <div id="wooconfig-paste-warnings" style="display: none; margin-top: 10px; padding: 10px 12px; border-radius: 4px; font-size: 12.5px; line-height: 1.55;"></div>
+
+                                <!-- Mapeo de columnas: se abre solo cuando la detección es dudosa -->
+                                <details id="wooconfig-map-panel" style="margin-top: 10px; border: 1px solid #dcdcde; border-radius: 4px; padding: 8px 12px; background: #fff;">
+                                    <summary style="cursor: pointer; font-weight: 600; font-size: 12.5px; color: #1d2327;">
+                                        🔧 <?php esc_html_e( 'Mapear columnas manualmente', 'woo-config' ); ?>
+                                    </summary>
+                                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
+                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Dorsal', 'woo-config' ); ?>
+                                            <select id="wooconfig-map-dorsal" style="width: 100%; margin-top: 3px;"></select>
+                                        </label>
+                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Nombre', 'woo-config' ); ?>
+                                            <select id="wooconfig-map-name" style="width: 100%; margin-top: 3px;"></select>
+                                        </label>
+                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Talla', 'woo-config' ); ?>
+                                            <select id="wooconfig-map-size" style="width: 100%; margin-top: 3px;"></select>
+                                        </label>
+                                        <label style="font-size: 12px; font-weight: 600;"><?php esc_html_e( 'Adicionales', 'woo-config' ); ?>
+                                            <select id="wooconfig-map-ads" style="width: 100%; margin-top: 3px;"></select>
+                                        </label>
+                                    </div>
+                                    <p class="description" style="margin: 8px 0 0; font-size: 11.5px;">
+                                        <?php esc_html_e( 'Elige qué columna corresponde a cada dato y pulsa Reaplicar. Útil cuando la planilla trae columnas en otro orden (Ej: Nombre, Talla, Dorsal).', 'woo-config' ); ?>
+                                    </p>
+                                    <button type="button" class="button button-secondary button-small" id="wooconfig-map-apply-btn" style="margin-top: 8px;">
+                                        ↻ <?php esc_html_e( 'Reaplicar mapeo', 'woo-config' ); ?>
+                                    </button>
+                                </details>
                                 <p class="description" style="margin-top: 8px;">
                                     <?php esc_html_e( 'Detecta automáticamente tallas (S, M, L, XL, 4-16), dorsales numéricos, nombres y adicionales (manga larga, piqué).', 'woo-config' ); ?>
                                 </p>
@@ -1183,6 +1225,44 @@ class WC_Config_Order {
         wp_send_json_success( array( 'products' => $list ) );
     }
 
+    /**
+     * Convierte un pedido auto-draft (pantalla "Añadir pedido") en un pedido real.
+     *
+     * @param WC_Order $order Pedido.
+     * @return bool True si hubo que promoverlo.
+     */
+    private static function promote_draft_order( $order ) {
+        $status = $order->get_status();
+        $is_draft = in_array( $status, array( 'auto-draft', 'checkout-draft' ), true ) || ! $order->get_date_created();
+
+        if ( ! $is_draft && $order->get_id() && wc_get_order( $order->get_id() ) ) {
+            // Un pedido ya guardado con estado real no se toca.
+            if ( ! in_array( $status, array( 'auto-draft', 'checkout-draft' ), true ) ) {
+                return false;
+            }
+        }
+
+        $valid      = array_keys( wc_get_order_statuses() );
+        $requested  = isset( $_POST['order_status'] ) ? sanitize_text_field( wp_unslash( $_POST['order_status'] ) ) : '';
+        $new_status = in_array( $requested, $valid, true ) ? $requested : '';
+        if ( '' === $new_status ) {
+            $new_status = in_array( 'wc-quote', $valid, true ) ? 'wc-quote' : 'wc-pending';
+        }
+
+        if ( ! $order->get_date_created() ) {
+            $order->set_date_created( time() );
+        }
+        $order->set_created_via( 'admin' );
+        $order->set_status( $new_status );
+        $order->save();
+
+        if ( function_exists( 'wc_get_order' ) && ! $order->get_id() ) {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function ajax_save_group() {
         check_ajax_referer( 'wooconfig_admin_nonce', 'nonce' );
 
@@ -1201,6 +1281,11 @@ class WC_Config_Order {
         if ( ! $product ) {
             wp_send_json_error( array( 'message' => __( 'Producto seleccionado no válido.', 'woo-config' ) ) );
         }
+
+        // Un pedido recién abierto en "Añadir pedido" es un auto-draft: no aparece en el
+        // listado y WooCommerce lo descarta al recargar, así que lo que se añadiera aquí
+        // parecía guardado y luego desaparecía. Se convierte en pedido real antes de tocar items.
+        $was_draft = self::promote_draft_order( $order );
 
         $group_title = isset( $_POST['group_title'] ) ? sanitize_text_field( wp_unslash( $_POST['group_title'] ) ) : '';
         if ( empty( $group_title ) ) {
@@ -1348,9 +1433,19 @@ class WC_Config_Order {
         $order->calculate_totals();
         $order->save();
 
+        $order = wc_get_order( $order->get_id() );
+
         wp_send_json_success( array(
-            'message'  => __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' ),
-            'group_id' => $group_id,
+            'message'         => $was_draft
+                ? sprintf( __( 'Prendas añadidas y pedido guardado con estado «%s».', 'woo-config' ), wc_get_order_status_name( $order->get_status() ) )
+                : __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' ),
+            'group_id'        => $group_id,
+            'order_id'        => $order->get_id(),
+            'order_was_draft' => $was_draft,
+            'order_status'    => $order->get_status(),
+            'order_edit_url'  => $order->get_edit_order_url(),
+            'items_added'     => count( $items_data ),
+            'order_items'     => count( $order->get_items() ),
         ) );
     }
 

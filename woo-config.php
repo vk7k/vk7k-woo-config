@@ -3,7 +3,7 @@
  * Plugin Name: vk7k-woo-config - Configurador de Ropa Deportiva y Corporativa
  * Plugin URI:  https://uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.8.2
+ * Version:     1.9.0
  * Author:      uxcribe.cl / vk7k
  * Text Domain: vk7k-woo-config
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.8.2' );
+define( 'WOOCONFIG_VERSION', '1.9.0' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -373,6 +373,61 @@ final class WooConfig {
         ) );
     }
 
+    /**
+     * Contexto del pedido que se está editando en el admin (para avisar de que
+     * todavía no está guardado y evitar que se pierdan las prendas en un auto-draft).
+     *
+     * @return array{id:int,is_draft:bool,status:string,status_label:string}
+     */
+    public function get_current_admin_order_context() {
+        $ctx = array(
+            'id'           => 0,
+            'is_draft'     => false,
+            'status'       => '',
+            'status_label' => '',
+        );
+
+        if ( ! is_admin() ) {
+            return $ctx;
+        }
+
+        $page   = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+        $action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+        $order_id = 0;
+
+        if ( 'wc-orders' === $page ) {
+            $order_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+            if ( ! $order_id && 'new' === $action ) {
+                // Pantalla "Añadir pedido": WooCommerce crea el auto-draft al cargar y su id
+                // solo está en el HTML, por eso el modo borrador se resuelve en JS.
+                $ctx['is_draft'] = true;
+                $ctx['status']   = 'auto-draft';
+                return $ctx;
+            }
+        } elseif ( isset( $_GET['post'] ) ) {
+            $order_id = absint( $_GET['post'] );
+        } elseif ( isset( $_GET['post_ID'] ) ) {
+            $order_id = absint( $_GET['post_ID'] );
+        }
+
+        if ( ! $order_id ) {
+            return $ctx;
+        }
+
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            return $ctx;
+        }
+
+        $status              = $order->get_status();
+        $ctx['id']           = $order->get_id();
+        $ctx['status']       = $status;
+        $ctx['status_label'] = wc_get_order_status_name( $status );
+        $ctx['is_draft']     = in_array( $status, array( 'auto-draft', 'checkout-draft' ), true );
+
+        return $ctx;
+    }
+
     public function enqueue_admin_assets( $hook ) {
         wp_enqueue_media();
 
@@ -384,16 +439,25 @@ final class WooConfig {
         );
 
         wp_enqueue_script(
+            'wooconfig-admin-import',
+            WOOCONFIG_URL . 'assets/js/admin-import.js',
+            array(),
+            WOOCONFIG_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
             'wooconfig-admin-js',
             WOOCONFIG_URL . 'assets/js/admin.js',
-            array( 'jquery' ),
+            array( 'jquery', 'wooconfig-admin-import' ),
             WOOCONFIG_VERSION,
             true
         );
 
         wp_localize_script( 'wooconfig-admin-js', 'wooconfig_admin', array(
-            'ajax_url' => admin_url( 'admin-ajax.php' ),
-            'nonce'    => wp_create_nonce( 'wooconfig_admin_nonce' ),
+            'ajax_url'       => admin_url( 'admin-ajax.php' ),
+            'nonce'          => wp_create_nonce( 'wooconfig_admin_nonce' ),
+            'current_order'  => $this->get_current_admin_order_context(),
             'i18n'     => array(
                 'confirm_delete' => __( '¿Confirmas que deseas eliminar esta prenda del pedido?', 'woo-config' ),
                 'saving'         => __( 'Guardando cambios...', 'woo-config' ),
