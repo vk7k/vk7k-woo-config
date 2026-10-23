@@ -286,11 +286,23 @@ class WC_Config_Order {
     }
 
     public static function register_order_metabox() {
-        $screen = class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' )
-            && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()
-            ? wc_get_page_screen_id( 'shop-order' )
-            : 'shop_order';
+        // Se registra en pedidos Y en cotizaciones (tipo quote del plugin vk7k-woo-quotes):
+        // una cotización también lleva prendas, dorsales y tallas.
+        foreach ( array( 'shop_order', 'quote' ) as $order_type ) {
+            $screen = class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' )
+                && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()
+                ? wc_get_page_screen_id( $order_type )
+                : $order_type;
 
+            if ( ! $screen ) {
+                continue;
+            }
+
+            self::register_single_order_metabox( $screen );
+        }
+    }
+
+    private static function register_single_order_metabox( $screen ) {
         add_meta_box(
             'wooconfig_order_teams',
             __( '🎽 Ficha de Equipos, Anticipos y WhatsApp (WooConfig)', 'woo-config' ),
@@ -1445,6 +1457,8 @@ class WC_Config_Order {
 
         $order = wc_get_order( $order->get_id() );
 
+        $is_quote = ( 'quote' === $order->get_type() );
+
         if ( $is_group_add ) {
             $message = sprintf(
                 _n( '%d prenda añadida al equipo «%2$s».', '%d prendas añadidas al equipo «%2$s».', count( $items_data ), 'woo-config' ),
@@ -1452,9 +1466,13 @@ class WC_Config_Order {
                 $group_title
             );
         } elseif ( $was_draft ) {
-            $message = sprintf( __( 'Prendas añadidas y pedido guardado con estado «%s».', 'woo-config' ), wc_get_order_status_name( $order->get_status() ) );
+            $message = $is_quote
+                ? sprintf( __( 'Prendas añadidas y cotización guardada con estado «%s».', 'woo-config' ), wc_get_order_status_name( $order->get_status() ) )
+                : sprintf( __( 'Prendas añadidas y pedido guardado con estado «%s».', 'woo-config' ), wc_get_order_status_name( $order->get_status() ) );
         } else {
-            $message = __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' );
+            $message = $is_quote
+                ? __( 'Equipo y uniformes añadidos correctamente a la cotización.', 'woo-config' )
+                : __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' );
         }
 
         wp_send_json_success( array(
