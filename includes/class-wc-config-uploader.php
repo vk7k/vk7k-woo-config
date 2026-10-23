@@ -17,6 +17,8 @@ class WC_Config_Uploader {
 
     public static function init() {
         add_action( 'wp_ajax_wooconfig_upload_files', array( __CLASS__, 'handle_ajax_upload' ) );
+        add_action( 'wp_ajax_wooconfig_refresh_nonce', array( __CLASS__, 'handle_ajax_refresh_nonce' ) );
+        add_action( 'wp_ajax_nopriv_wooconfig_refresh_nonce', array( __CLASS__, 'handle_ajax_refresh_nonce' ) );
         add_action( 'wp_ajax_nopriv_wooconfig_upload_files', array( __CLASS__, 'handle_ajax_upload' ) );
 
         add_action( 'wp_ajax_wooconfig_upload_file', array( __CLASS__, 'handle_ajax_upload' ) );
@@ -701,6 +703,23 @@ class WC_Config_Uploader {
         }
 
         return true;
+    }
+
+    /**
+     * Return a fresh nonce.
+     *
+     * Product pages are page-cached for up to 7 days (Varnish/CloudPanel), but the nonce
+     * embedded in the HTML only lives 12-24 h, so uploads and add-to-cart failed with a
+     * bare 403 from a page that looked perfectly fine. The frontend asks for a new nonce
+     * right before acting (and retries once on 403).
+     */
+    public static function handle_ajax_refresh_nonce() {
+        nocache_headers();
+
+        wp_send_json_success( array(
+            'nonce'    => wp_create_nonce( 'wooconfig_nonce' ),
+            'issued_at' => time(),
+        ) );
     }
 
     public static function handle_ajax_upload() {

@@ -28,6 +28,7 @@
         isSubmitting: false,
         uploadToken: '',
         uploadTokenIsNew: false,
+        nonceFresh: false,
 
         init: function() {
             if (!this.data.product_id) return;
@@ -45,6 +46,32 @@
             this.bindEvents();
             this.renderOnPageValues();
             this.updateTotals();
+
+            // The cached HTML carries an old nonce: refresh it in the background.
+            this.refreshNonce();
+        },
+
+        /**
+         * Fetch a nonce that is valid right now (cached pages ship an expired one).
+         */
+        refreshNonce: function(cb) {
+            var self = this;
+
+            if (this.nonceFresh) {
+                if (cb) { cb(); }
+                return;
+            }
+
+            jQuery.post(this.data.ajax_url, { action: 'wooconfig_refresh_nonce', _t: Date.now() })
+                .done(function(res) {
+                    if (res && res.success && res.data && res.data.nonce) {
+                        self.data.nonce = res.data.nonce;
+                        self.nonceFresh = true;
+                    }
+                })
+                .always(function() {
+                    if (cb) { cb(); }
+                });
         },
 
         getDraftKey: function() {
@@ -323,6 +350,15 @@
 
             if (validFilesCount === 0) return;
 
+            this.sendUpload(formData, type, 0);
+        },
+
+        /**
+         * Send the upload; a 403 means the nonce is stale (cached page) -> refresh + retry once.
+         */
+        sendUpload: function(formData, type, attempt) {
+            var self = this;
+
             var $progressWrapper = $('#wooconfig-' + type + '-progress');
             var $progressFill    = $('#wooconfig-' + type + '-progress-fill');
             var $progressText    = $('#wooconfig-' + type + '-progress-text');
@@ -366,8 +402,21 @@
                         alert((res && res.data && res.data.message) ? res.data.message : 'Error al subir archivo.');
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    if (xhr && xhr.status === 403 && attempt < 1) {
+                        // Stale nonce from a cached page: get a fresh one and retry.
+                        self.nonceFresh = false;
+                        self.refreshNonce(function() {
+                            formData.set('nonce', self.data.nonce);
+                            self.sendUpload(formData, type, attempt + 1);
+                        });
+                        return;
+                    }
                     $progressWrapper.hide();
+                    if (xhr && xhr.status === 413) {
+                        alert('El archivo es demasiado grande para el servidor. Reduce su tamaño e inténtalo de nuevo.');
+                        return;
+                    }
                     alert('Error de conexión al subir el archivo.');
                 }
             });
@@ -746,6 +795,18 @@
                 players: JSON.stringify(this.players)
             };
 
+            this.sendCart(payload, 0);
+        },
+
+        /**
+         * Envía el pedido; un 403 significa nonce vencido (página cacheada) -> refrescar y reintentar.
+         */
+        sendCart: function(payload, attempt) {
+            var self = this;
+            var $btn     = $('#wooconfig-submit-cart-btn');
+            var $label   = $('#wooconfig-submit-cart-label');
+            var $spinner = $('#wooconfig-submit-spinner');
+
             $.post(this.data.ajax_url, payload, function(res) {
                 $btn.prop('disabled', false);
                 $spinner.hide();
@@ -762,7 +823,15 @@
                     self.isSubmitting = false;
                     alert((res && res.data && res.data.message) ? res.data.message : 'Error al añadir al carrito.');
                 }
-            }).fail(function() {
+            }).fail(function(xhr) {
+                if (xhr && xhr.status === 403 && attempt < 1) {
+                    self.nonceFresh = false;
+                    self.refreshNonce(function() {
+                        payload.nonce = self.data.nonce;
+                        self.sendCart(payload, attempt + 1);
+                    });
+                    return;
+                }
                 $btn.prop('disabled', false);
                 $spinner.hide();
                 $label.text('Añadir y ver carrito');
