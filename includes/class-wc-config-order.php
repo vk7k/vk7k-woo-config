@@ -542,7 +542,11 @@ class WC_Config_Order {
                             <span style="background: #f0f0f1; padding: 3px 8px; border-radius: 3px; font-weight: 600; font-size: 12px; color: #50575e;">
                                 <?php echo count( $group_item_list ); ?> prendas
                             </span>
-                            <button type="button" class="button button-small wooconfig-btn-add-item-row" data-group-id="<?php echo esc_attr( $gid ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+                            <button type="button" class="button button-small wooconfig-btn-add-item-row"
+                                data-group-id="<?php echo esc_attr( $gid ); ?>"
+                                data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
+                                data-product-id="<?php echo esc_attr( $first_item->get_product_id() ); ?>"
+                                data-group-title="<?php echo esc_attr( $group_title ); ?>">
                                 ➕ Añadir Prenda
                             </button>
                             <button type="button" class="button button-small wooconfig-btn-preview-group" data-group-id="<?php echo esc_attr( $gid ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" data-group-title="<?php echo esc_attr( $group_title ); ?>">
@@ -679,6 +683,7 @@ class WC_Config_Order {
                         </div>
                         <input type="hidden" id="wooconfig-modal-convert-item-id" value="0" />
                         <input type="hidden" id="wooconfig-modal-order-id" value="<?php echo esc_attr( $order->get_id() ); ?>" />
+                        <input type="hidden" id="wooconfig-modal-target-group" value="" />
 
                         <!-- Step 1: Producto base y Título del Grupo -->
                         <div class="wooconfig-modal-step-section">
@@ -693,6 +698,9 @@ class WC_Config_Order {
                                 <div>
                                     <label style="display: block; font-weight: 600; margin-bottom: 5px;"><?php esc_html_e( 'Nombre del Equipo / Grupo:', 'woo-config' ); ?></label>
                                     <input type="text" id="wooconfig-modal-group-title" style="width: 100%;" placeholder="<?php esc_attr_e( 'Ej: Camisetas Titulares / Titular Adulto', 'woo-config' ); ?>" />
+                                    <span id="wooconfig-modal-group-hint" style="display: none; font-size: 11.5px; color: #646970;">
+                                        <?php esc_html_e( 'Las prendas se añaden al equipo existente; el nombre no cambia.', 'woo-config' ); ?>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -1308,24 +1316,44 @@ class WC_Config_Order {
         }
 
         $base_price = (float) $product->get_price();
-        $group_id   = 'group_admin_' . wp_generate_uuid4();
 
-        // Save new group metadata
         $groups = $order->get_meta( '_wooconfig_order_groups' );
         if ( ! is_array( $groups ) ) {
             $groups = array();
         }
-        $groups[$group_id] = array(
-            'group_id'    => $group_id,
-            'flow'        => 'wizard',
-            'group_title' => $group_title,
-            'design_desc' => $combined_desc,
-            'files'       => $files,
-        );
-        $order->update_meta_data( '_wooconfig_order_groups', $groups );
+
+        // ¿Añadir a un equipo ya existente? (modal abierto desde "➕ Añadir Prenda" del grupo)
+        $target_group = isset( $_POST['group_id'] ) ? sanitize_text_field( wp_unslash( $_POST['group_id'] ) ) : '';
+        $is_group_add = ( '' !== $target_group && isset( $groups[ $target_group ] ) );
+
+        if ( $is_group_add ) {
+            // El equipo conserva su nombre, diseño y archivos: solo se suman prendas.
+            $group_id    = $target_group;
+            $group_title = isset( $groups[ $group_id ]['group_title'] ) && '' !== $groups[ $group_id ]['group_title']
+                ? $groups[ $group_id ]['group_title']
+                : $group_title;
+        } else {
+            $group_id = 'group_admin_' . wp_generate_uuid4();
+            $groups[ $group_id ] = array(
+                'group_id'    => $group_id,
+                'flow'        => 'wizard',
+                'group_title' => $group_title,
+                'design_desc' => $combined_desc,
+                'files'       => $files,
+            );
+            $order->update_meta_data( '_wooconfig_order_groups', $groups );
+        }
 
         // Add line items
         $idx = 1;
+        if ( $is_group_add ) {
+            // Continuar la numeración del equipo en vez de reiniciarla en 1.
+            foreach ( $order->get_items() as $existing_item ) {
+                if ( $existing_item->get_meta( '_wooconfig_group_id' ) === $group_id ) {
+                    $idx = max( $idx, (int) $existing_item->get_meta( '_wooconfig_item_index' ) + 1 );
+                }
+            }
+        }
         foreach ( $items_data as $row ) {
             $dorsal = isset( $row['dorsal'] ) ? sanitize_text_field( $row['dorsal'] ) : '';
             $name   = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
@@ -1417,11 +1445,22 @@ class WC_Config_Order {
 
         $order = wc_get_order( $order->get_id() );
 
+        if ( $is_group_add ) {
+            $message = sprintf(
+                _n( '%d prenda añadida al equipo «%2$s».', '%d prendas añadidas al equipo «%2$s».', count( $items_data ), 'woo-config' ),
+                count( $items_data ),
+                $group_title
+            );
+        } elseif ( $was_draft ) {
+            $message = sprintf( __( 'Prendas añadidas y pedido guardado con estado «%s».', 'woo-config' ), wc_get_order_status_name( $order->get_status() ) );
+        } else {
+            $message = __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' );
+        }
+
         wp_send_json_success( array(
-            'message'         => $was_draft
-                ? sprintf( __( 'Prendas añadidas y pedido guardado con estado «%s».', 'woo-config' ), wc_get_order_status_name( $order->get_status() ) )
-                : __( 'Equipo y uniformes añadidos correctamente al pedido.', 'woo-config' ),
+            'message'         => $message,
             'group_id'        => $group_id,
+            'group_add'       => $is_group_add,
             'order_id'        => $order->get_id(),
             'order_was_draft' => $was_draft,
             'order_status'    => $order->get_status(),

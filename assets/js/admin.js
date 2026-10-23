@@ -122,49 +122,25 @@
         });
 
         // Quick add single row to existing group
+        /**
+         * "➕ Añadir Prenda" de un equipo: abre el mismo modal del resto del panel,
+         * pre-configurado para ese grupo (antes eran 3 prompt() del navegador).
+         */
         $(document).on('click', '.wooconfig-btn-add-item-row', function(e) {
             e.preventDefault();
-            var $btn     = $(this);
-            var groupId  = $btn.data('group-id');
-            var orderId  = $btn.data('order-id');
-            var dorsal   = prompt('Número de dorsal (opcional):', '');
-            if (dorsal === null) return;
-            var name     = prompt('Nombre / Apellido / Alias en camiseta (opcional):', '');
-            if (name === null) return;
-            var size     = prompt('Talla (ej: M, L, 12, XL):', 'M');
-            if (size === null || !size.trim()) return;
+            var $btn       = $(this);
+            var groupId    = $btn.data('group-id') || '';
+            var groupTitle = $btn.data('group-title') || '';
+            var productId  = parseInt($btn.data('product-id'), 10) || 0;
 
-            $btn.prop('disabled', true).text('Añadiendo...');
+            // Los items sin grupo no tienen equipo donde sumar: se crea uno nuevo.
+            if (!groupId || groupId === 'sin_grupo') {
+                groupId = '';
+            }
 
-            $.ajax({
-                url: wooconfig_admin.ajax_url,
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action: 'wooconfig_admin_add_item',
-                    nonce: wooconfig_admin.nonce,
-                    order_id: orderId,
-                    group_id: groupId,
-                    dorsal: dorsal,
-                    name: name,
-                    size: size
-                },
-                success: function(res) {
-                    $btn.prop('disabled', false).text('➕ Añadir Prenda');
-                    if (res.success) {
-                        window.location.reload();
-                    } else {
-                        alert(res.data && res.data.message ? res.data.message : wooconfig_admin.i18n.error);
-                    }
-                },
-                error: function() {
-                    $btn.prop('disabled', false).text('➕ Añadir Prenda');
-                    alert(wooconfig_admin.i18n.error);
-                }
-            });
+            openModalForGroupAdd(groupId, groupTitle, productId);
         });
 
-        // Group workshop preview live trigger
         $(document).on('click', '.wooconfig-btn-preview-group', function(e) {
             e.preventDefault();
             var $card      = $(this).closest('.wooconfig-group-card');
@@ -244,6 +220,45 @@
             openModalForDesglosar(orderId, itemId, productId, productName, quantity);
         });
 
+    }
+
+    /**
+     * Abre el modal para sumar prendas a un equipo existente.
+     *
+     * @param {string} groupId    Grupo destino ('' = crear equipo nuevo).
+     * @param {string} groupTitle Nombre visible del equipo.
+     * @param {number} productId  Producto del equipo (se preselecciona).
+     */
+    function openModalForGroupAdd(groupId, groupTitle, productId) {
+        var $backdrop = $('#wooconfig-admin-modal-backdrop');
+        resetModal();
+
+        $('#wooconfig-modal-order-id').val(currentOrderId());
+
+        if (groupId) {
+            $('#wooconfig-modal-target-group').val(groupId);
+            $('#wooconfig-modal-title').html('➕ Añadir prendas a «' + $('<div>').text(groupTitle || 'equipo').html() + '»');
+            $('#wooconfig-modal-group-title')
+                .val(groupTitle || '')
+                .prop('readonly', true)
+                .css('background', '#f6f7f7');
+            $('#wooconfig-modal-group-hint').show();
+            $('#wooconfig-modal-save-btn').text('Guardar prendas en el equipo');
+        }
+
+        $backdrop.css('display', 'flex');
+        updateDraftNotice();
+
+        loadConfigurableProducts(function() {
+            if (productId) {
+                $('#wooconfig-modal-product-select').val(String(productId)).trigger('change');
+            }
+        });
+
+        for (var i = 0; i < 5; i++) {
+            addModalPlayerRow();
+        }
+        updateTableCount();
     }
 
     function openModalForDesglosar(orderId, itemId, productId, productName, quantity) {
@@ -546,7 +561,8 @@
                     items: JSON.stringify(items),
                     convert_item_id: convertItemId,
                     payment_mode: paymentMode,
-                    order_status: $('#order_status').val() || ''
+                    order_status: $('#order_status').val() || '',
+                    group_id: $('#wooconfig-modal-target-group').val() || ''
                 },
                 success: function(res) {
                     $btn.prop('disabled', false).text('Guardar y Añadir al Pedido');
@@ -772,6 +788,10 @@
 
     function resetModal() {
         $('#wooconfig-modal-convert-item-id').val('0');
+        $('#wooconfig-modal-target-group').val('');
+        $('#wooconfig-modal-group-hint').hide();
+        $('#wooconfig-modal-group-title').prop('readonly', false).css('background', '');
+        $('#wooconfig-modal-save-btn').text('Guardar y Añadir al Pedido');
         $('#wooconfig-modal-title').html('➕ Añadir Prendas / Uniformes al Pedido');
         $('#wooconfig-modal-group-title').val('');
         $('#wooconfig-modal-design-notes').val('');
