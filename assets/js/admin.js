@@ -253,6 +253,9 @@
             if (productId) {
                 $('#wooconfig-modal-product-select').val(String(productId)).trigger('change');
             }
+            // El equipo ya tiene su producto: se bloquea para no mezclar prendas distintas
+            // (y para que el selector no reescriba tallas/adicionales de la tabla).
+            $('#wooconfig-modal-product-select').prop('disabled', true);
         });
 
         for (var i = 0; i < 5; i++) {
@@ -790,6 +793,7 @@
         $('#wooconfig-modal-convert-item-id').val('0');
         $('#wooconfig-modal-target-group').val('');
         $('#wooconfig-modal-group-hint').hide();
+        $('#wooconfig-modal-product-select').prop('disabled', false);
         $('#wooconfig-modal-group-title').prop('readonly', false).css('background', '');
         $('#wooconfig-modal-save-btn').text('Guardar y Añadir al Pedido');
         $('#wooconfig-modal-title').html('➕ Añadir Prendas / Uniformes al Pedido');
