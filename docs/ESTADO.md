@@ -24,6 +24,18 @@ Piezas: `includes/class-wc-config-order.php` (metabox, handler AJAX, promoción 
 8. **Estado inicial por tipo**: un pedido creado desde «Añadir pedido» arrancaba en estado *Cotización*; ahora usa *Pendiente* (o el elegido), y sólo las cotizaciones nacen en *Cotización*.
 9. Los metadatos `_wooconfig_*` se ocultan de la tabla de artículos con `woocommerce_order_item_get_formatted_meta_data`, pero **siguen legibles con `get_meta()`**: no romper esa vía.
 
+## Convencion de metadatos (2026-10-25)
+
+Cada plugin firma sus datos en la base: `_vk7k_wquote_*` (quotes), `_vk7k_wconfig_*` (config),
+`_vk7k_winvoice_*` (factura). Nunca reutilizar prefijos ajenos ni los nativos de WooCommerce.
+
+- Prohibido usar texto traducido como clave de metadato (`__( 'Talla' )`): si cambia el idioma
+  los datos quedan ilegibles. Clave fija + etiqueta solo al mostrar.
+- Cada plugin tiene `class-*-meta.php` (PREFIX, map(), get(), migrate()) y un comando
+  `wp vk7k-... meta-migrate [--dry-run]`. Copia, no borra; idempotente.
+- `wc_orders_meta` NO tiene `meta_id` (PK = `id`); `woocommerce_order_itemmeta` NO tiene
+  `order_id` (se llega por `woocommerce_order_items`). Usar `SELECT 1` para chequear existencia.
+
 ## Cómo probar (Laragon)
 
 ```bash
