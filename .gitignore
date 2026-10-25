@@ -3,3 +3,10 @@
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Artefactos de agentes (ver AGENTS.md en la raíz del workspace)
+.antigravity/
+.gemini/
+.hermes/
+.claude/
+.cursor/
