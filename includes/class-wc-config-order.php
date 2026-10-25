@@ -285,6 +285,24 @@ class WC_Config_Order {
         }
     }
 
+    /**
+     * ¿Se puede modificar el CONTENIDO (prendas) de este documento?
+     *
+     * Se apoya en WC_Order::is_editable() y su filtro wc_order_is_editable, que es donde
+     * el plugin de cotizaciones aplica el candado. Si ese plugin no está activo, rige la
+     * regla nativa de WooCommerce: cero dependencia entre plugins.
+     *
+     * @param WC_Order $order Documento.
+     * @return bool
+     */
+    private static function content_editable( $order ) {
+        if ( ! $order instanceof WC_Order ) {
+            return false;
+        }
+
+        return (bool) apply_filters( 'wooconfig_order_content_editable', $order->is_editable(), $order );
+    }
+
     public static function register_order_metabox() {
         // Se registra en pedidos Y en cotizaciones (tipo quote del plugin vk7k-woo-quotes):
         // una cotización también lleva prendas, dorsales y tallas.
@@ -317,6 +335,7 @@ class WC_Config_Order {
         $order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
         if ( ! $order ) return;
 
+        $content_locked      = ! self::content_editable( $order );
         $groups              = $order->get_meta( '_wooconfig_order_groups' );
         $items               = $order->get_items();
         $has_wooconfig_items = false;
@@ -493,6 +512,21 @@ class WC_Config_Order {
                 </div>
             <?php endif; ?>
 
+            <?php if ( $content_locked ) : ?>
+                <div class="notice notice-warning inline" style="margin: 0 0 14px; padding: 10px 12px;">
+                    <p style="margin: 0; font-size: 12.5px;">
+                        🔒 <strong><?php esc_html_e( 'Contenido bloqueado.', 'woo-config' ); ?></strong>
+                        <?php
+                        printf(
+                            /* translators: %s: estado */
+                            esc_html__( 'Este documento está en estado «%s» y sus prendas ya no se pueden modificar. El estado, las notas, los pagos y el envío siguen disponibles. Para cambiarlo, clona el documento.', 'woo-config' ),
+                            esc_html( wc_get_order_status_name( $order->get_status() ) )
+                        );
+                        ?>
+                    </p>
+                </div>
+            <?php endif; ?>
+
             <div class="wooconfig-admin-toolbar" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #c3c4c7; border-radius: 4px; padding: 12px 16px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                     <strong style="font-size: 15px; color: #1e293b; white-space: nowrap;">🎽 Personalización de Prendas y Equipos</strong>
@@ -501,9 +535,11 @@ class WC_Config_Order {
                     </span>
                 </div>
                 <div class="wooconfig-admin-toolbar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-left: auto;">
-                    <button type="button" class="button button-primary" id="wooconfig-btn-open-add-group" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
-                        ➕ Añadir Prendas / Equipo al Pedido
-                    </button>
+                    <?php if ( ! $content_locked ) : ?>
+                        <button type="button" class="button button-primary" id="wooconfig-btn-open-add-group" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+                            ➕ Añadir Prendas / Equipo al Pedido
+                        </button>
+                    <?php endif; ?>
                     <a href="<?php echo esc_url( $pdf_url ); ?>" target="_blank" class="button button-secondary">
                         📄 Ficha Oficial de Taller (PDF)
                     </a>
@@ -554,6 +590,7 @@ class WC_Config_Order {
                             <span style="background: #f0f0f1; padding: 3px 8px; border-radius: 3px; font-weight: 600; font-size: 12px; color: #50575e;">
                                 <?php echo count( $group_item_list ); ?> prendas
                             </span>
+                            <?php if ( ! $content_locked ) : ?>
                             <button type="button" class="button button-small wooconfig-btn-add-item-row"
                                 data-group-id="<?php echo esc_attr( $gid ); ?>"
                                 data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
@@ -561,6 +598,7 @@ class WC_Config_Order {
                                 data-group-title="<?php echo esc_attr( $group_title ); ?>">
                                 ➕ Añadir Prenda
                             </button>
+                            <?php endif; ?>
                             <button type="button" class="button button-small wooconfig-btn-preview-group" data-group-id="<?php echo esc_attr( $gid ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" data-group-title="<?php echo esc_attr( $group_title ); ?>">
                                 👁 Previsualizar Ficha
                             </button>
@@ -1278,6 +1316,10 @@ class WC_Config_Order {
             wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
         }
 
+        if ( ! self::content_editable( $order ) ) {
+            wp_send_json_error( array( 'message' => __( 'Este documento ya no admite cambios en su contenido (está emitido o confirmado). Clónalo para modificarlo.', 'woo-config' ) ) );
+        }
+
         $product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
         $product    = wc_get_product( $product_id );
         if ( ! $product ) {
@@ -1503,6 +1545,10 @@ class WC_Config_Order {
             wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
         }
 
+        if ( ! self::content_editable( $order ) ) {
+            wp_send_json_error( array( 'message' => __( 'Este documento ya no admite cambios en su contenido. Clónalo para modificarlo.', 'woo-config' ) ) );
+        }
+
         $item = $order->get_item( $item_id );
         if ( ! $item ) {
             wp_send_json_error( array( 'message' => __( 'Prenda no encontrada.', 'woo-config' ) ) );
@@ -1528,6 +1574,10 @@ class WC_Config_Order {
         $order = wc_get_order( $order_id );
         if ( ! $order ) {
             wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        if ( ! self::content_editable( $order ) ) {
+            wp_send_json_error( array( 'message' => __( 'Este documento ya no admite cambios en su contenido. Clónalo para modificarlo.', 'woo-config' ) ) );
         }
 
         $item = $order->get_item( $item_id );
@@ -1564,6 +1614,10 @@ class WC_Config_Order {
         $order = wc_get_order( $order_id );
         if ( ! $order ) {
             wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        if ( ! self::content_editable( $order ) ) {
+            wp_send_json_error( array( 'message' => __( 'Este documento ya no admite cambios en su contenido. Clónalo para modificarlo.', 'woo-config' ) ) );
         }
 
         // Find reference item in group to inherit product and group title
