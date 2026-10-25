@@ -215,8 +215,8 @@ class WC_Config_Size_Guide {
         }
 
         // Custom admin overrides
-        $custom_img = get_post_meta( $product_id, '_wooconfig_size_guide_image', true );
-        $custom_url = get_post_meta( $product_id, '_wooconfig_size_guide_url', true );
+        $custom_img = get_post_meta( $product_id, '_vk7k_wconfig_size_guide_image', true );
+        $custom_url = get_post_meta( $product_id, '_vk7k_wconfig_size_guide_url', true );
 
         if ( 'buzo' === $discipline ) {
             $top_label    = __( 'Chaqueta / Polerón', 'woo-config' );

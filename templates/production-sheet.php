@@ -19,16 +19,16 @@ if ( $is_draft && isset( $draft_data ) ) {
         $mock_item = new WC_Order_Item_Product();
         $mock_item->set_name( $d_item['product_name'] );
         $mock_item->set_quantity( 1 );
-        $mock_item->add_meta_data( '_wooconfig_group_id', 'draft_preview' );
-        $mock_item->add_meta_data( '_wooconfig_item_index', $d_idx + 1 );
-        $mock_item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), $d_item['dorsal'] );
-        $mock_item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), $d_item['name'] );
-        $mock_item->add_meta_data( __( 'Talla', 'woo-config' ), $d_item['size'] );
-        $mock_item->add_meta_data( __( 'Adicionales', 'woo-config' ), $d_item['adicionales'] );
+        $mock_item->add_meta_data( '_vk7k_wconfig_group_id', 'draft_preview' );
+        $mock_item->add_meta_data( '_vk7k_wconfig_item_index', $d_idx + 1 );
+        $mock_item->add_meta_data( '_vk7k_wconfig_dorsal', $d_item['dorsal'] );
+        $mock_item->add_meta_data( '_vk7k_wconfig_nombre', $d_item['name'] );
+        $mock_item->add_meta_data( '_vk7k_wconfig_talla', $d_item['size'] );
+        $mock_item->add_meta_data( '_vk7k_wconfig_adicionales_list', $d_item['adicionales'] );
         $items[] = $mock_item;
     }
 } else {
-    $groups = $order->get_meta( '_wooconfig_order_groups' );
+    $groups = $order->get_meta( '_vk7k_wconfig_order_groups' );
     $items  = $order->get_items();
 }
 ?>
@@ -121,7 +121,7 @@ if ( $is_draft && isset( $draft_data ) ) {
     <?php
     $grouped_items = array();
     foreach ( $items as $item ) {
-        $gid = $item->get_meta( '_wooconfig_group_id' );
+        $gid = $item->get_meta( '_vk7k_wconfig_group_id' );
         if ( empty( $gid ) ) continue;
         $grouped_items[$gid][] = $item;
     }
@@ -129,10 +129,10 @@ if ( $is_draft && isset( $draft_data ) ) {
     foreach ( $grouped_items as $gid => $group_item_list ) :
         $group_meta  = isset( $groups[$gid] ) ? $groups[$gid] : array();
         $first_item  = $group_item_list[0];
-        $flow        = isset( $group_meta['flow'] ) ? $group_meta['flow'] : $first_item->get_meta( '_wooconfig_flow' );
-        $group_title = $first_item->get_meta( '_wooconfig_group_title' );
-        $design_desc = isset( $group_meta['design_desc'] ) ? $group_meta['design_desc'] : $first_item->get_meta( '_wooconfig_design_desc' );
-        $files       = isset( $group_meta['files'] ) ? $group_meta['files'] : $first_item->get_meta( '_wooconfig_files' );
+        $flow        = isset( $group_meta['flow'] ) ? $group_meta['flow'] : $first_item->get_meta( '_vk7k_wconfig_flow' );
+        $group_title = $first_item->get_meta( '_vk7k_wconfig_group_title' );
+        $design_desc = isset( $group_meta['design_desc'] ) ? $group_meta['design_desc'] : $first_item->get_meta( '_vk7k_wconfig_design_desc' );
+        $files       = isset( $group_meta['files'] ) ? $group_meta['files'] : $first_item->get_meta( '_vk7k_wconfig_files' );
     ?>
         <div class="team-block">
             <div class="team-header">
@@ -141,7 +141,7 @@ if ( $is_draft && isset( $draft_data ) ) {
             </div>
 
             <?php if ( 'quick' === $flow ) : 
-                $ad_summary = $first_item->get_meta( __( 'Adicionales incluidos', 'woo-config' ) );
+                $ad_summary = $first_item->get_meta( '_vk7k_wconfig_adicionales_summary' );
                 $clean_ad_summary = array();
                 if ( is_array( $ad_summary ) ) {
                     foreach ( $ad_summary as $as_item ) {
@@ -172,15 +172,15 @@ if ( $is_draft && isset( $draft_data ) ) {
                     </thead>
                     <tbody>
                         <?php foreach ( $group_item_list as $i => $item ) : 
-                            $ads = $item->get_meta( __( 'Adicionales', 'woo-config' ) );
+                            $ads = $item->get_meta( '_vk7k_wconfig_adicionales_list' );
                             $ads_text = is_array( $ads ) ? implode( ', ', $ads ) : ( $ads ? $ads : '-' );
                             $clean_ads_text = html_entity_decode( wp_strip_all_tags( $ads_text ) );
                         ?>
                             <tr>
-                                <td><?php echo esc_html( $item->get_meta( '_wooconfig_item_index' ) ? $item->get_meta( '_wooconfig_item_index' ) : ($i + 1) ); ?></td>
-                                <td><span class="dorsal-badge"><?php echo esc_html( $item->get_meta( __( 'Dorsal (#)', 'woo-config' ) ) ); ?></span></td>
-                                <td><span class="player-name"><?php echo esc_html( $item->get_meta( __( 'Nombre / Alias', 'woo-config' ) ) ); ?></span></td>
-                                <td><span class="size-badge"><?php echo esc_html( $item->get_meta( __( 'Talla', 'woo-config' ) ) ); ?></span></td>
+                                <td><?php echo esc_html( $item->get_meta( '_vk7k_wconfig_item_index' ) ? $item->get_meta( '_vk7k_wconfig_item_index' ) : ($i + 1) ); ?></td>
+                                <td><span class="dorsal-badge"><?php echo esc_html( $item->get_meta( '_vk7k_wconfig_dorsal' ) ); ?></span></td>
+                                <td><span class="player-name"><?php echo esc_html( $item->get_meta( '_vk7k_wconfig_nombre' ) ); ?></span></td>
+                                <td><span class="size-badge"><?php echo esc_html( $item->get_meta( '_vk7k_wconfig_talla' ) ); ?></span></td>
                                 <td><span class="ads-badge"><?php echo esc_html( $clean_ads_text ); ?></span></td>
                                 <td><?php echo esc_html( $item->get_name() ); ?></td>
                             </tr>

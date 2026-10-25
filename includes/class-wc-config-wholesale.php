@@ -40,7 +40,7 @@ class WC_Config_Wholesale {
         }
 
         // Check user meta flag
-        if ( 'yes' === get_user_meta( $user->ID, '_wooconfig_is_wholesale', true ) ) {
+        if ( 'yes' === get_user_meta( $user->ID, '_vk7k_wconfig_is_wholesale', true ) ) {
             return true;
         }
 
@@ -268,12 +268,12 @@ class WC_Config_Wholesale {
         $parent_id  = $product->get_parent_id();
         $target_id  = $parent_id > 0 ? $parent_id : $product_id;
 
-        $wholesale_price = get_post_meta( $target_id, '_wooconfig_wholesale_price', true );
+        $wholesale_price = get_post_meta( $target_id, '_vk7k_wconfig_wholesale_price', true );
         if ( '' === $wholesale_price || null === $wholesale_price || (float) $wholesale_price <= 0 ) {
             return $price_html;
         }
 
-        $min_qty = (int) get_post_meta( $target_id, '_wooconfig_wholesale_min_qty', true );
+        $min_qty = (int) get_post_meta( $target_id, '_vk7k_wconfig_wholesale_min_qty', true );
         if ( $min_qty < 1 ) {
             $min_qty = 1;
         }
@@ -322,12 +322,12 @@ class WC_Config_Wholesale {
         $parent_id  = $product->get_parent_id();
         $target_id  = $parent_id > 0 ? $parent_id : $product_id;
 
-        $wholesale_price = get_post_meta( $target_id, '_wooconfig_wholesale_price', true );
+        $wholesale_price = get_post_meta( $target_id, '_vk7k_wconfig_wholesale_price', true );
         if ( '' === $wholesale_price || null === $wholesale_price || (float) $wholesale_price <= 0 ) {
             return '';
         }
 
-        $min_qty = (int) get_post_meta( $target_id, '_wooconfig_wholesale_min_qty', true );
+        $min_qty = (int) get_post_meta( $target_id, '_vk7k_wconfig_wholesale_min_qty', true );
         if ( $min_qty < 1 ) {
             $min_qty = 1;
         }
@@ -651,9 +651,9 @@ class WC_Config_Wholesale {
             }
             if ( $product ) {
                 $product_id = $product->get_id();
-                $wholesale_price = get_post_meta( $product_id, '_wooconfig_wholesale_price', true );
+                $wholesale_price = get_post_meta( $product_id, '_vk7k_wconfig_wholesale_price', true );
                 if ( '' !== $wholesale_price && (float) $wholesale_price > 0 ) {
-                    $min_qty = max( 1, (int) get_post_meta( $product_id, '_wooconfig_wholesale_min_qty', true ) );
+                    $min_qty = max( 1, (int) get_post_meta( $product_id, '_vk7k_wconfig_wholesale_min_qty', true ) );
                     $formatted_wholesale_price = wc_price( (float) $wholesale_price );
                     $min_label = ( 1 === $min_qty )
                         ? __( 'mín. 1 ud.*', 'woo-config' )
@@ -749,12 +749,12 @@ class WC_Config_Wholesale {
                 $reason  = 'wholesale_customer';
             }
 
-            $cart_item['_wooconfig_wholesale_applied'] = $applies;
-            $cart_item['_wooconfig_wholesale_reason']  = $reason;
+            $cart_item['_vk7k_wconfig_wholesale_applied'] = $applies;
+            $cart_item['_vk7k_wconfig_wholesale_reason']  = $reason;
 
             // Compute appropriate base price
-            $regular_base_price = isset( $cart_item['_wooconfig_base_price'] )
-                ? (float) $cart_item['_wooconfig_base_price']
+            $regular_base_price = isset( $cart_item['_vk7k_wconfig_base_price'] )
+                ? (float) $cart_item['_vk7k_wconfig_base_price']
                 : (float) $cart_item['data']->get_regular_price();
 
             if ( $regular_base_price <= 0 ) {
@@ -764,30 +764,30 @@ class WC_Config_Wholesale {
             $effective_base_price = $applies ? round( $regular_base_price * $discount_factor ) : $regular_base_price;
 
             // If this is a WooConfig custom product (with extra add-ons/players/deposits)
-            if ( isset( $cart_item['_wooconfig_group_id'] ) ) {
+            if ( isset( $cart_item['_vk7k_wconfig_group_id'] ) ) {
                 // Calculate add-on cost
                 $extra_cost = 0;
 
                 // Flow 3 table players:
-                if ( ! empty( $cart_item['_wooconfig_adicionales_raw'] ) && is_array( $cart_item['_wooconfig_adicionales_raw'] ) ) {
-                    $prod_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+                if ( ! empty( $cart_item['_vk7k_wconfig_adicionales_raw'] ) && is_array( $cart_item['_vk7k_wconfig_adicionales_raw'] ) ) {
+                    $prod_adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
                     if ( is_array( $prod_adicionales ) ) {
-                        foreach ( $cart_item['_wooconfig_adicionales_raw'] as $ad_k ) {
+                        foreach ( $cart_item['_vk7k_wconfig_adicionales_raw'] as $ad_k ) {
                             if ( isset( $prod_adicionales[$ad_k]['price'] ) ) {
                                 $extra_cost += (float) $prod_adicionales[$ad_k]['price'];
                             }
                         }
                     }
-                } elseif ( ! empty( $cart_item['_wooconfig_adicionales_counts'] ) && is_array( $cart_item['_wooconfig_adicionales_counts'] ) ) {
+                } elseif ( ! empty( $cart_item['_vk7k_wconfig_adicionales_counts'] ) && is_array( $cart_item['_vk7k_wconfig_adicionales_counts'] ) ) {
                     // Wizard summary / Quick flow
-                    $prod_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
-                    $total_item_qty   = isset( $cart_item['_wooconfig_total_items'] ) ? absint( $cart_item['_wooconfig_total_items'] ) : 1;
+                    $prod_adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
+                    $total_item_qty   = isset( $cart_item['_vk7k_wconfig_total_items'] ) ? absint( $cart_item['_vk7k_wconfig_total_items'] ) : 1;
                     $item_qty         = isset( $cart_item['quantity'] ) ? absint( $cart_item['quantity'] ) : 1;
                     $calc_qty         = max( 1, $total_item_qty > 0 ? $total_item_qty : $item_qty );
 
                     $raw_extra_sum = 0;
                     if ( is_array( $prod_adicionales ) ) {
-                        foreach ( $cart_item['_wooconfig_adicionales_counts'] as $ad_k => $count ) {
+                        foreach ( $cart_item['_vk7k_wconfig_adicionales_counts'] as $ad_k => $count ) {
                             if ( isset( $prod_adicionales[$ad_k]['price'] ) ) {
                                 $raw_extra_sum += ( absint( $count ) * (float) $prod_adicionales[$ad_k]['price'] );
                             }
@@ -797,8 +797,8 @@ class WC_Config_Wholesale {
                 }
 
                 $full_unit_price = $effective_base_price + $extra_cost;
-                $is_deposit      = ( ! empty( $cart_item['_wooconfig_is_deposit'] ) && 'yes' === $cart_item['_wooconfig_is_deposit'] );
-                $deposit_pct     = isset( $cart_item['_wooconfig_deposit_percent'] ) ? absint( $cart_item['_wooconfig_deposit_percent'] ) : 50;
+                $is_deposit      = ( ! empty( $cart_item['_vk7k_wconfig_is_deposit'] ) && 'yes' === $cart_item['_vk7k_wconfig_is_deposit'] );
+                $deposit_pct     = isset( $cart_item['_vk7k_wconfig_deposit_percent'] ) ? absint( $cart_item['_vk7k_wconfig_deposit_percent'] ) : 50;
 
                 if ( $is_deposit ) {
                     $deposit_unit_price = round( $full_unit_price * ( $deposit_pct / 100 ) );
@@ -808,10 +808,10 @@ class WC_Config_Wholesale {
                     $balance_unit_due   = 0;
                 }
 
-                $cart_item['_wooconfig_full_unit_price']    = $full_unit_price;
-                $cart_item['_wooconfig_deposit_unit_price'] = $deposit_unit_price;
-                $cart_item['_wooconfig_balance_unit_due']   = $balance_unit_due;
-                $cart_item['_wooconfig_custom_price']       = $full_unit_price;
+                $cart_item['_vk7k_wconfig_full_unit_price']    = $full_unit_price;
+                $cart_item['_vk7k_wconfig_deposit_unit_price'] = $deposit_unit_price;
+                $cart_item['_vk7k_wconfig_balance_unit_due']   = $balance_unit_due;
+                $cart_item['_vk7k_wconfig_custom_price']       = $full_unit_price;
 
                 $cart_item['data']->set_price( $full_unit_price );
                 $cart_item['data']->set_regular_price( $full_unit_price );
@@ -911,7 +911,7 @@ class WC_Config_Wholesale {
         }
 
         $is_ws = ( isset( $_POST['wooconfig_is_wholesale'] ) && 'yes' === $_POST['wooconfig_is_wholesale'] ) ? 'yes' : 'no';
-        update_user_meta( $user_id, '_wooconfig_is_wholesale', $is_ws );
+        update_user_meta( $user_id, '_vk7k_wconfig_is_wholesale', $is_ws );
 
         $user = get_user_by( 'id', $user_id );
         if ( $user ) {

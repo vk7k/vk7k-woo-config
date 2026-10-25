@@ -711,7 +711,7 @@ class WC_Config_Admin {
             <div class="options_group">
                 <?php
                 woocommerce_wp_select( array(
-                    'id'          => '_wooconfig_type',
+                    'id'          => '_vk7k_wconfig_type',
                     'label'       => __( 'Tipo de Configurador', 'woo-config' ),
                     'description' => __( 'Selecciona el modo de personalización para este producto.', 'woo-config' ),
                     'desc_tip'    => true,
@@ -723,7 +723,7 @@ class WC_Config_Admin {
                 ) );
 
                 woocommerce_wp_text_input( array(
-                    'id'          => '_wooconfig_btn_text',
+                    'id'          => '_vk7k_wconfig_btn_text',
                     'label'       => __( 'Texto del Botón', 'woo-config' ),
                     'description' => __( 'Texto mostrado en el botón que abre el modal.', 'woo-config' ),
                     'desc_tip'    => true,
@@ -731,21 +731,21 @@ class WC_Config_Admin {
                 ) );
 
                 woocommerce_wp_text_input( array(
-                    'id'          => '_wooconfig_size_guide_url',
+                    'id'          => '_vk7k_wconfig_size_guide_url',
                     'label'       => __( 'URL Guía de Tallas (Opcional)', 'woo-config' ),
                     'description' => __( 'Enlace a la página o PDF de la tabla de medidas.', 'woo-config' ),
                     'desc_tip'    => true,
                 ) );
 
                 woocommerce_wp_text_input( array(
-                    'id'          => '_wooconfig_size_guide_image',
+                    'id'          => '_vk7k_wconfig_size_guide_image',
                     'label'       => __( 'URL Imagen Guía de Tallas (Opcional)', 'woo-config' ),
                     'description' => __( 'Imagen de la tabla de tallas que se abrirá en popup al presionar "Guía de tallas".', 'woo-config' ),
                     'desc_tip'    => true,
                 ) );
 
                 woocommerce_wp_checkbox( array(
-                    'id'          => '_wooconfig_show_widget_size_guide',
+                    'id'          => '_vk7k_wconfig_show_widget_size_guide',
                     'label'       => __( 'Guía de Tallas en Widget', 'woo-config' ),
                     'description' => __( 'Mostrar el botón de guía de tallas dentro del cuadro de configuración de compra (puedes desactivarlo si prefieres posicionarlo manualmente con el bloque de Gutenberg o shortcode).', 'woo-config' ),
                     'default'     => 'yes',
@@ -765,7 +765,7 @@ class WC_Config_Admin {
 
                 <?php
                 woocommerce_wp_text_input( array(
-                    'id'          => '_wooconfig_wholesale_price',
+                    'id'          => '_vk7k_wconfig_wholesale_price',
                     'label'       => __( 'Precio Mayorista ($)', 'woo-config' ),
                     'placeholder' => __( 'Ej: 14990 (dejar vacío si no aplica)', 'woo-config' ),
                     'description' => __( 'Precio base por unidad al comprar por mayor. Si se deja en blanco, el producto mantendrá su precio regular.', 'woo-config' ),
@@ -775,7 +775,7 @@ class WC_Config_Admin {
                 ) );
 
                 woocommerce_wp_text_input( array(
-                    'id'          => '_wooconfig_wholesale_min_qty',
+                    'id'          => '_vk7k_wconfig_wholesale_min_qty',
                     'label'       => __( 'Mínimo de unidades (Individual)', 'woo-config' ),
                     'placeholder' => '1',
                     'description' => __( 'Cantidad mínima de unidades requerida de este producto para activar su precio mayorista independientemente del carrito global. Por defecto: 1.', 'woo-config' ),
@@ -811,7 +811,7 @@ class WC_Config_Admin {
                 </p>
 
                 <?php
-                $adicionales = get_post_meta( $post->ID, '_wooconfig_adicionales', true );
+                $adicionales = get_post_meta( $post->ID, '_vk7k_wconfig_adicionales', true );
                 if ( ! is_array( $adicionales ) ) {
                     $adicionales = array(
                         'cuello_polo' => array( 'enabled' => 'yes', 'price' => 2500, 'label' => __( 'Cuello piqué', 'woo-config' ) ),
@@ -834,32 +834,32 @@ class WC_Config_Admin {
                 <div class="wooconfig-admin-box" style="padding: 14px 18px; background: #fafafa; border: 1px solid #e5e5e5; margin: 0 15px 15px; border-radius: 6px;">
                     <strong style="display: block; margin-bottom: 8px; font-size: 13px; color: #111;"><?php esc_html_e( '1. Cuello Piqué', 'woo-config' ); ?></strong>
                     <div style="margin: 8px 0; display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="_wooconfig_adicional_cuello_enabled" name="_wooconfig_adicional_cuello_enabled" value="yes" <?php checked( $cuello_enabled, true ); ?> style="margin: 0 !important; float: none !important;" />
-                        <label for="_wooconfig_adicional_cuello_enabled" style="float: none !important; margin: 0 !important; width: auto !important; font-weight: 600; cursor: pointer; display: inline !important;">
+                        <input type="checkbox" id="_vk7k_wconfig_adicional_cuello_enabled" name="_vk7k_wconfig_adicional_cuello_enabled" value="yes" <?php checked( $cuello_enabled, true ); ?> style="margin: 0 !important; float: none !important;" />
+                        <label for="_vk7k_wconfig_adicional_cuello_enabled" style="float: none !important; margin: 0 !important; width: auto !important; font-weight: 600; cursor: pointer; display: inline !important;">
                             <?php esc_html_e( 'Habilitar Cuello Piqué para este producto', 'woo-config' ); ?>
                         </label>
                     </div>
                     <div style="margin: 10px 0 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <span style="font-size: 13px; color: #333; font-weight: 500;"><?php esc_html_e( 'Nombre / Etiqueta:', 'woo-config' ); ?></span>
-                        <input type="text" name="_wooconfig_adicional_cuello_label" value="<?php echo esc_attr( $cuello_label ); ?>" style="width: 180px; margin: 0 !important; float: none !important;" />
+                        <input type="text" name="_vk7k_wconfig_adicional_cuello_label" value="<?php echo esc_attr( $cuello_label ); ?>" style="width: 180px; margin: 0 !important; float: none !important;" />
                         <span style="font-size: 13px; color: #333; font-weight: 500; margin-left: 10px;"><?php esc_html_e( 'Precio adicional ($):', 'woo-config' ); ?></span>
-                        <input type="number" step="100" min="0" name="_wooconfig_adicional_cuello_price" value="<?php echo esc_attr( $cuello_price ); ?>" style="width: 100px; margin: 0 !important; float: none !important;" />
+                        <input type="number" step="100" min="0" name="_vk7k_wconfig_adicional_cuello_price" value="<?php echo esc_attr( $cuello_price ); ?>" style="width: 100px; margin: 0 !important; float: none !important;" />
                     </div>
                 </div>
 
                 <div class="wooconfig-admin-box" style="padding: 14px 18px; background: #fafafa; border: 1px solid #e5e5e5; margin: 0 15px 15px; border-radius: 6px;">
                     <strong style="display: block; margin-bottom: 8px; font-size: 13px; color: #111;"><?php esc_html_e( '2. Manga Larga', 'woo-config' ); ?></strong>
                     <div style="margin: 8px 0; display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="_wooconfig_adicional_manga_enabled" name="_wooconfig_adicional_manga_enabled" value="yes" <?php checked( $manga_enabled, true ); ?> style="margin: 0 !important; float: none !important;" />
-                        <label for="_wooconfig_adicional_manga_enabled" style="float: none !important; margin: 0 !important; width: auto !important; font-weight: 600; cursor: pointer; display: inline !important;">
+                        <input type="checkbox" id="_vk7k_wconfig_adicional_manga_enabled" name="_vk7k_wconfig_adicional_manga_enabled" value="yes" <?php checked( $manga_enabled, true ); ?> style="margin: 0 !important; float: none !important;" />
+                        <label for="_vk7k_wconfig_adicional_manga_enabled" style="float: none !important; margin: 0 !important; width: auto !important; font-weight: 600; cursor: pointer; display: inline !important;">
                             <?php esc_html_e( 'Habilitar Manga Larga para este producto', 'woo-config' ); ?>
                         </label>
                     </div>
                     <div style="margin: 10px 0 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <span style="font-size: 13px; color: #333; font-weight: 500;"><?php esc_html_e( 'Nombre / Etiqueta:', 'woo-config' ); ?></span>
-                        <input type="text" name="_wooconfig_adicional_manga_label" value="<?php echo esc_attr( $manga_label ); ?>" style="width: 180px; margin: 0 !important; float: none !important;" />
+                        <input type="text" name="_vk7k_wconfig_adicional_manga_label" value="<?php echo esc_attr( $manga_label ); ?>" style="width: 180px; margin: 0 !important; float: none !important;" />
                         <span style="font-size: 13px; color: #333; font-weight: 500; margin-left: 10px;"><?php esc_html_e( 'Precio adicional ($):', 'woo-config' ); ?></span>
-                        <input type="number" step="100" min="0" name="_wooconfig_adicional_manga_price" value="<?php echo esc_attr( $manga_price ); ?>" style="width: 100px; margin: 0 !important; float: none !important;" />
+                        <input type="number" step="100" min="0" name="_vk7k_wconfig_adicional_manga_price" value="<?php echo esc_attr( $manga_price ); ?>" style="width: 100px; margin: 0 !important; float: none !important;" />
                     </div>
                 </div>
             </div>
@@ -868,45 +868,45 @@ class WC_Config_Admin {
     }
 
     public static function save_product_meta( $post_id ) {
-        $type = isset( $_POST['_wooconfig_type'] ) ? sanitize_text_field( $_POST['_wooconfig_type'] ) : 'disabled';
-        update_post_meta( $post_id, '_wooconfig_type', $type );
+        $type = isset( $_POST['_vk7k_wconfig_type'] ) ? sanitize_text_field( $_POST['_vk7k_wconfig_type'] ) : 'disabled';
+        update_post_meta( $post_id, '_vk7k_wconfig_type', $type );
 
-        if ( isset( $_POST['_wooconfig_btn_text'] ) ) {
-            update_post_meta( $post_id, '_wooconfig_btn_text', sanitize_text_field( $_POST['_wooconfig_btn_text'] ) );
+        if ( isset( $_POST['_vk7k_wconfig_btn_text'] ) ) {
+            update_post_meta( $post_id, '_vk7k_wconfig_btn_text', sanitize_text_field( $_POST['_vk7k_wconfig_btn_text'] ) );
         }
 
-        if ( isset( $_POST['_wooconfig_size_guide_url'] ) ) {
-            update_post_meta( $post_id, '_wooconfig_size_guide_url', esc_url_raw( $_POST['_wooconfig_size_guide_url'] ) );
+        if ( isset( $_POST['_vk7k_wconfig_size_guide_url'] ) ) {
+            update_post_meta( $post_id, '_vk7k_wconfig_size_guide_url', esc_url_raw( $_POST['_vk7k_wconfig_size_guide_url'] ) );
         }
 
-        if ( isset( $_POST['_wooconfig_size_guide_image'] ) ) {
-            update_post_meta( $post_id, '_wooconfig_size_guide_image', esc_url_raw( $_POST['_wooconfig_size_guide_image'] ) );
+        if ( isset( $_POST['_vk7k_wconfig_size_guide_image'] ) ) {
+            update_post_meta( $post_id, '_vk7k_wconfig_size_guide_image', esc_url_raw( $_POST['_vk7k_wconfig_size_guide_image'] ) );
         }
 
-        $show_widget_guide = isset( $_POST['_wooconfig_show_widget_size_guide'] ) ? 'yes' : 'no';
-        update_post_meta( $post_id, '_wooconfig_show_widget_size_guide', $show_widget_guide );
+        $show_widget_guide = isset( $_POST['_vk7k_wconfig_show_widget_size_guide'] ) ? 'yes' : 'no';
+        update_post_meta( $post_id, '_vk7k_wconfig_show_widget_size_guide', $show_widget_guide );
 
         // Save Wholesale Product Meta
-        if ( isset( $_POST['_wooconfig_wholesale_price'] ) ) {
-            $ws_raw = sanitize_text_field( $_POST['_wooconfig_wholesale_price'] );
+        if ( isset( $_POST['_vk7k_wconfig_wholesale_price'] ) ) {
+            $ws_raw = sanitize_text_field( $_POST['_vk7k_wconfig_wholesale_price'] );
             if ( '' === $ws_raw ) {
-                delete_post_meta( $post_id, '_wooconfig_wholesale_price' );
+                delete_post_meta( $post_id, '_vk7k_wconfig_wholesale_price' );
             } else {
-                update_post_meta( $post_id, '_wooconfig_wholesale_price', wc_format_decimal( $ws_raw ) );
+                update_post_meta( $post_id, '_vk7k_wconfig_wholesale_price', wc_format_decimal( $ws_raw ) );
             }
         }
 
-        if ( isset( $_POST['_wooconfig_wholesale_min_qty'] ) ) {
-            $ws_min = max( 1, absint( $_POST['_wooconfig_wholesale_min_qty'] ) );
-            update_post_meta( $post_id, '_wooconfig_wholesale_min_qty', $ws_min );
+        if ( isset( $_POST['_vk7k_wconfig_wholesale_min_qty'] ) ) {
+            $ws_min = max( 1, absint( $_POST['_vk7k_wconfig_wholesale_min_qty'] ) );
+            update_post_meta( $post_id, '_vk7k_wconfig_wholesale_min_qty', $ws_min );
         }
 
         // Save Adicionales
         $adicionales = array();
         
-        $cuello_enabled = isset( $_POST['_wooconfig_adicional_cuello_enabled'] ) ? 'yes' : 'no';
-        $cuello_label   = isset( $_POST['_wooconfig_adicional_cuello_label'] ) ? sanitize_text_field( $_POST['_wooconfig_adicional_cuello_label'] ) : 'Cuello piqué';
-        $cuello_price   = isset( $_POST['_wooconfig_adicional_cuello_price'] ) ? (float) $_POST['_wooconfig_adicional_cuello_price'] : 2500;
+        $cuello_enabled = isset( $_POST['_vk7k_wconfig_adicional_cuello_enabled'] ) ? 'yes' : 'no';
+        $cuello_label   = isset( $_POST['_vk7k_wconfig_adicional_cuello_label'] ) ? sanitize_text_field( $_POST['_vk7k_wconfig_adicional_cuello_label'] ) : 'Cuello piqué';
+        $cuello_price   = isset( $_POST['_vk7k_wconfig_adicional_cuello_price'] ) ? (float) $_POST['_vk7k_wconfig_adicional_cuello_price'] : 2500;
         
         $adicionales['cuello_polo'] = array(
             'id'      => 'cuello_polo',
@@ -915,9 +915,9 @@ class WC_Config_Admin {
             'price'   => $cuello_price,
         );
 
-        $manga_enabled = isset( $_POST['_wooconfig_adicional_manga_enabled'] ) ? 'yes' : 'no';
-        $manga_label   = isset( $_POST['_wooconfig_adicional_manga_label'] ) ? sanitize_text_field( $_POST['_wooconfig_adicional_manga_label'] ) : 'Manga larga';
-        $manga_price   = isset( $_POST['_wooconfig_adicional_manga_price'] ) ? (float) $_POST['_wooconfig_adicional_manga_price'] : 2500;
+        $manga_enabled = isset( $_POST['_vk7k_wconfig_adicional_manga_enabled'] ) ? 'yes' : 'no';
+        $manga_label   = isset( $_POST['_vk7k_wconfig_adicional_manga_label'] ) ? sanitize_text_field( $_POST['_vk7k_wconfig_adicional_manga_label'] ) : 'Manga larga';
+        $manga_price   = isset( $_POST['_vk7k_wconfig_adicional_manga_price'] ) ? (float) $_POST['_vk7k_wconfig_adicional_manga_price'] : 2500;
 
         $adicionales['manga_larga'] = array(
             'id'      => 'manga_larga',
@@ -926,25 +926,25 @@ class WC_Config_Admin {
             'price'   => $manga_price,
         );
 
-        update_post_meta( $post_id, '_wooconfig_adicionales', $adicionales );
+        update_post_meta( $post_id, '_vk7k_wconfig_adicionales', $adicionales );
     }
 
     public static function set_new_product_defaults( $product_id ) {
-        if ( '' === get_post_meta( $product_id, '_wooconfig_deposit_enabled', true ) ) {
-            update_post_meta( $product_id, '_wooconfig_deposit_enabled', 'yes' );
+        if ( '' === get_post_meta( $product_id, '_vk7k_wconfig_deposit_enabled', true ) ) {
+            update_post_meta( $product_id, '_vk7k_wconfig_deposit_enabled', 'yes' );
         }
-        if ( '' === get_post_meta( $product_id, '_wooconfig_deposit_percent', true ) ) {
-            update_post_meta( $product_id, '_wooconfig_deposit_percent', 50 );
+        if ( '' === get_post_meta( $product_id, '_vk7k_wconfig_deposit_percent', true ) ) {
+            update_post_meta( $product_id, '_vk7k_wconfig_deposit_percent', 50 );
         }
-        if ( '' === get_post_meta( $product_id, '_wooconfig_allow_full_payment', true ) ) {
-            update_post_meta( $product_id, '_wooconfig_allow_full_payment', 'yes' );
+        if ( '' === get_post_meta( $product_id, '_vk7k_wconfig_allow_full_payment', true ) ) {
+            update_post_meta( $product_id, '_vk7k_wconfig_allow_full_payment', 'yes' );
         }
     }
 
     public static function register_rest_fields() {
         $fields = array(
             'wooconfig_type'               => array(
-                'meta_key' => '_wooconfig_type',
+                'meta_key' => '_vk7k_wconfig_type',
                 'type'     => 'string',
                 'sanitize' => function( $val ) {
                     $allowed = array( 'disabled', 'full_sublimado', 'importado' );
@@ -952,43 +952,43 @@ class WC_Config_Admin {
                 },
             ),
             'wooconfig_min_units'          => array(
-                'meta_key' => '_wooconfig_min_units',
+                'meta_key' => '_vk7k_wconfig_min_units',
                 'type'     => 'integer',
                 'sanitize' => function( $val ) {
                     return '' !== $val ? max( 1, absint( $val ) ) : '';
                 },
             ),
             'wooconfig_btn_text'           => array(
-                'meta_key' => '_wooconfig_btn_text',
+                'meta_key' => '_vk7k_wconfig_btn_text',
                 'type'     => 'string',
                 'sanitize' => 'sanitize_text_field',
             ),
             'wooconfig_size_guide_url'     => array(
-                'meta_key' => '_wooconfig_size_guide_url',
+                'meta_key' => '_vk7k_wconfig_size_guide_url',
                 'type'     => 'string',
                 'sanitize' => 'esc_url_raw',
             ),
             'wooconfig_size_guide_image'   => array(
-                'meta_key' => '_wooconfig_size_guide_image',
+                'meta_key' => '_vk7k_wconfig_size_guide_image',
                 'type'     => 'string',
                 'sanitize' => 'esc_url_raw',
             ),
             'wooconfig_adicionales'        => array(
-                'meta_key' => '_wooconfig_adicionales',
+                'meta_key' => '_vk7k_wconfig_adicionales',
                 'type'     => 'object',
                 'sanitize' => function( $val ) {
                     return is_array( $val ) ? $val : array();
                 },
             ),
             'wooconfig_deposit_enabled'    => array(
-                'meta_key' => '_wooconfig_deposit_enabled',
+                'meta_key' => '_vk7k_wconfig_deposit_enabled',
                 'type'     => 'string',
                 'sanitize' => function( $val ) {
                     return 'yes' === $val ? 'yes' : 'no';
                 },
             ),
             'wooconfig_deposit_percent'    => array(
-                'meta_key' => '_wooconfig_deposit_percent',
+                'meta_key' => '_vk7k_wconfig_deposit_percent',
                 'type'     => 'integer',
                 'sanitize' => function( $val ) {
                     $pct = absint( $val );
@@ -996,7 +996,7 @@ class WC_Config_Admin {
                 },
             ),
             'wooconfig_allow_full_payment' => array(
-                'meta_key' => '_wooconfig_allow_full_payment',
+                'meta_key' => '_vk7k_wconfig_allow_full_payment',
                 'type'     => 'string',
                 'sanitize' => function( $val ) {
                     return 'yes' === $val ? 'yes' : 'no';

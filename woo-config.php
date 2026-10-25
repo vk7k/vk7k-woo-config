@@ -3,7 +3,7 @@
  * Plugin Name: vk7k-woo-config - Configurador de Ropa Deportiva y Corporativa
  * Plugin URI:  https://uxcribe.cl
  * Description: Configurador por pasos para pedidos mayoristas de indumentaria deportiva (Full Sublimación) y corporativa (Línea Importada) con soporte nativo para variaciones, inventario, subida de archivos y ficha de producción.
- * Version:     1.9.7
+ * Version:     2.0.0
  * Author:      uxcribe.cl / vk7k
  * Text Domain: vk7k-woo-config
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WOOCONFIG_VERSION', '1.9.7' );
+define( 'WOOCONFIG_VERSION', '2.0.0' );
 define( 'WOOCONFIG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOCONFIG_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOOCONFIG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -47,6 +47,8 @@ final class WooConfig {
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-uploader.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-cart.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-wholesale.php';
+        require_once WOOCONFIG_PATH . 'includes/class-wc-config-meta.php';
+        require_once WOOCONFIG_PATH . 'includes/class-wc-config-cli.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-order.php';
         require_once WOOCONFIG_PATH . 'includes/class-wc-config-pdf.php';
     }
@@ -161,7 +163,7 @@ final class WooConfig {
             return;
         }
 
-        $config_type = get_post_meta( $product->get_id(), '_wooconfig_type', true );
+        $config_type = get_post_meta( $product->get_id(), '_vk7k_wconfig_type', true );
         if ( empty( $config_type ) ) {
             $config_type = 'disabled';
         }
@@ -279,7 +281,7 @@ final class WooConfig {
             return $rank_a - $rank_b;
         });
         $available_sizes = $clean_sizes;
-        $adicionales = get_post_meta( $product->get_id(), '_wooconfig_adicionales', true );
+        $adicionales = get_post_meta( $product->get_id(), '_vk7k_wconfig_adicionales', true );
         if ( ! is_array( $adicionales ) ) {
             $adicionales = array(
                 'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
@@ -301,9 +303,9 @@ final class WooConfig {
             }
         }
 
-        $size_guide_url = get_post_meta( $product->get_id(), '_wooconfig_size_guide_url', true );
-        $size_guide_img = get_post_meta( $product->get_id(), '_wooconfig_size_guide_image', true );
-        $btn_text       = get_post_meta( $product->get_id(), '_wooconfig_btn_text', true );
+        $size_guide_url = get_post_meta( $product->get_id(), '_vk7k_wconfig_size_guide_url', true );
+        $size_guide_img = get_post_meta( $product->get_id(), '_vk7k_wconfig_size_guide_image', true );
+        $btn_text       = get_post_meta( $product->get_id(), '_vk7k_wconfig_btn_text', true );
         if ( empty( $btn_text ) ) {
             $btn_text = __( 'Configurar y comprar este producto >>', 'woo-config' );
         }
@@ -337,8 +339,8 @@ final class WooConfig {
             'size_guide_img'     => $size_guide_img,
             'max_file_size_mb'   => (int) get_option( 'wooconfig_max_file_size_mb', 20 ),
             'wholesale_enabled'  => WC_Config_Wholesale::is_enabled(),
-            'wholesale_price'    => WC_Config_Wholesale::is_enabled() ? (float) get_post_meta( $product->get_id(), '_wooconfig_wholesale_price', true ) : 0,
-            'wholesale_min_qty'  => max( 1, (int) get_post_meta( $product->get_id(), '_wooconfig_wholesale_min_qty', true ) ),
+            'wholesale_price'    => WC_Config_Wholesale::is_enabled() ? (float) get_post_meta( $product->get_id(), '_vk7k_wconfig_wholesale_price', true ) : 0,
+            'wholesale_min_qty'  => max( 1, (int) get_post_meta( $product->get_id(), '_vk7k_wconfig_wholesale_min_qty', true ) ),
             'wholesale_cart_qty' => max( 1, (int) get_option( 'wooconfig_wholesale_cart_qty', 50 ) ),
             'wholesale_override' => ( 'yes' === get_option( 'wooconfig_wholesale_override_product_rules', 'yes' ) ),
             'help_images'        => array(
@@ -483,7 +485,7 @@ final class WooConfig {
                 $post_id = $post ? $post->ID : 0;
             }
             if ( $post_id ) {
-                $config_type = get_post_meta( $post_id, '_wooconfig_type', true );
+                $config_type = get_post_meta( $post_id, '_vk7k_wconfig_type', true );
                 if ( $config_type && 'disabled' !== $config_type ) {
                     remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
                     add_action( 'woocommerce_single_product_summary', array( $this, 'render_configurator_button' ), 30 );
@@ -507,7 +509,7 @@ final class WooConfig {
             return;
         }
 
-        $config_type = get_post_meta( $product->get_id(), '_wooconfig_type', true );
+        $config_type = get_post_meta( $product->get_id(), '_vk7k_wconfig_type', true );
         if ( ! $config_type || 'disabled' === $config_type ) {
             return;
         }
@@ -540,7 +542,7 @@ final class WooConfig {
             return '';
         }
 
-        $config_type = get_post_meta( $product->get_id(), '_wooconfig_type', true );
+        $config_type = get_post_meta( $product->get_id(), '_vk7k_wconfig_type', true );
         if ( ! $config_type || 'disabled' === $config_type ) {
             return '';
         }
@@ -575,7 +577,7 @@ final class WooConfig {
             $product = wc_get_product( $main_id );
             if ( ! $product ) return $block_content;
 
-            $config_type = get_post_meta( $product->get_id(), '_wooconfig_type', true );
+            $config_type = get_post_meta( $product->get_id(), '_vk7k_wconfig_type', true );
             if ( ! $config_type || 'disabled' === $config_type ) {
                 return $block_content;
             }
@@ -604,7 +606,7 @@ final class WooConfig {
             return;
         }
 
-        $config_type = get_post_meta( $product->get_id(), '_wooconfig_type', true );
+        $config_type = get_post_meta( $product->get_id(), '_vk7k_wconfig_type', true );
         if ( $config_type && 'disabled' !== $config_type ) {
             include WOOCONFIG_PATH . 'templates/modal-configurator.php';
         }

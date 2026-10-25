@@ -9,7 +9,7 @@ class WC_Config_Order {
         add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'save_order_line_item_meta' ), 10, 4 );
         add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_order_files_and_groups' ), 10, 3 );
         add_action( 'add_meta_boxes', array( __CLASS__, 'register_order_metabox' ) );
-        add_filter( 'woocommerce_order_item_get_formatted_meta_data', array( __CLASS__, 'hide_internal_item_meta' ), 20, 2 );
+        add_filter( 'woocommerce_order_item_get_formatted_meta_data', array( __CLASS__, 'format_item_meta' ), 20, 2 );
         add_action( 'woocommerce_email_after_order_table', array( __CLASS__, 'render_email_order_team_details' ), 10, 4 );
 
         // Balance payment redirect endpoint
@@ -62,26 +62,26 @@ class WC_Config_Order {
 
     public static function save_order_line_item_meta( $item, $cart_item_key, $values, $order ) {
         $keys = array(
-            '_wooconfig_flow'                => '_wooconfig_flow',
-            '_wooconfig_upload_token'        => '_wooconfig_upload_token',
-            '_wooconfig_group_id'            => '_wooconfig_group_id',
-            '_wooconfig_group_title'         => '_wooconfig_group_title',
-            '_wooconfig_item_index'          => '_wooconfig_item_index',
-            '_wooconfig_total_items'         => '_wooconfig_total_items',
-            '_wooconfig_is_deposit'          => '_wooconfig_is_deposit',
-            '_wooconfig_payment_mode'        => '_wooconfig_payment_mode',
-            '_wooconfig_deposit_percent'     => '_wooconfig_deposit_percent',
-            '_wooconfig_full_unit_price'     => '_wooconfig_full_unit_price',
-            '_wooconfig_deposit_unit_price'  => '_wooconfig_deposit_unit_price',
-            '_wooconfig_balance_unit_due'    => '_wooconfig_balance_unit_due',
-            '_wooconfig_dorsal'              => __( 'Dorsal (#)', 'woo-config' ),
-            '_wooconfig_player_name'         => __( 'Nombre / Alias', 'woo-config' ),
-            '_wooconfig_size'                => __( 'Talla', 'woo-config' ),
-            '_wooconfig_color'               => __( 'Color', 'woo-config' ),
-            '_wooconfig_adicionales_list'    => __( 'Adicionales', 'woo-config' ),
-            '_wooconfig_adicionales_summary' => __( 'Adicionales incluidos', 'woo-config' ),
-            '_wooconfig_design_desc'         => '_wooconfig_design_desc',
-            '_wooconfig_files'               => '_wooconfig_files',
+            '_vk7k_wconfig_flow'                => '_vk7k_wconfig_flow',
+            '_vk7k_wconfig_upload_token'        => '_vk7k_wconfig_upload_token',
+            '_vk7k_wconfig_group_id'            => '_vk7k_wconfig_group_id',
+            '_vk7k_wconfig_group_title'         => '_vk7k_wconfig_group_title',
+            '_vk7k_wconfig_item_index'          => '_vk7k_wconfig_item_index',
+            '_vk7k_wconfig_total_items'         => '_vk7k_wconfig_total_items',
+            '_vk7k_wconfig_is_deposit'          => '_vk7k_wconfig_is_deposit',
+            '_vk7k_wconfig_payment_mode'        => '_vk7k_wconfig_payment_mode',
+            '_vk7k_wconfig_deposit_percent'     => '_vk7k_wconfig_deposit_percent',
+            '_vk7k_wconfig_full_unit_price'     => '_vk7k_wconfig_full_unit_price',
+            '_vk7k_wconfig_deposit_unit_price'  => '_vk7k_wconfig_deposit_unit_price',
+            '_vk7k_wconfig_balance_unit_due'    => '_vk7k_wconfig_balance_unit_due',
+            '_vk7k_wconfig_dorsal'              => '_vk7k_wconfig_dorsal',
+            '_vk7k_wconfig_nombre'         => '_vk7k_wconfig_nombre',
+            '_vk7k_wconfig_talla'                => '_vk7k_wconfig_talla',
+            '_vk7k_wconfig_color'               => '_vk7k_wconfig_color',
+            '_vk7k_wconfig_adicionales_list'    => '_vk7k_wconfig_adicionales_list',
+            '_vk7k_wconfig_adicionales_summary' => '_vk7k_wconfig_adicionales_summary',
+            '_vk7k_wconfig_design_desc'         => '_vk7k_wconfig_design_desc',
+            '_vk7k_wconfig_files'               => '_vk7k_wconfig_files',
         );
 
         foreach ( $keys as $cart_key => $meta_label ) {
@@ -96,7 +96,7 @@ class WC_Config_Order {
     }
 
     public static function process_order_files_and_groups( $order_id, $posted_data, $order ) {
-        $existing_groups     = $order->get_meta( '_wooconfig_order_groups' );
+        $existing_groups     = $order->get_meta( '_vk7k_wconfig_order_groups' );
         $groups              = is_array( $existing_groups ) ? $existing_groups : array();
         $has_deposit         = false;
         $order_full_total    = 0;
@@ -104,15 +104,15 @@ class WC_Config_Order {
         $order_balance_total = 0;
 
         foreach ( $order->get_items() as $item_id => $item ) {
-            $group_id = $item->get_meta( '_wooconfig_group_id' );
+            $group_id = $item->get_meta( '_vk7k_wconfig_group_id' );
             if ( empty( $group_id ) ) continue;
 
-            $is_dep = $item->get_meta( '_wooconfig_is_deposit' );
+            $is_dep = $item->get_meta( '_vk7k_wconfig_is_deposit' );
             if ( 'yes' === $is_dep ) {
                 $has_deposit = true;
-                $full_unit   = (float) $item->get_meta( '_wooconfig_full_unit_price' );
-                $dep_unit    = (float) $item->get_meta( '_wooconfig_deposit_unit_price' );
-                $bal_unit    = (float) $item->get_meta( '_wooconfig_balance_unit_due' );
+                $full_unit   = (float) $item->get_meta( '_vk7k_wconfig_full_unit_price' );
+                $dep_unit    = (float) $item->get_meta( '_vk7k_wconfig_deposit_unit_price' );
+                $bal_unit    = (float) $item->get_meta( '_vk7k_wconfig_balance_unit_due' );
                 $qty         = $item->get_quantity();
 
                 $order_full_total    += ( $full_unit * $qty );
@@ -121,10 +121,10 @@ class WC_Config_Order {
             }
 
             if ( ! isset( $groups[$group_id] ) ) {
-                $raw_files    = $item->get_meta( '_wooconfig_files' );
-                $design_desc  = $item->get_meta( '_wooconfig_design_desc' );
-                $flow         = $item->get_meta( '_wooconfig_flow' );
-                $upload_token = $item->get_meta( '_wooconfig_upload_token' );
+                $raw_files    = $item->get_meta( '_vk7k_wconfig_files' );
+                $design_desc  = $item->get_meta( '_vk7k_wconfig_design_desc' );
+                $flow         = $item->get_meta( '_vk7k_wconfig_flow' );
+                $upload_token = $item->get_meta( '_vk7k_wconfig_upload_token' );
 
                 $permanent_files = WC_Config_Uploader::move_temp_files_to_order( $raw_files, $order_id, $upload_token );
                 $expected_files  = is_array( $raw_files ) ? count( $raw_files ) : 0;
@@ -134,14 +134,14 @@ class WC_Config_Order {
                         __( 'Atención: no se pudieron adjuntar %d de %d archivo(s) del grupo %s. Revisa la ficha de producción antes de confeccionar.', 'woo-config' ),
                         $expected_files - count( $permanent_files ),
                         $expected_files,
-                        $item->get_meta( '_wooconfig_group_title' )
+                        $item->get_meta( '_vk7k_wconfig_group_title' )
                     ) );
                 }
 
                 $groups[$group_id] = array(
                     'group_id'    => $group_id,
                     'flow'        => $flow ? $flow : 'wizard',
-                    'group_title' => $item->get_meta( '_wooconfig_group_title' ),
+                    'group_title' => $item->get_meta( '_vk7k_wconfig_group_title' ),
                     'design_desc' => $design_desc,
                     'files'       => $permanent_files,
                 );
@@ -149,15 +149,15 @@ class WC_Config_Order {
         }
 
         if ( ! empty( $groups ) ) {
-            $order->update_meta_data( '_wooconfig_order_groups', $groups );
+            $order->update_meta_data( '_vk7k_wconfig_order_groups', $groups );
         }
 
         if ( $has_deposit ) {
-            $order->update_meta_data( '_wooconfig_has_deposit', 'yes' );
-            $order->update_meta_data( '_wooconfig_order_full_total', $order_full_total );
-            $order->update_meta_data( '_wooconfig_order_deposit_total', $order_deposit_total );
-            $order->update_meta_data( '_wooconfig_order_balance_total', $order_balance_total );
-            $order->update_meta_data( '_wooconfig_balance_status', 'pending' );
+            $order->update_meta_data( '_vk7k_wconfig_has_deposit', 'yes' );
+            $order->update_meta_data( '_vk7k_wconfig_order_full_total', $order_full_total );
+            $order->update_meta_data( '_vk7k_wconfig_order_deposit_total', $order_deposit_total );
+            $order->update_meta_data( '_vk7k_wconfig_order_balance_total', $order_balance_total );
+            $order->update_meta_data( '_vk7k_wconfig_balance_status', 'pending' );
         }
 
         $order->save();
@@ -189,21 +189,21 @@ class WC_Config_Order {
             wp_die( esc_html__( 'Pedido no válido o enlace expirado.', 'woo-config' ) );
         }
 
-        $balance_status = $parent_order->get_meta( '_wooconfig_balance_status' );
+        $balance_status = $parent_order->get_meta( '_vk7k_wconfig_balance_status' );
         if ( 'paid' === $balance_status ) {
             wc_add_notice( __( 'El saldo de este pedido ya se encuentra 100% pagado. ¡Gracias!', 'woo-config' ), 'success' );
             wp_safe_redirect( $parent_order->get_view_order_url() );
             exit;
         }
 
-        $balance_amount = (float) $parent_order->get_meta( '_wooconfig_order_balance_total' );
+        $balance_amount = (float) $parent_order->get_meta( '_vk7k_wconfig_order_balance_total' );
         if ( $balance_amount <= 0 ) {
             wp_safe_redirect( $parent_order->get_view_order_url() );
             exit;
         }
 
         // Check if existing child balance order is reusable
-        $balance_order_id = absint( $parent_order->get_meta( '_wooconfig_balance_order_id' ) );
+        $balance_order_id = absint( $parent_order->get_meta( '_vk7k_wconfig_balance_order_id' ) );
         $balance_order    = $balance_order_id ? wc_get_order( $balance_order_id ) : false;
 
         if ( ! $balance_order || in_array( $balance_order->get_status(), array( 'cancelled', 'refunded', 'failed' ), true ) ) {
@@ -223,12 +223,12 @@ class WC_Config_Order {
 
             $balance_order->set_address( $parent_order->get_address( 'billing' ), 'billing' );
             $balance_order->set_address( $parent_order->get_address( 'shipping' ), 'shipping' );
-            $balance_order->update_meta_data( '_wooconfig_parent_order_id', $parent_order->get_id() );
-            $balance_order->update_meta_data( '_wooconfig_is_balance_order', 'yes' );
+            $balance_order->update_meta_data( '_vk7k_wconfig_parent_order_id', $parent_order->get_id() );
+            $balance_order->update_meta_data( '_vk7k_wconfig_is_balance_order', 'yes' );
             $balance_order->calculate_totals();
             $balance_order->save();
 
-            $parent_order->update_meta_data( '_wooconfig_balance_order_id', $balance_order->get_id() );
+            $parent_order->update_meta_data( '_vk7k_wconfig_balance_order_id', $balance_order->get_id() );
             $parent_order->save();
         }
 
@@ -242,12 +242,12 @@ class WC_Config_Order {
         }
         if ( ! $order ) return;
 
-        $parent_order_id = absint( $order->get_meta( '_wooconfig_parent_order_id' ) );
+        $parent_order_id = absint( $order->get_meta( '_vk7k_wconfig_parent_order_id' ) );
         if ( $parent_order_id > 0 && in_array( $new_status, array( 'processing', 'completed' ), true ) ) {
             $parent_order = wc_get_order( $parent_order_id );
             if ( $parent_order ) {
-                $parent_order->update_meta_data( '_wooconfig_balance_status', 'paid' );
-                $parent_order->update_meta_data( '_wooconfig_balance_paid_date', current_time( 'mysql' ) );
+                $parent_order->update_meta_data( '_vk7k_wconfig_balance_status', 'paid' );
+                $parent_order->update_meta_data( '_vk7k_wconfig_balance_paid_date', current_time( 'mysql' ) );
                 $parent_order->add_order_note( sprintf( __( '✅ Saldo final pagado exitosamente mediante pedido de saldo #%d (%s).', 'woo-config' ), $order_id, wc_price( $order->get_total() ) ) );
                 $parent_order->save();
             }
@@ -270,13 +270,13 @@ class WC_Config_Order {
 
             $action = sanitize_text_field( $_GET['wooconfig_manual_balance_action'] );
             if ( 'mark_paid' === $action ) {
-                $order->update_meta_data( '_wooconfig_balance_status', 'paid' );
-                $order->update_meta_data( '_wooconfig_balance_paid_date', current_time( 'mysql' ) );
+                $order->update_meta_data( '_vk7k_wconfig_balance_status', 'paid' );
+                $order->update_meta_data( '_vk7k_wconfig_balance_paid_date', current_time( 'mysql' ) );
                 $order->add_order_note( __( '✅ Saldo marcado manualmente como PAGADO por el administrador.', 'woo-config' ) );
                 $order->save();
             } elseif ( 'mark_pending' === $action ) {
-                $order->update_meta_data( '_wooconfig_balance_status', 'pending' );
-                $order->delete_meta_data( '_wooconfig_balance_paid_date' );
+                $order->update_meta_data( '_vk7k_wconfig_balance_status', 'pending' );
+                $order->delete_meta_data( '_vk7k_wconfig_balance_paid_date' );
                 $order->add_order_note( __( '⏳ Saldo marcado nuevamente como PENDIENTE por el administrador.', 'woo-config' ) );
                 $order->save();
             }
@@ -312,18 +312,8 @@ class WC_Config_Order {
      * @param WC_Item  $item      Item.
      * @return array
      */
-    public static function hide_internal_item_meta( $formatted, $item ) {
-        if ( ! is_array( $formatted ) ) {
-            return $formatted;
-        }
-
-        foreach ( $formatted as $key => $meta ) {
-            if ( isset( $meta->key ) && 0 === strpos( $meta->key, '_wooconfig_' ) ) {
-                unset( $formatted[ $key ] );
-            }
-        }
-
-        return $formatted;
+    public static function format_item_meta( $formatted, $item ) {
+        return VK7K_WConfig_Meta::format_item_meta( $formatted, $item );
     }
 
     public static function register_order_metabox() {
@@ -359,18 +349,18 @@ class WC_Config_Order {
         if ( ! $order ) return;
 
         $content_locked      = ! self::content_editable( $order );
-        $groups              = $order->get_meta( '_wooconfig_order_groups' );
+        $groups              = $order->get_meta( '_vk7k_wconfig_order_groups' );
         $items               = $order->get_items();
         $has_wooconfig_items = false;
         $standard_configurable = array();
 
         foreach ( $items as $item_id => $item ) {
-            if ( $item->get_meta( '_wooconfig_group_id' ) ) {
+            if ( $item->get_meta( '_vk7k_wconfig_group_id' ) ) {
                 $has_wooconfig_items = true;
             } else {
                 $product_id = $item->get_product_id();
                 if ( $product_id ) {
-                    $wc_type = get_post_meta( $product_id, '_wooconfig_type', true );
+                    $wc_type = get_post_meta( $product_id, '_vk7k_wconfig_type', true );
                     if ( ! empty( $wc_type ) && 'disabled' !== $wc_type ) {
                         $standard_configurable[] = array(
                             'item_id'      => $item_id,
@@ -383,11 +373,11 @@ class WC_Config_Order {
             }
         }
 
-        $has_deposit         = 'yes' === $order->get_meta( '_wooconfig_has_deposit' );
-        $order_full_total    = (float) $order->get_meta( '_wooconfig_order_full_total' );
-        $order_deposit_total = (float) $order->get_meta( '_wooconfig_order_deposit_total' );
-        $order_balance_total = (float) $order->get_meta( '_wooconfig_order_balance_total' );
-        $balance_status      = $order->get_meta( '_wooconfig_balance_status' );
+        $has_deposit         = 'yes' === $order->get_meta( '_vk7k_wconfig_has_deposit' );
+        $order_full_total    = (float) $order->get_meta( '_vk7k_wconfig_order_full_total' );
+        $order_deposit_total = (float) $order->get_meta( '_vk7k_wconfig_order_deposit_total' );
+        $order_balance_total = (float) $order->get_meta( '_vk7k_wconfig_order_balance_total' );
+        $balance_status      = $order->get_meta( '_vk7k_wconfig_balance_status' );
         if ( empty( $balance_status ) ) {
             $balance_status = 'pending';
         }
@@ -420,7 +410,7 @@ class WC_Config_Order {
 
         $wa_url = 'https://api.whatsapp.com/send?phone=' . $clean_phone . '&text=' . rawurlencode( $wa_msg );
         $toggle_paid_nonce = wp_create_nonce( 'wooconfig_balance_toggle_' . $order->get_id() );
-        $preferred_contact = $order->get_meta( '_wooconfig_preferred_contact' );
+        $preferred_contact = $order->get_meta( '_vk7k_wconfig_preferred_contact' );
         ?>
 
         <div class="wooconfig-admin-order-box">
@@ -586,7 +576,7 @@ class WC_Config_Order {
             <?php
             $grouped_items = array();
             foreach ( $items as $item_id => $item ) {
-                $gid = $item->get_meta( '_wooconfig_group_id' );
+                $gid = $item->get_meta( '_vk7k_wconfig_group_id' );
                 if ( empty( $gid ) ) {
                     $gid = 'sin_grupo';
                 }
@@ -596,13 +586,13 @@ class WC_Config_Order {
             foreach ( $grouped_items as $gid => $group_item_list ) :
                 $group_meta  = isset( $groups[$gid] ) ? $groups[$gid] : array();
                 $first_item  = $group_item_list[0];
-                $flow        = isset( $group_meta['flow'] ) ? $group_meta['flow'] : $first_item->get_meta( '_wooconfig_flow' );
-                $group_title = $first_item->get_meta( '_wooconfig_group_title' );
+                $flow        = isset( $group_meta['flow'] ) ? $group_meta['flow'] : $first_item->get_meta( '_vk7k_wconfig_flow' );
+                $group_title = $first_item->get_meta( '_vk7k_wconfig_group_title' );
                 if ( empty( $group_title ) ) {
                     $group_title = isset( $group_meta['group_title'] ) ? $group_meta['group_title'] : __( 'Equipo / Lote de Confección', 'woo-config' );
                 }
-                $design_desc = isset( $group_meta['design_desc'] ) ? $group_meta['design_desc'] : $first_item->get_meta( '_wooconfig_design_desc' );
-                $files       = isset( $group_meta['files'] ) ? $group_meta['files'] : $first_item->get_meta( '_wooconfig_files' );
+                $design_desc = isset( $group_meta['design_desc'] ) ? $group_meta['design_desc'] : $first_item->get_meta( '_vk7k_wconfig_design_desc' );
+                $files       = isset( $group_meta['files'] ) ? $group_meta['files'] : $first_item->get_meta( '_vk7k_wconfig_files' );
                 ?>
                 <div class="wooconfig-group-card" data-group-id="<?php echo esc_attr( $gid ); ?>" style="background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; margin-bottom: 25px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2271b1; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
@@ -643,16 +633,16 @@ class WC_Config_Order {
                         <tbody>
                             <?php foreach ( $group_item_list as $i => $item ) : 
                                 $item_id        = $item->get_id();
-                                $dorsal_val     = $item->get_meta( __( 'Dorsal (#)', 'woo-config' ) );
-                                $name_val       = $item->get_meta( __( 'Nombre / Alias', 'woo-config' ) );
-                                $size_val       = $item->get_meta( __( 'Talla', 'woo-config' ) );
-                                $ads            = $item->get_meta( __( 'Adicionales', 'woo-config' ) );
+                                $dorsal_val     = $item->get_meta( '_vk7k_wconfig_dorsal' );
+                                $name_val       = $item->get_meta( '_vk7k_wconfig_nombre' );
+                                $size_val       = $item->get_meta( '_vk7k_wconfig_talla' );
+                                $ads            = $item->get_meta( '_vk7k_wconfig_adicionales_list' );
                                 $ads_text       = is_array( $ads ) ? implode( ', ', $ads ) : ( $ads ? $ads : '-' );
                                 $clean_ads_text = html_entity_decode( wp_strip_all_tags( $ads_text ) );
                             ?>
                                 <tr class="wooconfig-item-row" data-item-id="<?php echo esc_attr( $item_id ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
                                     <td style="text-align: center; vertical-align: middle;">
-                                        <strong>#<?php echo esc_html( $item->get_meta( '_wooconfig_item_index' ) ? $item->get_meta( '_wooconfig_item_index' ) : ($i + 1) ); ?></strong>
+                                        <strong>#<?php echo esc_html( $item->get_meta( '_vk7k_wconfig_item_index' ) ? $item->get_meta( '_vk7k_wconfig_item_index' ) : ($i + 1) ); ?></strong>
                                     </td>
                                     <td style="vertical-align: middle;">
                                         <strong><?php echo esc_html( $item->get_name() ); ?></strong>
@@ -985,13 +975,13 @@ class WC_Config_Order {
     public static function render_customer_balance_section( $order ) {
         if ( ! $order ) return;
 
-        $has_deposit = 'yes' === $order->get_meta( '_wooconfig_has_deposit' );
+        $has_deposit = 'yes' === $order->get_meta( '_vk7k_wconfig_has_deposit' );
         if ( ! $has_deposit ) return;
 
-        $order_full_total    = (float) $order->get_meta( '_wooconfig_order_full_total' );
-        $order_deposit_total = (float) $order->get_meta( '_wooconfig_order_deposit_total' );
-        $order_balance_total = (float) $order->get_meta( '_wooconfig_order_balance_total' );
-        $balance_status      = $order->get_meta( '_wooconfig_balance_status' );
+        $order_full_total    = (float) $order->get_meta( '_vk7k_wconfig_order_full_total' );
+        $order_deposit_total = (float) $order->get_meta( '_vk7k_wconfig_order_deposit_total' );
+        $order_balance_total = (float) $order->get_meta( '_vk7k_wconfig_order_balance_total' );
+        $balance_status      = $order->get_meta( '_vk7k_wconfig_balance_status' );
         if ( empty( $balance_status ) ) {
             $balance_status = 'pending';
         }
@@ -1055,7 +1045,7 @@ class WC_Config_Order {
     public static function render_email_order_team_details( $order, $sent_to_admin, $plain_text, $email ) {
         $sketch_notice_enabled = get_option( 'wooconfig_sketch_notice_enabled', 'yes' );
         $notice_text           = get_option( 'wooconfig_sketch_notice_text', __( 'Luego de realizar el pago inicial, recibirás el boceto de tu diseño dentro de un plazo máximo de 24 horas a través del medio de contacto que señalaste.', 'woo-config' ) );
-        $preferred_contact     = $order ? $order->get_meta( '_wooconfig_preferred_contact' ) : '';
+        $preferred_contact     = $order ? $order->get_meta( '_vk7k_wconfig_preferred_contact' ) : '';
 
         if ( 'yes' === $sketch_notice_enabled && ! empty( $notice_text ) ) {
             if ( $plain_text ) {
@@ -1084,7 +1074,7 @@ class WC_Config_Order {
             }
         }
 
-        $groups = $order ? $order->get_meta( '_wooconfig_order_groups' ) : array();
+        $groups = $order ? $order->get_meta( '_vk7k_wconfig_order_groups' ) : array();
         if ( empty( $groups ) || ! is_array( $groups ) ) return;
 
         if ( $plain_text ) {
@@ -1169,7 +1159,7 @@ class WC_Config_Order {
             $preferred_contact = sanitize_text_field( $_POST['wooconfig_preferred_contact'] );
             $order = wc_get_order( $order_id );
             if ( $order ) {
-                $order->update_meta_data( '_wooconfig_preferred_contact', $preferred_contact );
+                $order->update_meta_data( '_vk7k_wconfig_preferred_contact', $preferred_contact );
                 $order->save();
             }
         }
@@ -1183,7 +1173,7 @@ class WC_Config_Order {
         if ( ! $order ) return;
 
         $notice_text       = get_option( 'wooconfig_sketch_notice_text', __( 'Luego de realizar el pago inicial, recibirás el boceto de tu diseño dentro de un plazo máximo de 24 horas a través del medio de contacto que señalaste.', 'woo-config' ) );
-        $preferred_contact = $order->get_meta( '_wooconfig_preferred_contact' );
+        $preferred_contact = $order->get_meta( '_vk7k_wconfig_preferred_contact' );
 
         ?>
         <div class="wooconfig-thankyou-sketch-notice" style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 10px; padding: 20px 22px; margin: 25px 0; color: #14532d; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
@@ -1207,7 +1197,7 @@ class WC_Config_Order {
 
     public static function render_admin_order_preferred_contact( $order ) {
         if ( ! $order ) return;
-        $preferred_contact = $order->get_meta( '_wooconfig_preferred_contact' );
+        $preferred_contact = $order->get_meta( '_vk7k_wconfig_preferred_contact' );
         if ( ! empty( $preferred_contact ) ) {
             echo '<p style="margin-top: 12px;"><strong>' . esc_html__( 'Medio de contacto preferido (Boceto):', 'woo-config' ) . '</strong><br><span style="display:inline-block; background:#0284c7; color:#fff; padding:4px 12px; border-radius:4px; font-weight:700; margin-top:4px;">💬 ' . esc_html( $preferred_contact ) . '</span></p>';
         }
@@ -1235,7 +1225,7 @@ class WC_Config_Order {
         $default_sizes = array( '4', '6', '8', '10', '12', '14', '16', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
 
         foreach ( $product_ids as $pid ) {
-            $type = get_post_meta( $pid, '_wooconfig_type', true );
+            $type = get_post_meta( $pid, '_vk7k_wconfig_type', true );
             if ( empty( $type ) || 'disabled' === $type ) {
                 continue;
             }
@@ -1261,7 +1251,7 @@ class WC_Config_Order {
             }
             $sizes = array_values( array_unique( $sizes ) );
 
-            $adicionales = get_post_meta( $pid, '_wooconfig_adicionales', true );
+            $adicionales = get_post_meta( $pid, '_vk7k_wconfig_adicionales', true );
             if ( ! is_array( $adicionales ) ) {
                 $adicionales = array(
                     'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
@@ -1388,7 +1378,7 @@ class WC_Config_Order {
         }
 
         // Product configured adicionales
-        $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+        $product_adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
         if ( ! is_array( $product_adicionales ) ) {
             $product_adicionales = array(
                 'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
@@ -1398,7 +1388,7 @@ class WC_Config_Order {
 
         $base_price = (float) $product->get_price();
 
-        $groups = $order->get_meta( '_wooconfig_order_groups' );
+        $groups = $order->get_meta( '_vk7k_wconfig_order_groups' );
         if ( ! is_array( $groups ) ) {
             $groups = array();
         }
@@ -1422,7 +1412,7 @@ class WC_Config_Order {
                 'design_desc' => $combined_desc,
                 'files'       => $files,
             );
-            $order->update_meta_data( '_wooconfig_order_groups', $groups );
+            $order->update_meta_data( '_vk7k_wconfig_order_groups', $groups );
         }
 
         // Add line items
@@ -1430,8 +1420,8 @@ class WC_Config_Order {
         if ( $is_group_add ) {
             // Continuar la numeración del equipo en vez de reiniciarla en 1.
             foreach ( $order->get_items() as $existing_item ) {
-                if ( $existing_item->get_meta( '_wooconfig_group_id' ) === $group_id ) {
-                    $idx = max( $idx, (int) $existing_item->get_meta( '_wooconfig_item_index' ) + 1 );
+                if ( $existing_item->get_meta( '_vk7k_wconfig_group_id' ) === $group_id ) {
+                    $idx = max( $idx, (int) $existing_item->get_meta( '_vk7k_wconfig_item_index' ) + 1 );
                 }
             }
         }
@@ -1461,16 +1451,16 @@ class WC_Config_Order {
             $item->set_subtotal( $unit_price );
             $item->set_total( $unit_price );
 
-            $item->add_meta_data( '_wooconfig_group_id', $group_id );
-            $item->add_meta_data( '_wooconfig_group_title', $group_title );
-            $item->add_meta_data( '_wooconfig_item_index', $idx );
-            $item->add_meta_data( '_wooconfig_flow', 'wizard' );
-            $item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), $dorsal );
-            $item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), $name );
-            $item->add_meta_data( __( 'Talla', 'woo-config' ), $size );
-            $item->add_meta_data( __( 'Adicionales', 'woo-config' ), $ad_labels );
-            $item->add_meta_data( '_wooconfig_adicionales_raw', $assigned_ads );
-            $item->add_meta_data( '_wooconfig_full_unit_price', $unit_price );
+            $item->add_meta_data( '_vk7k_wconfig_group_id', $group_id );
+            $item->add_meta_data( '_vk7k_wconfig_group_title', $group_title );
+            $item->add_meta_data( '_vk7k_wconfig_item_index', $idx );
+            $item->add_meta_data( '_vk7k_wconfig_flow', 'wizard' );
+            $item->add_meta_data( '_vk7k_wconfig_dorsal', $dorsal );
+            $item->add_meta_data( '_vk7k_wconfig_nombre', $name );
+            $item->add_meta_data( '_vk7k_wconfig_talla', $size );
+            $item->add_meta_data( '_vk7k_wconfig_adicionales_list', $ad_labels );
+            $item->add_meta_data( '_vk7k_wconfig_adicionales_raw', $assigned_ads );
+            $item->add_meta_data( '_vk7k_wconfig_full_unit_price', $unit_price );
 
             $order->add_item( $item );
             $idx++;
@@ -1509,15 +1499,15 @@ class WC_Config_Order {
             $deposit_total = round( $total_items_cost * ( $deposit_percent / 100 ), 0 );
             $balance_total = $total_items_cost - $deposit_total;
 
-            $order->update_meta_data( '_wooconfig_has_deposit', 'yes' );
-            $existing_full = (float) $order->get_meta( '_wooconfig_order_full_total' );
-            $existing_dep  = (float) $order->get_meta( '_wooconfig_order_deposit_total' );
-            $existing_bal  = (float) $order->get_meta( '_wooconfig_order_balance_total' );
-            $order->update_meta_data( '_wooconfig_order_full_total', $existing_full + $total_items_cost );
-            $order->update_meta_data( '_wooconfig_order_deposit_total', $existing_dep + $deposit_total );
-            $order->update_meta_data( '_wooconfig_order_balance_total', $existing_bal + $balance_total );
-            if ( ! $order->get_meta( '_wooconfig_balance_status' ) ) {
-                $order->update_meta_data( '_wooconfig_balance_status', 'pending' );
+            $order->update_meta_data( '_vk7k_wconfig_has_deposit', 'yes' );
+            $existing_full = (float) $order->get_meta( '_vk7k_wconfig_order_full_total' );
+            $existing_dep  = (float) $order->get_meta( '_vk7k_wconfig_order_deposit_total' );
+            $existing_bal  = (float) $order->get_meta( '_vk7k_wconfig_order_balance_total' );
+            $order->update_meta_data( '_vk7k_wconfig_order_full_total', $existing_full + $total_items_cost );
+            $order->update_meta_data( '_vk7k_wconfig_order_deposit_total', $existing_dep + $deposit_total );
+            $order->update_meta_data( '_vk7k_wconfig_order_balance_total', $existing_bal + $balance_total );
+            if ( ! $order->get_meta( '_vk7k_wconfig_balance_status' ) ) {
+                $order->update_meta_data( '_vk7k_wconfig_balance_status', 'pending' );
             }
         }
 
@@ -1613,13 +1603,13 @@ class WC_Config_Order {
         }
 
         if ( isset( $_POST['dorsal'] ) ) {
-            $item->update_meta_data( __( 'Dorsal (#)', 'woo-config' ), sanitize_text_field( wp_unslash( $_POST['dorsal'] ) ) );
+            $item->update_meta_data( '_vk7k_wconfig_dorsal', sanitize_text_field( wp_unslash( $_POST['dorsal'] ) ) );
         }
         if ( isset( $_POST['name'] ) ) {
-            $item->update_meta_data( __( 'Nombre / Alias', 'woo-config' ), sanitize_text_field( wp_unslash( $_POST['name'] ) ) );
+            $item->update_meta_data( '_vk7k_wconfig_nombre', sanitize_text_field( wp_unslash( $_POST['name'] ) ) );
         }
         if ( isset( $_POST['size'] ) ) {
-            $item->update_meta_data( __( 'Talla', 'woo-config' ), sanitize_text_field( wp_unslash( $_POST['size'] ) ) );
+            $item->update_meta_data( '_vk7k_wconfig_talla', sanitize_text_field( wp_unslash( $_POST['size'] ) ) );
         }
 
         $item->save();
@@ -1651,9 +1641,9 @@ class WC_Config_Order {
         $reference_item = null;
         $max_index = 0;
         foreach ( $order->get_items() as $it ) {
-            if ( $it->get_meta( '_wooconfig_group_id' ) === $group_id ) {
+            if ( $it->get_meta( '_vk7k_wconfig_group_id' ) === $group_id ) {
                 $reference_item = $it;
-                $idx = (int) $it->get_meta( '_wooconfig_item_index' );
+                $idx = (int) $it->get_meta( '_vk7k_wconfig_item_index' );
                 if ( $idx > $max_index ) {
                     $max_index = $idx;
                 }
@@ -1679,13 +1669,13 @@ class WC_Config_Order {
         $item->set_subtotal( $base_price );
         $item->set_total( $base_price );
 
-        $item->add_meta_data( '_wooconfig_group_id', $group_id );
-        $item->add_meta_data( '_wooconfig_group_title', $reference_item ? $reference_item->get_meta( '_wooconfig_group_title' ) : $product->get_name() );
-        $item->add_meta_data( '_wooconfig_item_index', $max_index + 1 );
-        $item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), $dorsal );
-        $item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), $name );
-        $item->add_meta_data( __( 'Talla', 'woo-config' ), $size );
-        $item->add_meta_data( '_wooconfig_full_unit_price', $base_price );
+        $item->add_meta_data( '_vk7k_wconfig_group_id', $group_id );
+        $item->add_meta_data( '_vk7k_wconfig_group_title', $reference_item ? $reference_item->get_meta( '_vk7k_wconfig_group_title' ) : $product->get_name() );
+        $item->add_meta_data( '_vk7k_wconfig_item_index', $max_index + 1 );
+        $item->add_meta_data( '_vk7k_wconfig_dorsal', $dorsal );
+        $item->add_meta_data( '_vk7k_wconfig_nombre', $name );
+        $item->add_meta_data( '_vk7k_wconfig_talla', $size );
+        $item->add_meta_data( '_vk7k_wconfig_full_unit_price', $base_price );
 
         $order->add_item( $item );
         $order->calculate_totals();
@@ -1774,7 +1764,7 @@ class WC_Config_Order {
         $group_title = sprintf( __( 'Equipo: %s', 'woo-config' ), $product->get_name() );
 
         // Create group meta
-        $groups = $order->get_meta( '_wooconfig_order_groups' );
+        $groups = $order->get_meta( '_vk7k_wconfig_order_groups' );
         if ( ! is_array( $groups ) ) {
             $groups = array();
         }
@@ -1785,7 +1775,7 @@ class WC_Config_Order {
             'design_desc' => sprintf( __( 'Desglosado automáticamente desde artículo estándar ×%d.', 'woo-config' ), $quantity ),
             'files'       => array(),
         );
-        $order->update_meta_data( '_wooconfig_order_groups', $groups );
+        $order->update_meta_data( '_vk7k_wconfig_order_groups', $groups );
 
         // Create individual items
         for ( $i = 1; $i <= $quantity; $i++ ) {
@@ -1796,14 +1786,14 @@ class WC_Config_Order {
             $item->set_subtotal( $base_price );
             $item->set_total( $base_price );
 
-            $item->add_meta_data( '_wooconfig_group_id', $group_id );
-            $item->add_meta_data( '_wooconfig_group_title', $group_title );
-            $item->add_meta_data( '_wooconfig_item_index', $i );
-            $item->add_meta_data( '_wooconfig_flow', 'wizard' );
-            $item->add_meta_data( __( 'Dorsal (#)', 'woo-config' ), '' );
-            $item->add_meta_data( __( 'Nombre / Alias', 'woo-config' ), '' );
-            $item->add_meta_data( __( 'Talla', 'woo-config' ), 'M' );
-            $item->add_meta_data( '_wooconfig_full_unit_price', $base_price );
+            $item->add_meta_data( '_vk7k_wconfig_group_id', $group_id );
+            $item->add_meta_data( '_vk7k_wconfig_group_title', $group_title );
+            $item->add_meta_data( '_vk7k_wconfig_item_index', $i );
+            $item->add_meta_data( '_vk7k_wconfig_flow', 'wizard' );
+            $item->add_meta_data( '_vk7k_wconfig_dorsal', '' );
+            $item->add_meta_data( '_vk7k_wconfig_nombre', '' );
+            $item->add_meta_data( '_vk7k_wconfig_talla', 'M' );
+            $item->add_meta_data( '_vk7k_wconfig_full_unit_price', $base_price );
 
             $order->add_item( $item );
         }

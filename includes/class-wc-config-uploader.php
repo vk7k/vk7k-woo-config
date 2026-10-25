@@ -326,7 +326,7 @@ class WC_Config_Uploader {
             return false;
         }
 
-        $groups = $order->get_meta( '_wooconfig_order_groups' );
+        $groups = $order->get_meta( '_vk7k_wconfig_order_groups' );
         if ( is_array( $groups ) ) {
             foreach ( $groups as $group ) {
                 if ( empty( $group['files'] ) || ! is_array( $group['files'] ) ) {
@@ -349,7 +349,7 @@ class WC_Config_Uploader {
         }
 
         foreach ( $order->get_items() as $item ) {
-            $files = $item->get_meta( '_wooconfig_files' );
+            $files = $item->get_meta( '_vk7k_wconfig_files' );
             if ( empty( $files ) || ! is_array( $files ) ) {
                 continue;
             }

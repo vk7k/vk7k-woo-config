@@ -64,7 +64,7 @@ class WC_Config_Cart {
         $upload_token = isset( $_POST['upload_token'] ) ? WC_Config_Uploader::sanitize_upload_token( wp_unslash( $_POST['upload_token'] ) ) : '';
 
         // Product configured adicionales
-        $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+        $product_adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
         if ( ! is_array( $product_adicionales ) ) {
             $product_adicionales = array(
                 'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
@@ -241,31 +241,31 @@ class WC_Config_Cart {
                     }
 
                     $cart_item_data = array(
-                        '_wooconfig_flow'                => 'unified',
-                        '_wooconfig_upload_token'        => $upload_token,
-                        '_wooconfig_group_id'            => $group_id,
-                        '_wooconfig_group_title'         => $group_title,
-                        '_wooconfig_item_index'          => $index,
-                        '_wooconfig_total_items'         => count( $players ),
-                        '_wooconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
-                        '_wooconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
-                        '_wooconfig_deposit_percent'     => $deposit_percent,
-                        '_wooconfig_full_unit_price'     => $player_full_unit_price,
-                        '_wooconfig_deposit_unit_price'  => $deposit_unit_price,
-                        '_wooconfig_balance_unit_due'    => $balance_unit_due,
-                        '_wooconfig_custom_price'        => $player_full_unit_price,
-                        '_wooconfig_dorsal'              => $dorsal,
-                        '_wooconfig_player_name'         => $name,
-                        '_wooconfig_size'                => $size,
-                        '_wooconfig_adicionales_raw'     => $assigned_ad_raw,
-                        '_wooconfig_adicionales_list'    => $player_adicionales_labels,
-                        '_wooconfig_base_price'          => $base_price,
-                        '_wooconfig_design_desc'         => $combined_desc,
-                        '_wooconfig_files'               => $all_files,
-                        '_wooconfig_files_design'        => $files_design,
-                        '_wooconfig_files_sponsors'      => $files_sponsors,
-                        '_wooconfig_files_players'       => $files_players,
-                        '_wooconfig_unique_key'          => md5( $group_id . '_' . $index . '_' . microtime() ),
+                        '_vk7k_wconfig_flow'                => 'unified',
+                        '_vk7k_wconfig_upload_token'        => $upload_token,
+                        '_vk7k_wconfig_group_id'            => $group_id,
+                        '_vk7k_wconfig_group_title'         => $group_title,
+                        '_vk7k_wconfig_item_index'          => $index,
+                        '_vk7k_wconfig_total_items'         => count( $players ),
+                        '_vk7k_wconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
+                        '_vk7k_wconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
+                        '_vk7k_wconfig_deposit_percent'     => $deposit_percent,
+                        '_vk7k_wconfig_full_unit_price'     => $player_full_unit_price,
+                        '_vk7k_wconfig_deposit_unit_price'  => $deposit_unit_price,
+                        '_vk7k_wconfig_balance_unit_due'    => $balance_unit_due,
+                        '_vk7k_wconfig_custom_price'        => $player_full_unit_price,
+                        '_vk7k_wconfig_dorsal'              => $dorsal,
+                        '_vk7k_wconfig_nombre'         => $name,
+                        '_vk7k_wconfig_talla'                => $size,
+                        '_vk7k_wconfig_adicionales_raw'     => $assigned_ad_raw,
+                        '_vk7k_wconfig_adicionales_list'    => $player_adicionales_labels,
+                        '_vk7k_wconfig_base_price'          => $base_price,
+                        '_vk7k_wconfig_design_desc'         => $combined_desc,
+                        '_vk7k_wconfig_files'               => $all_files,
+                        '_vk7k_wconfig_files_design'        => $files_design,
+                        '_vk7k_wconfig_files_sponsors'      => $files_sponsors,
+                        '_vk7k_wconfig_files_players'       => $files_players,
+                        '_vk7k_wconfig_unique_key'          => md5( $group_id . '_' . $index . '_' . microtime() ),
                     );
 
                     $key = WC()->cart->add_to_cart( $product_id, 1, $variation_id, $variation_attributes, $cart_item_data );
@@ -294,27 +294,27 @@ class WC_Config_Cart {
                 }
 
                 $cart_item_data = array(
-                    '_wooconfig_flow'                => 'unified',
-                    '_wooconfig_upload_token'        => $upload_token,
-                    '_wooconfig_group_id'            => $group_id,
-                    '_wooconfig_group_title'         => sprintf( __( 'Equipo / Set: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
-                    '_wooconfig_total_items'         => $qty,
-                    '_wooconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
-                    '_wooconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
-                    '_wooconfig_deposit_percent'     => $deposit_percent,
-                    '_wooconfig_full_unit_price'     => $full_unit_price,
-                    '_wooconfig_deposit_unit_price'  => $deposit_unit_price,
-                    '_wooconfig_balance_unit_due'    => $balance_unit_due,
-                    '_wooconfig_custom_price'        => $full_unit_price,
-                    '_wooconfig_base_price'          => $base_price,
-                    '_wooconfig_adicionales_summary' => $adicionales_summary_list,
-                    '_wooconfig_adicionales_counts'  => $adicionales_counts,
-                    '_wooconfig_design_desc'         => $combined_desc,
-                    '_wooconfig_files'               => $all_files,
-                    '_wooconfig_files_design'        => $files_design,
-                    '_wooconfig_files_sponsors'      => $files_sponsors,
-                    '_wooconfig_files_players'       => $files_players,
-                    '_wooconfig_unique_key'          => md5( $group_id . '_' . microtime() ),
+                    '_vk7k_wconfig_flow'                => 'unified',
+                    '_vk7k_wconfig_upload_token'        => $upload_token,
+                    '_vk7k_wconfig_group_id'            => $group_id,
+                    '_vk7k_wconfig_group_title'         => sprintf( __( 'Equipo / Set: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
+                    '_vk7k_wconfig_total_items'         => $qty,
+                    '_vk7k_wconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
+                    '_vk7k_wconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
+                    '_vk7k_wconfig_deposit_percent'     => $deposit_percent,
+                    '_vk7k_wconfig_full_unit_price'     => $full_unit_price,
+                    '_vk7k_wconfig_deposit_unit_price'  => $deposit_unit_price,
+                    '_vk7k_wconfig_balance_unit_due'    => $balance_unit_due,
+                    '_vk7k_wconfig_custom_price'        => $full_unit_price,
+                    '_vk7k_wconfig_base_price'          => $base_price,
+                    '_vk7k_wconfig_adicionales_summary' => $adicionales_summary_list,
+                    '_vk7k_wconfig_adicionales_counts'  => $adicionales_counts,
+                    '_vk7k_wconfig_design_desc'         => $combined_desc,
+                    '_vk7k_wconfig_files'               => $all_files,
+                    '_vk7k_wconfig_files_design'        => $files_design,
+                    '_vk7k_wconfig_files_sponsors'      => $files_sponsors,
+                    '_vk7k_wconfig_files_players'       => $files_players,
+                    '_vk7k_wconfig_unique_key'          => md5( $group_id . '_' . microtime() ),
                 );
 
                 $variation_id         = 0;
@@ -389,24 +389,24 @@ class WC_Config_Cart {
             $group_id = 'quick_' . wp_generate_uuid4();
 
             $cart_item_data = array(
-                '_wooconfig_flow'                => 'quick',
-                '_wooconfig_upload_token'        => $upload_token,
-                '_wooconfig_group_id'            => $group_id,
-                '_wooconfig_group_title'         => sprintf( __( 'Pedido Rápido: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
-                '_wooconfig_total_items'         => $qty,
-                '_wooconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
-                '_wooconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
-                '_wooconfig_deposit_percent'     => $deposit_percent,
-                '_wooconfig_full_unit_price'     => $full_unit_price,
-                '_wooconfig_deposit_unit_price'  => $deposit_unit_price,
-                '_wooconfig_balance_unit_due'    => $balance_unit_due,
-                '_wooconfig_custom_price'        => $full_unit_price,
-                '_wooconfig_base_price'          => $base_price,
-                '_wooconfig_adicionales_summary' => $adicionales_summary_list,
-                '_wooconfig_adicionales_counts'  => $adicionales_counts,
-                '_wooconfig_design_desc'         => $design_desc,
-                '_wooconfig_files'               => $files,
-                '_wooconfig_unique_key'          => md5( $group_id . '_' . microtime() ),
+                '_vk7k_wconfig_flow'                => 'quick',
+                '_vk7k_wconfig_upload_token'        => $upload_token,
+                '_vk7k_wconfig_group_id'            => $group_id,
+                '_vk7k_wconfig_group_title'         => sprintf( __( 'Pedido Rápido: %s (%d prendas)', 'woo-config' ), $product->get_name(), $qty ),
+                '_vk7k_wconfig_total_items'         => $qty,
+                '_vk7k_wconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
+                '_vk7k_wconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
+                '_vk7k_wconfig_deposit_percent'     => $deposit_percent,
+                '_vk7k_wconfig_full_unit_price'     => $full_unit_price,
+                '_vk7k_wconfig_deposit_unit_price'  => $deposit_unit_price,
+                '_vk7k_wconfig_balance_unit_due'    => $balance_unit_due,
+                '_vk7k_wconfig_custom_price'        => $full_unit_price,
+                '_vk7k_wconfig_base_price'          => $base_price,
+                '_vk7k_wconfig_adicionales_summary' => $adicionales_summary_list,
+                '_vk7k_wconfig_adicionales_counts'  => $adicionales_counts,
+                '_vk7k_wconfig_design_desc'         => $design_desc,
+                '_vk7k_wconfig_files'               => $files,
+                '_vk7k_wconfig_unique_key'          => md5( $group_id . '_' . microtime() ),
             );
 
             $variation_id         = 0;
@@ -559,29 +559,29 @@ class WC_Config_Cart {
             }
 
             $cart_item_data = array(
-                '_wooconfig_flow'                => 'wizard',
-                '_wooconfig_upload_token'        => $upload_token,
-                '_wooconfig_group_id'            => $group_id,
-                '_wooconfig_group_title'         => $group_title,
-                '_wooconfig_item_index'          => $index,
-                '_wooconfig_total_items'         => count( $players ),
-                '_wooconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
-                '_wooconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
-                '_wooconfig_deposit_percent'     => $deposit_percent,
-                '_wooconfig_full_unit_price'     => $player_full_unit_price,
-                '_wooconfig_deposit_unit_price'  => $deposit_unit_price,
-                '_wooconfig_balance_unit_due'    => $balance_unit_due,
-                '_wooconfig_custom_price'        => $player_full_unit_price,
-                '_wooconfig_dorsal'              => $dorsal,
-                '_wooconfig_player_name'         => $name,
-                '_wooconfig_size'                => $size,
-                '_wooconfig_color'               => $color,
-                '_wooconfig_adicionales_raw'     => $assigned_ad_raw,
-                '_wooconfig_adicionales_list'    => $player_adicionales_labels,
-                '_wooconfig_base_price'          => $base_price,
-                '_wooconfig_design_desc'         => $design_desc,
-                '_wooconfig_files'               => $files,
-                '_wooconfig_unique_key'          => md5( $group_id . '_' . $index . '_' . microtime() ),
+                '_vk7k_wconfig_flow'                => 'wizard',
+                '_vk7k_wconfig_upload_token'        => $upload_token,
+                '_vk7k_wconfig_group_id'            => $group_id,
+                '_vk7k_wconfig_group_title'         => $group_title,
+                '_vk7k_wconfig_item_index'          => $index,
+                '_vk7k_wconfig_total_items'         => count( $players ),
+                '_vk7k_wconfig_is_deposit'          => $is_deposit ? 'yes' : 'no',
+                '_vk7k_wconfig_payment_mode'        => $is_deposit ? 'deposit' : 'full',
+                '_vk7k_wconfig_deposit_percent'     => $deposit_percent,
+                '_vk7k_wconfig_full_unit_price'     => $player_full_unit_price,
+                '_vk7k_wconfig_deposit_unit_price'  => $deposit_unit_price,
+                '_vk7k_wconfig_balance_unit_due'    => $balance_unit_due,
+                '_vk7k_wconfig_custom_price'        => $player_full_unit_price,
+                '_vk7k_wconfig_dorsal'              => $dorsal,
+                '_vk7k_wconfig_nombre'         => $name,
+                '_vk7k_wconfig_talla'                => $size,
+                '_vk7k_wconfig_color'               => $color,
+                '_vk7k_wconfig_adicionales_raw'     => $assigned_ad_raw,
+                '_vk7k_wconfig_adicionales_list'    => $player_adicionales_labels,
+                '_vk7k_wconfig_base_price'          => $base_price,
+                '_vk7k_wconfig_design_desc'         => $design_desc,
+                '_vk7k_wconfig_files'               => $files,
+                '_vk7k_wconfig_unique_key'          => md5( $group_id . '_' . $index . '_' . microtime() ),
             );
 
             $cart_item_key = WC()->cart->add_to_cart(
@@ -618,8 +618,8 @@ class WC_Config_Cart {
 
     public static function calculate_custom_cart_item_prices( $cart ) {
         foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-            if ( isset( $cart_item['_wooconfig_custom_price'] ) && (float) $cart_item['_wooconfig_custom_price'] > 0 ) {
-                $price = (float) $cart_item['_wooconfig_custom_price'];
+            if ( isset( $cart_item['_vk7k_wconfig_custom_price'] ) && (float) $cart_item['_vk7k_wconfig_custom_price'] > 0 ) {
+                $price = (float) $cart_item['_vk7k_wconfig_custom_price'];
                 $cart_item['data']->set_price( $price );
                 $cart_item['data']->set_regular_price( $price );
                 $cart_item['data']->set_sale_price( '' );
@@ -631,8 +631,8 @@ class WC_Config_Cart {
         $total_balance_deduction = 0;
 
         foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-            if ( ! empty( $cart_item['_wooconfig_is_deposit'] ) && 'yes' === $cart_item['_wooconfig_is_deposit'] ) {
-                $balance_unit = isset( $cart_item['_wooconfig_balance_unit_due'] ) ? (float) $cart_item['_wooconfig_balance_unit_due'] : 0;
+            if ( ! empty( $cart_item['_vk7k_wconfig_is_deposit'] ) && 'yes' === $cart_item['_vk7k_wconfig_is_deposit'] ) {
+                $balance_unit = isset( $cart_item['_vk7k_wconfig_balance_unit_due'] ) ? (float) $cart_item['_vk7k_wconfig_balance_unit_due'] : 0;
                 $qty          = isset( $cart_item['quantity'] ) ? absint( $cart_item['quantity'] ) : 1;
                 $total_balance_deduction += ( $balance_unit * $qty );
             }
@@ -647,11 +647,11 @@ class WC_Config_Cart {
     }
 
     public static function filter_cart_item_name_html( $product_name, $cart_item, $cart_item_key ) {
-        if ( empty( $cart_item['_wooconfig_group_id'] ) ) {
+        if ( empty( $cart_item['_vk7k_wconfig_group_id'] ) ) {
             return $product_name;
         }
 
-        $flow = isset( $cart_item['_wooconfig_flow'] ) ? $cart_item['_wooconfig_flow'] : 'wizard';
+        $flow = isset( $cart_item['_vk7k_wconfig_flow'] ) ? $cart_item['_vk7k_wconfig_flow'] : 'wizard';
         $output = '<div class="wooconfig-cart-title-wrapper" style="margin-bottom: 4px;">';
         $output .= '<div class="wooconfig-cart-prod-title" style="font-weight: 700; color: #111; font-size: 15px; line-height: 1.3;">' . $product_name . '</div>';
 
@@ -662,11 +662,11 @@ class WC_Config_Cart {
             $output .= '<span style="background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 4px;">' . sprintf( esc_html__( 'Set de %d prendas', 'woo-config' ), $qty ) . '</span>';
             $output .= '</div>';
         } else {
-            $dorsal = isset( $cart_item['_wooconfig_dorsal'] ) ? trim( $cart_item['_wooconfig_dorsal'] ) : '';
-            $name   = isset( $cart_item['_wooconfig_player_name'] ) ? trim( $cart_item['_wooconfig_player_name'] ) : '';
-            $size   = isset( $cart_item['_wooconfig_size'] ) ? trim( $cart_item['_wooconfig_size'] ) : '';
-            $index  = isset( $cart_item['_wooconfig_item_index'] ) ? absint( $cart_item['_wooconfig_item_index'] ) : 1;
-            $total  = isset( $cart_item['_wooconfig_total_items'] ) ? absint( $cart_item['_wooconfig_total_items'] ) : 1;
+            $dorsal = isset( $cart_item['_vk7k_wconfig_dorsal'] ) ? trim( $cart_item['_vk7k_wconfig_dorsal'] ) : '';
+            $name   = isset( $cart_item['_vk7k_wconfig_nombre'] ) ? trim( $cart_item['_vk7k_wconfig_nombre'] ) : '';
+            $size   = isset( $cart_item['_vk7k_wconfig_talla'] ) ? trim( $cart_item['_vk7k_wconfig_talla'] ) : '';
+            $index  = isset( $cart_item['_vk7k_wconfig_item_index'] ) ? absint( $cart_item['_vk7k_wconfig_item_index'] ) : 1;
+            $total  = isset( $cart_item['_vk7k_wconfig_total_items'] ) ? absint( $cart_item['_vk7k_wconfig_total_items'] ) : 1;
 
             $player_identity = '';
             if ( '' !== $dorsal && '' !== $name ) {
@@ -706,29 +706,29 @@ class WC_Config_Cart {
     }
 
     public static function filter_cart_item_price_html( $price_html, $cart_item, $cart_item_key ) {
-        if ( empty( $cart_item['_wooconfig_group_id'] ) ) {
+        if ( empty( $cart_item['_vk7k_wconfig_group_id'] ) ) {
             return $price_html;
         }
 
-        $flow = isset( $cart_item['_wooconfig_flow'] ) ? $cart_item['_wooconfig_flow'] : 'wizard';
+        $flow = isset( $cart_item['_vk7k_wconfig_flow'] ) ? $cart_item['_vk7k_wconfig_flow'] : 'wizard';
         $product_id = isset( $cart_item['product_id'] ) ? $cart_item['product_id'] : 0;
-        $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+        $product_adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
         if ( ! is_array( $product_adicionales ) ) {
             $product_adicionales = array();
         }
 
         $pills_html = '';
 
-        if ( 'wizard' === $flow && ! empty( $cart_item['_wooconfig_adicionales_raw'] ) && is_array( $cart_item['_wooconfig_adicionales_raw'] ) ) {
-            foreach ( $cart_item['_wooconfig_adicionales_raw'] as $ad_key ) {
+        if ( 'wizard' === $flow && ! empty( $cart_item['_vk7k_wconfig_adicionales_raw'] ) && is_array( $cart_item['_vk7k_wconfig_adicionales_raw'] ) ) {
+            foreach ( $cart_item['_vk7k_wconfig_adicionales_raw'] as $ad_key ) {
                 if ( isset( $product_adicionales[$ad_key] ) ) {
                     $label = $product_adicionales[$ad_key]['label'];
                     $cost  = (float) $product_adicionales[$ad_key]['price'];
                     $pills_html .= '<span class="wooconfig-cart-ad-pill" style="display: inline-flex; align-items: center; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 700; white-space: nowrap;">+ ' . esc_html( $label ) . ' (' . wc_price( $cost ) . ')</span>';
                 }
             }
-        } elseif ( 'quick' === $flow && ! empty( $cart_item['_wooconfig_adicionales_counts'] ) && is_array( $cart_item['_wooconfig_adicionales_counts'] ) ) {
-            foreach ( $cart_item['_wooconfig_adicionales_counts'] as $ad_key => $count ) {
+        } elseif ( 'quick' === $flow && ! empty( $cart_item['_vk7k_wconfig_adicionales_counts'] ) && is_array( $cart_item['_vk7k_wconfig_adicionales_counts'] ) ) {
+            foreach ( $cart_item['_vk7k_wconfig_adicionales_counts'] as $ad_key => $count ) {
                 $count = absint( $count );
                 if ( $count > 0 && isset( $product_adicionales[$ad_key] ) ) {
                     $label = $product_adicionales[$ad_key]['label'];
@@ -746,13 +746,13 @@ class WC_Config_Cart {
     }
 
     public static function render_cart_item_custom_data( $item_data, $cart_item ) {
-        if ( empty( $cart_item['_wooconfig_group_id'] ) ) {
+        if ( empty( $cart_item['_vk7k_wconfig_group_id'] ) ) {
             return $item_data;
         }
 
-        $flow       = isset( $cart_item['_wooconfig_flow'] ) ? $cart_item['_wooconfig_flow'] : 'wizard';
+        $flow       = isset( $cart_item['_vk7k_wconfig_flow'] ) ? $cart_item['_vk7k_wconfig_flow'] : 'wizard';
         $product_id = isset( $cart_item['product_id'] ) ? $cart_item['product_id'] : 0;
-        $product_adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+        $product_adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
         if ( ! is_array( $product_adicionales ) ) {
             $product_adicionales = array();
         }
@@ -764,8 +764,8 @@ class WC_Config_Cart {
                 'value' => sprintf( __( 'Pedido Rápido (%d prendas)', 'woo-config' ), $qty ),
             );
 
-            if ( ! empty( $cart_item['_wooconfig_adicionales_counts'] ) && is_array( $cart_item['_wooconfig_adicionales_counts'] ) ) {
-                foreach ( $cart_item['_wooconfig_adicionales_counts'] as $ad_key => $count ) {
+            if ( ! empty( $cart_item['_vk7k_wconfig_adicionales_counts'] ) && is_array( $cart_item['_vk7k_wconfig_adicionales_counts'] ) ) {
+                foreach ( $cart_item['_vk7k_wconfig_adicionales_counts'] as $ad_key => $count ) {
                     $count = absint( $count );
                     if ( $count > 0 && isset( $product_adicionales[$ad_key] ) ) {
                         $label = $product_adicionales[$ad_key]['label'];
@@ -778,10 +778,10 @@ class WC_Config_Cart {
                 }
             }
         } else {
-            $dorsal = isset( $cart_item['_wooconfig_dorsal'] ) ? trim( $cart_item['_wooconfig_dorsal'] ) : '';
-            $name   = isset( $cart_item['_wooconfig_player_name'] ) ? trim( $cart_item['_wooconfig_player_name'] ) : '';
-            $index  = isset( $cart_item['_wooconfig_item_index'] ) ? absint( $cart_item['_wooconfig_item_index'] ) : 1;
-            $total  = isset( $cart_item['_wooconfig_total_items'] ) ? absint( $cart_item['_wooconfig_total_items'] ) : 1;
+            $dorsal = isset( $cart_item['_vk7k_wconfig_dorsal'] ) ? trim( $cart_item['_vk7k_wconfig_dorsal'] ) : '';
+            $name   = isset( $cart_item['_vk7k_wconfig_nombre'] ) ? trim( $cart_item['_vk7k_wconfig_nombre'] ) : '';
+            $index  = isset( $cart_item['_vk7k_wconfig_item_index'] ) ? absint( $cart_item['_vk7k_wconfig_item_index'] ) : 1;
+            $total  = isset( $cart_item['_vk7k_wconfig_total_items'] ) ? absint( $cart_item['_vk7k_wconfig_total_items'] ) : 1;
 
             $player_str = '';
             if ( '' !== $dorsal && '' !== $name ) {
@@ -804,8 +804,8 @@ class WC_Config_Cart {
                 'value' => sprintf( __( 'Prenda %d de %d', 'woo-config' ), $index, $total ),
             );
 
-            if ( ! empty( $cart_item['_wooconfig_adicionales_raw'] ) && is_array( $cart_item['_wooconfig_adicionales_raw'] ) ) {
-                foreach ( $cart_item['_wooconfig_adicionales_raw'] as $ad_key ) {
+            if ( ! empty( $cart_item['_vk7k_wconfig_adicionales_raw'] ) && is_array( $cart_item['_vk7k_wconfig_adicionales_raw'] ) ) {
+                foreach ( $cart_item['_vk7k_wconfig_adicionales_raw'] as $ad_key ) {
                     if ( isset( $product_adicionales[$ad_key] ) ) {
                         $label = $product_adicionales[$ad_key]['label'];
                         $cost  = (float) $product_adicionales[$ad_key]['price'];
@@ -818,15 +818,15 @@ class WC_Config_Cart {
             }
         }
 
-        if ( ! empty( $cart_item['_wooconfig_design_desc'] ) ) {
+        if ( ! empty( $cart_item['_vk7k_wconfig_design_desc'] ) ) {
             $item_data[] = array(
                 'key'   => __( '📝 Diseño', 'woo-config' ),
-                'value' => esc_html( $cart_item['_wooconfig_design_desc'] ),
+                'value' => esc_html( $cart_item['_vk7k_wconfig_design_desc'] ),
             );
         }
 
-        if ( ! empty( $cart_item['_wooconfig_files'] ) && is_array( $cart_item['_wooconfig_files'] ) ) {
-            $file_names = wp_list_pluck( $cart_item['_wooconfig_files'], 'original_name' );
+        if ( ! empty( $cart_item['_vk7k_wconfig_files'] ) && is_array( $cart_item['_vk7k_wconfig_files'] ) ) {
+            $file_names = wp_list_pluck( $cart_item['_vk7k_wconfig_files'], 'original_name' );
             $item_data[] = array(
                 'key'   => __( '📁 Adjuntos', 'woo-config' ),
                 'value' => esc_html( implode( ', ', $file_names ) ),
@@ -837,7 +837,7 @@ class WC_Config_Cart {
     }
 
     public static function filter_cart_item_quantity( $product_quantity, $cart_item_key, $cart_item = array() ) {
-        if ( is_array( $cart_item ) && ! empty( $cart_item['_wooconfig_group_id'] ) ) {
+        if ( is_array( $cart_item ) && ! empty( $cart_item['_vk7k_wconfig_group_id'] ) ) {
             $qty = isset( $cart_item['quantity'] ) ? absint( $cart_item['quantity'] ) : 1;
             return '<span class="wooconfig-locked-qty" style="font-weight: 700; font-size: 15px; padding: 4px 8px; display: inline-block;">' . $qty . '</span>';
         }
@@ -845,7 +845,7 @@ class WC_Config_Cart {
     }
 
     public static function prevent_cart_item_qty_change( $passed, $cart_item_key, $values, $quantity ) {
-        if ( ! empty( $values['_wooconfig_group_id'] ) ) {
+        if ( ! empty( $values['_vk7k_wconfig_group_id'] ) ) {
             if ( (int) $quantity !== (int) $values['quantity'] ) {
                 wc_add_notice( __( 'Los pedidos configurados para equipo tienen cantidades fijas validadas. Si deseas modificar la cantidad, por favor reconfigura el producto.', 'woo-config' ), 'error' );
                 return false;
@@ -855,7 +855,7 @@ class WC_Config_Cart {
     }
 
     public static function filter_cart_item_permalink( $permalink, $cart_item, $cart_item_key ) {
-        if ( ! empty( $cart_item['_wooconfig_group_id'] ) || ! empty( $cart_item['_wooconfig_flow'] ) ) {
+        if ( ! empty( $cart_item['_vk7k_wconfig_group_id'] ) || ! empty( $cart_item['_vk7k_wconfig_flow'] ) ) {
             return false;
         }
         return $permalink;
@@ -874,7 +874,7 @@ class WC_Config_Cart {
         $configured_count = 0;
         if ( WC()->cart && ! WC()->cart->is_empty() ) {
             foreach ( WC()->cart->get_cart() as $cart_item ) {
-                if ( ! empty( $cart_item['_wooconfig_group_id'] ) || ! empty( $cart_item['_wooconfig_flow'] ) ) {
+                if ( ! empty( $cart_item['_vk7k_wconfig_group_id'] ) || ! empty( $cart_item['_vk7k_wconfig_flow'] ) ) {
                     $configured_count += isset( $cart_item['quantity'] ) ? absint( $cart_item['quantity'] ) : 1;
                 }
             }

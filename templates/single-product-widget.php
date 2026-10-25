@@ -13,7 +13,7 @@ $cart_min_units = (int) get_option( 'wooconfig_min_units', get_option( 'wooconfi
 $cart_min_units = max( 1, $cart_min_units );
 $base_price     = (float) $product->get_price();
 
-$adicionales = get_post_meta( $product_id, '_wooconfig_adicionales', true );
+$adicionales = get_post_meta( $product_id, '_vk7k_wconfig_adicionales', true );
 if ( ! is_array( $adicionales ) ) {
     $adicionales = array(
         'cuello_polo' => array( 'id' => 'cuello_polo', 'enabled' => 'yes', 'label' => __( 'Cuello piqué', 'woo-config' ), 'price' => 2500 ),
