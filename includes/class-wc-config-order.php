@@ -9,6 +9,7 @@ class WC_Config_Order {
         add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'save_order_line_item_meta' ), 10, 4 );
         add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_order_files_and_groups' ), 10, 3 );
         add_action( 'add_meta_boxes', array( __CLASS__, 'register_order_metabox' ) );
+        add_filter( 'woocommerce_order_item_get_formatted_meta_data', array( __CLASS__, 'hide_internal_item_meta' ), 20, 2 );
         add_action( 'woocommerce_email_after_order_table', array( __CLASS__, 'render_email_order_team_details' ), 10, 4 );
 
         // Balance payment redirect endpoint
@@ -301,6 +302,28 @@ class WC_Config_Order {
         }
 
         return (bool) apply_filters( 'wooconfig_order_content_editable', $order->is_editable(), $order );
+    }
+
+    /**
+     * Oculta los metadatos internos del plugin en la tabla de artículos del pedido
+     * (los datos de la prenda se siguen leyendo con get_meta()).
+     *
+     * @param array    $formatted Meta formateada.
+     * @param WC_Item  $item      Item.
+     * @return array
+     */
+    public static function hide_internal_item_meta( $formatted, $item ) {
+        if ( ! is_array( $formatted ) ) {
+            return $formatted;
+        }
+
+        foreach ( $formatted as $key => $meta ) {
+            if ( isset( $meta->key ) && 0 === strpos( $meta->key, '_wooconfig_' ) ) {
+                unset( $formatted[ $key ] );
+            }
+        }
+
+        return $formatted;
     }
 
     public static function register_order_metabox() {
@@ -1286,7 +1309,11 @@ class WC_Config_Order {
         $requested  = isset( $_POST['order_status'] ) ? sanitize_text_field( wp_unslash( $_POST['order_status'] ) ) : '';
         $new_status = in_array( $requested, $valid, true ) ? $requested : '';
         if ( '' === $new_status ) {
-            $new_status = in_array( 'wc-quote', $valid, true ) ? 'wc-quote' : 'wc-pending';
+            // Cotización -> Cotización; pedido -> Pendiente (antes un pedido nacía como cotización).
+            $is_quote   = ( 'quote' === $order->get_type() );
+            $new_status = $is_quote
+                ? ( in_array( 'wc-quote', $valid, true ) ? 'wc-quote' : 'wc-pending' )
+                : ( in_array( 'wc-pending', $valid, true ) ? 'wc-pending' : 'wc-quote' );
         }
 
         if ( ! $order->get_date_created() ) {
