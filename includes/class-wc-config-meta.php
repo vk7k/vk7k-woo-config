@@ -156,6 +156,20 @@ class VK7K_WConfig_Meta {
             'color'               => __( 'Color', 'woo-config' ),
         );
 
+        // Los documentos viejos conservan las claves sin prefijo (Talla, Dorsal (#)...), que
+        // WooCommerce ya muestra. Se retiran y se reinyectan con el valor canónico, o el
+        // articulo saldria con la talla y el dorsal repetidos.
+        $ours     = array_map( array( __CLASS__, 'normalize_label' ), array_values( $labels ) );
+        $filtered = array();
+
+        foreach ( $formatted as $meta ) {
+            $label = isset( $meta->display_key ) ? $meta->display_key : ( $meta->key ?? '' );
+            if ( in_array( self::normalize_label( $label ), $ours, true ) ) {
+                continue;
+            }
+            $filtered[] = $meta;
+        }
+
         foreach ( $labels as $field => $label ) {
             $val = self::item_field( $item, $field );
 
@@ -169,16 +183,30 @@ class VK7K_WConfig_Meta {
                 continue;
             }
 
-            $meta               = new stdClass();
-            $meta->key          = $label;
-            $meta->value        = $text;
-            $meta->display_key  = $label;
+            $meta                = new stdClass();
+            $meta->key           = $label;
+            $meta->value         = $text;
+            $meta->display_key   = $label;
             $meta->display_value = $text;
 
-            $formatted[] = $meta;
+            $filtered[] = $meta;
         }
 
-        return $formatted;
+        return $filtered;
+    }
+
+
+    /**
+     * Normaliza una etiqueta para comparar (sin HTML, acentos ni espacios de más).
+     *
+     * @param string $label Etiqueta.
+     * @return string
+     */
+    public static function normalize_label( $label ) {
+        $label = wp_strip_all_tags( (string) $label );
+        $label = remove_accents( $label );
+
+        return strtolower( trim( $label ) );
     }
 
     /**
