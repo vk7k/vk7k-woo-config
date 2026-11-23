@@ -906,15 +906,22 @@ class WC_Config_Wholesale {
      * Save user wholesale status
      */
     public static function save_user_profile_fields( $user_id ) {
+        $user_id = absint( $user_id );
+        if ( ! $user_id || ! current_user_can( 'edit_user', $user_id ) ) {
+            return;
+        }
         if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'edit_users' ) ) {
             return;
         }
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'update-user_' . $user_id ) ) {
+            return;
+        }
 
-        $is_ws = ( isset( $_POST['wooconfig_is_wholesale'] ) && 'yes' === $_POST['wooconfig_is_wholesale'] ) ? 'yes' : 'no';
+        $is_ws = ( isset( $_POST['wooconfig_is_wholesale'] ) && 'yes' === sanitize_text_field( wp_unslash( $_POST['wooconfig_is_wholesale'] ) ) ) ? 'yes' : 'no';
         update_user_meta( $user_id, '_vk7k_wconfig_is_wholesale', $is_ws );
 
         $user = get_user_by( 'id', $user_id );
-        if ( $user ) {
+        if ( $user && ! user_can( $user_id, 'manage_options' ) ) {
             if ( 'yes' === $is_ws ) {
                 if ( ! in_array( 'wholesale_customer', (array) $user->roles, true ) && in_array( 'customer', (array) $user->roles, true ) ) {
                     $user->set_role( 'wholesale_customer' );

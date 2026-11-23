@@ -977,7 +977,23 @@ class WC_Config_Admin {
                 'meta_key' => '_vk7k_wconfig_adicionales',
                 'type'     => 'object',
                 'sanitize' => function( $val ) {
-                    return is_array( $val ) ? $val : array();
+                    if ( ! is_array( $val ) ) {
+                        return array();
+                    }
+                    $clean = array();
+                    foreach ( $val as $k => $ad ) {
+                        $ck = sanitize_key( (string) $k );
+                        if ( '' === $ck || ! is_array( $ad ) ) {
+                            continue;
+                        }
+                        $clean[ $ck ] = array(
+                            'id'      => isset( $ad['id'] ) ? sanitize_key( (string) $ad['id'] ) : $ck,
+                            'enabled' => ( isset( $ad['enabled'] ) && 'yes' === $ad['enabled'] ) ? 'yes' : 'no',
+                            'label'   => isset( $ad['label'] ) ? sanitize_text_field( (string) $ad['label'] ) : '',
+                            'price'   => isset( $ad['price'] ) ? max( 0, (float) $ad['price'] ) : 0.0,
+                        );
+                    }
+                    return $clean;
                 },
             ),
             'wooconfig_deposit_enabled'    => array(

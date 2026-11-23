@@ -453,13 +453,14 @@
 
             var self = this;
             $.each(files, function(i, f) {
-                var previewHtml = f.is_image ? '<img src="' + f.file_url + '" class="file-thumb" alt="preview">' : '<span class="file-doc-icon">📄</span>';
+                var safeFileUrl = (f.file_url && /^(https?:\/\/|\/)/i.test(String(f.file_url))) ? self.escapeHtml(f.file_url) : '';
+                var previewHtml = (f.is_image && safeFileUrl) ? '<img src="' + safeFileUrl + '" class="file-thumb" alt="preview">' : '<span class="file-doc-icon">📄</span>';
                 var itemHtml = '<div class="wooconfig-file-item">' +
                     '<div class="file-meta">' +
                         previewHtml +
                         '<span class="file-name" title="' + self.escapeHtml(f.original_name) + '">' + self.escapeHtml(f.original_name) + '</span>' +
                     '</div>' +
-                    '<button type="button" class="wooconfig-btn-delete-file" data-stored-name="' + self.escapeHtml(f.stored_name) + '" data-upload-type="' + type + '">' +
+                    '<button type="button" class="wooconfig-btn-delete-file" data-stored-name="' + self.escapeHtml(f.stored_name) + '" data-upload-type="' + self.escapeHtml(type) + '">' +
                         '<span class="trash-icon">🗑</span> Borrar' +
                     '</button>' +
                 '</div>';

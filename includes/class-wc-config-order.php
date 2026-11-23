@@ -287,6 +287,62 @@ class WC_Config_Order {
     }
 
     /**
+     * Sanitize an uploaded files array decoded from JSON payloads.
+     *
+     * @param mixed $raw_files Decoded files payload.
+     * @return array
+     */
+    private static function sanitize_files_array( $raw_files ) {
+        if ( ! is_array( $raw_files ) ) {
+            return array();
+        }
+        $clean = array();
+        foreach ( $raw_files as $f ) {
+            if ( ! is_array( $f ) ) {
+                continue;
+            }
+            $url     = isset( $f['file_url'] ) ? esc_url_raw( (string) $f['file_url'], array( 'http', 'https' ) ) : '';
+            $clean[] = array(
+                'original_name' => isset( $f['original_name'] ) ? sanitize_text_field( (string) $f['original_name'] ) : '',
+                'stored_name'   => isset( $f['stored_name'] ) ? sanitize_file_name( (string) $f['stored_name'] ) : '',
+                'file_url'      => $url,
+                'is_image'      => ! empty( $f['is_image'] ),
+            );
+        }
+        return $clean;
+    }
+
+    /**
+     * Sanitize preview sheet items decoded from JSON payloads.
+     *
+     * @param mixed $raw_items Decoded items payload.
+     * @return array
+     */
+    private static function sanitize_preview_items_array( $raw_items ) {
+        if ( ! is_array( $raw_items ) ) {
+            return array();
+        }
+        $clean = array();
+        foreach ( $raw_items as $item ) {
+            if ( ! is_array( $item ) ) {
+                continue;
+            }
+            $ads = array();
+            if ( ! empty( $item['adicionales'] ) && is_array( $item['adicionales'] ) ) {
+                $ads = array_values( array_filter( array_map( 'sanitize_text_field', $item['adicionales'] ) ) );
+            }
+            $clean[] = array(
+                'dorsal'       => isset( $item['dorsal'] ) ? sanitize_text_field( (string) $item['dorsal'] ) : '',
+                'name'         => isset( $item['name'] ) ? sanitize_text_field( (string) $item['name'] ) : '',
+                'size'         => isset( $item['size'] ) ? sanitize_text_field( (string) $item['size'] ) : '',
+                'product_name' => isset( $item['product_name'] ) ? sanitize_text_field( (string) $item['product_name'] ) : '',
+                'adicionales'  => $ads,
+            );
+        }
+        return $clean;
+    }
+
+    /**
      * ¿Se puede modificar el CONTENIDO (prendas) de este documento?
      *
      * Se apoya en WC_Order::is_editable() y su filtro wc_order_is_editable, que es donde
@@ -1366,10 +1422,7 @@ class WC_Config_Order {
         $combined_desc = implode( "\n\n", $desc_parts );
 
         $files_raw = isset( $_POST['files'] ) ? wp_unslash( $_POST['files'] ) : '[]';
-        $files     = json_decode( $files_raw, true );
-        if ( ! is_array( $files ) ) {
-            $files = array();
-        }
+        $files     = self::sanitize_files_array( json_decode( $files_raw, true ) );
 
         $items_raw = isset( $_POST['items'] ) ? wp_unslash( $_POST['items'] ) : '[]';
         $items_data = json_decode( $items_raw, true );
@@ -1703,14 +1756,13 @@ class WC_Config_Order {
         $group_title = isset( $_POST['group_title'] ) ? sanitize_text_field( wp_unslash( $_POST['group_title'] ) ) : 'Vista Previa de Taller';
         $design_desc = isset( $_POST['design_desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['design_desc'] ) ) : '';
         $files_raw   = isset( $_POST['files'] ) ? wp_unslash( $_POST['files'] ) : '[]';
-        $files       = json_decode( $files_raw, true );
-        if ( ! is_array( $files ) ) $files = array();
+        $files       = self::sanitize_files_array( json_decode( $files_raw, true ) );
 
         $items_raw   = isset( $_POST['items'] ) ? wp_unslash( $_POST['items'] ) : '[]';
-        $items       = json_decode( $items_raw, true );
-        if ( ! is_array( $items ) ) $items = array();
+        $items       = self::sanitize_preview_items_array( json_decode( $items_raw, true ) );
 
         $draft_data = array(
+            'order_id'    => $order_id,
             'group_title' => $group_title,
             'design_desc' => $design_desc,
             'files'       => $files,
@@ -1745,6 +1797,10 @@ class WC_Config_Order {
         $order = wc_get_order( $order_id );
         if ( ! $order ) {
             wp_send_json_error( array( 'message' => __( 'Pedido no encontrado.', 'woo-config' ) ) );
+        }
+
+        if ( ! self::content_editable( $order ) ) {
+            wp_send_json_error( array( 'message' => __( 'Este documento ya no admite cambios en su contenido (está emitido o confirmado). Clónalo para modificarlo.', 'woo-config' ) ) );
         }
 
         $original_item = $order->get_item( $item_id );

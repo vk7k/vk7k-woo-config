@@ -1,6 +1,6 @@
 # ESTADO — vk7k-woo-config
 
-> Última actualización: 2026-10-25 · versión **1.9.7** · rama **flujo-configurador** (¡no es master!) · remoto `github.com/vk7k/vk7k-woo-config` · local 1.9.7, prod 1.9.7.
+> Última actualización: 2026-11-23 · versión **2.0.2** · rama **flujo-configurador** (¡no es master!) · remoto `github.com/vk7k/vk7k-woo-config`. Endurecimiento de seguridad en PDF preview nonce/`draft_key`, sanitización JSON/REST/perfil mayorista y escapes DOM JS.
 
 Leer antes de tocar nada: `..\AGENTS.md`. El **deploy a producción no lo hace un agente de código** (eso es de Hermes + `vk7k-wp-sync`).
 

@@ -1071,11 +1071,15 @@ class WC_Config_Uploader {
      * Safely recursively delete a directory within an allowed base path.
      */
     public static function delete_directory_recursive( $dir, $base_allowed_dir ) {
+        if ( is_link( $dir ) ) {
+            return false;
+        }
         $real_dir  = realpath( $dir );
         $real_base = realpath( $base_allowed_dir );
 
-        // Security check: ensure target is strictly inside allowed directory
-        if ( ! $real_dir || ! $real_base || 0 !== strpos( $real_dir, $real_base ) || $real_dir === $real_base ) {
+        // Security check: ensure target is strictly inside allowed directory (with trailing separator)
+        $base_prefix = $real_base ? rtrim( $real_base, '/\\' ) . DIRECTORY_SEPARATOR : '';
+        if ( ! $real_dir || ! $real_base || '' === $base_prefix || 0 !== strpos( $real_dir, $base_prefix ) || $real_dir === $real_base ) {
             return false;
         }
 
@@ -1090,7 +1094,9 @@ class WC_Config_Uploader {
             }
 
             $path = $real_dir . DIRECTORY_SEPARATOR . $item;
-            if ( is_dir( $path ) ) {
+            if ( is_link( $path ) ) {
+                @unlink( $path );
+            } elseif ( is_dir( $path ) ) {
                 self::delete_directory_recursive( $path, $base_allowed_dir );
             } else {
                 @unlink( $path );

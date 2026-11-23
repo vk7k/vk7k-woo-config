@@ -18,22 +18,26 @@ class WC_Config_PDF {
             wp_die( __( 'Permisos insuficientes para ver esta ficha de producción.', 'woo-config' ) );
         }
 
+        $order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
+        check_admin_referer( 'wooconfig_pdf_' . $order_id );
+
         // Support draft preview without saving to database permanently
         if ( isset( $_GET['draft_key'] ) ) {
-            $draft_key  = sanitize_text_field( $_GET['draft_key'] );
-            $draft_data = get_transient( 'wooconfig_draft_' . $draft_key );
-            if ( ! $draft_data ) {
+            $draft_key     = sanitize_text_field( wp_unslash( $_GET['draft_key'] ) );
+            $transient_key = ( 0 === strpos( $draft_key, 'wooconfig_draft_' ) ) ? $draft_key : ( 'wooconfig_draft_' . $draft_key );
+            $draft_data    = get_transient( $transient_key );
+            if ( ! is_array( $draft_data ) || empty( $draft_data ) ) {
                 wp_die( __( 'El borrador de previsualización ha caducado o no existe.', 'woo-config' ) );
             }
+            if ( ! empty( $draft_data['order_id'] ) && (int) $draft_data['order_id'] !== $order_id ) {
+                wp_die( __( 'El borrador no corresponde a este pedido.', 'woo-config' ) );
+            }
             $is_draft = true;
-            $order_id = isset( $draft_data['order_id'] ) ? absint( $draft_data['order_id'] ) : 0;
+            $order_id = ! empty( $draft_data['order_id'] ) ? absint( $draft_data['order_id'] ) : $order_id;
             $order    = $order_id ? wc_get_order( $order_id ) : false;
             include WOOCONFIG_PATH . 'templates/production-sheet.php';
             exit;
         }
-
-        $order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
-        check_admin_referer( 'wooconfig_pdf_' . $order_id );
 
         $order = wc_get_order( $order_id );
         if ( ! $order ) {

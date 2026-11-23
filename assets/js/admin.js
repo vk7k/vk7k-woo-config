@@ -272,7 +272,7 @@
         $('#wooconfig-modal-convert-item-id').val(itemId);
 
         // Update title
-        $('#wooconfig-modal-title').html('⚡ Configurar Tallas y Dorsales (' + quantity + ' prendas) - ' + productName);
+        $('#wooconfig-modal-title').html('⚡ Configurar Tallas y Dorsales (' + parseInt(quantity, 10) + ' prendas) - ' + escAttr(productName));
 
         // Set group title
         $('#wooconfig-modal-group-title').val('Equipo: ' + productName);
@@ -848,7 +848,7 @@
                     $select.empty();
                     $select.append('<option value="">-- Selecciona una prenda personalizable --</option>');
                     $.each(availableProducts, function(i, prod) {
-                        $select.append('<option value="' + prod.id + '">' + prod.name + ' (' + prod.price_html + ')</option>');
+                        $select.append('<option value="' + escAttr(prod.id) + '">' + escAttr(prod.name) + ' (' + escAttr($('<div>').html(prod.price_html || '').text()) + ')</option>');
                     });
                     if (availableProducts.length > 0 && !$select.val()) {
                         $select.val(availableProducts[0].id).trigger('change');
@@ -883,8 +883,8 @@
         var sizes = (prod && prod.sizes) ? prod.sizes : ['4', '6', '8', '10', '12', '14', '16', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
         var sizeOptions = '';
         $.each(sizes, function(i, s) {
-            var selected = (s.toUpperCase() === sizeVal.toUpperCase()) ? ' selected' : '';
-            sizeOptions += '<option value="' + s + '"' + selected + '>' + s + '</option>';
+            var selected = (String(s).toUpperCase() === String(sizeVal).toUpperCase()) ? ' selected' : '';
+            sizeOptions += '<option value="' + escAttr(s) + '"' + selected + '>' + escAttr(s) + '</option>';
         });
 
         var adicionalesHtml = '';
@@ -892,8 +892,8 @@
             $.each(prod.adicionales, function(k, ad) {
                 var checked = (adicionalesArr.indexOf(k) !== -1) ? ' checked' : '';
                 adicionalesHtml += '<label style="display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; font-size: 12px;">' +
-                    '<input type="checkbox" class="wooconfig-modal-ad-check" value="' + k + '"' + checked + '> ' +
-                    ad.label + ' (+$' + ad.price + ')' +
+                    '<input type="checkbox" class="wooconfig-modal-ad-check" value="' + escAttr(k) + '"' + checked + '> ' +
+                    escAttr(ad.label) + ' (+$' + escAttr(ad.price) + ')' +
                     '</label>';
             });
         }
@@ -930,7 +930,7 @@
         var sizes = prod.sizes || ['S', 'M', 'L', 'XL'];
         var sizeOptions = '';
         $.each(sizes, function(i, s) {
-            sizeOptions += '<option value="' + s + '">' + s + '</option>';
+            sizeOptions += '<option value="' + escAttr(s) + '">' + escAttr(s) + '</option>';
         });
 
         $('#wooconfig-modal-players-table tbody tr').each(function() {
@@ -945,8 +945,8 @@
             if (prod.adicionales) {
                 $.each(prod.adicionales, function(k, ad) {
                     adicionalesHtml += '<label style="display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; font-size: 12px;">' +
-                        '<input type="checkbox" class="wooconfig-modal-ad-check" value="' + k + '"> ' +
-                        ad.label + ' (+$' + ad.price + ')' +
+                        '<input type="checkbox" class="wooconfig-modal-ad-check" value="' + escAttr(k) + '"> ' +
+                        escAttr(ad.label) + ' (+$' + escAttr(ad.price) + ')' +
                         '</label>';
                 });
             }
